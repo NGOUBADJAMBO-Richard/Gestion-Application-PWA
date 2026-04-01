@@ -12,6 +12,7 @@ import {
   Globe,
   LogOut,
   Menu,
+  UserCircle2,
   X
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -19,6 +20,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
 import { useState } from 'react';
+import { BrandLogo } from './BrandLogo';
 
 export function Layout() {
   const { theme, toggleTheme } = useTheme();
@@ -32,6 +34,7 @@ export function Layout() {
     { name: t('nav.projects'), href: '/projects', icon: FolderKanban },
     { name: t('nav.invoicing'), href: '/invoicing', icon: FileText },
     { name: t('nav.support'), href: '/support', icon: Headphones },
+    { name: t('nav.account'), href: '/account', icon: UserCircle2 },
     { name: t('nav.help'), href: '/help', icon: HelpCircle },
   ];
 
@@ -47,18 +50,24 @@ export function Layout() {
       
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-card border-r border-border z-50
+        fixed top-0 left-0 h-full w-72 bg-card/90 border-r border-border z-50 surface-card
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-            <h1 className="font-bold" style={{ color: '#004aad' }}>M.G.N Manager</h1>
+          <div className="h-20 flex items-center justify-between px-5 border-b border-border">
+            <BrandLogo
+              size="sm"
+              mode={theme === 'dark' ? 'mono' : 'color'}
+              subtitle={t('brand.businessSuite')}
+            />
             <button 
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden"
+              title="Fermer le menu"
+              aria-label="Fermer le menu"
             >
               <X className="w-5 h-5" />
             </button>
@@ -111,18 +120,25 @@ export function Layout() {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-72">
         {/* Top bar */}
-        <header className="h-16 border-b border-border bg-card sticky top-0 z-30">
+        <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30">
           <div className="h-full px-4 lg:px-6 flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden"
+              title="Ouvrir le menu"
+              aria-label="Ouvrir le menu"
             >
               <Menu className="w-6 h-6" />
             </button>
 
-            <div className="flex-1" />
+            <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              {t('brand.platformActive')}
+            </div>
+
+            <div className="flex-1 md:hidden" />
 
             <div className="flex items-center gap-2">
               {/* Language toggle */}

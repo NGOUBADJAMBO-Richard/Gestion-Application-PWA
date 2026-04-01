@@ -16,6 +16,7 @@ const translations: Translations = {
   'nav.projects': { fr: 'Projets', en: 'Projects' },
   'nav.invoicing': { fr: 'Facturation', en: 'Invoicing' },
   'nav.support': { fr: 'Support', en: 'Support' },
+  'nav.account': { fr: 'Mon compte', en: 'My account' },
   'nav.help': { fr: 'Aide', en: 'Help' },
   'nav.logout': { fr: 'Déconnexion', en: 'Logout' },
   
@@ -28,6 +29,9 @@ const translations: Translations = {
   'dashboard.pendingInvoices': { fr: 'Factures en Attente', en: 'Pending Invoices' },
   'dashboard.recentProjects': { fr: 'Projets Récents', en: 'Recent Projects' },
   'dashboard.revenueOverview': { fr: 'Aperçu des Revenus', en: 'Revenue Overview' },
+  'dashboard.monthlyRevenueYear': { fr: 'Revenus mensuels sur 2026', en: 'Monthly revenue for 2026' },
+  'dashboard.latestUpdates': { fr: 'Dernieres mises a jour projets', en: 'Latest project updates' },
+  'dashboard.vsLastMonth': { fr: 'vs mois precedent', en: 'vs last month' },
   
   // Projects
   'projects.title': { fr: 'Gestion des Projets', en: 'Project Management' },
@@ -63,6 +67,13 @@ const translations: Translations = {
   'invoicing.paid': { fr: 'Payée', en: 'Paid' },
   'invoicing.pending': { fr: 'En Attente', en: 'Pending' },
   'invoicing.overdue': { fr: 'En Retard', en: 'Overdue' },
+  'invoicing.all': { fr: 'Toutes', en: 'All' },
+  'invoicing.listTitle': { fr: 'Liste des Factures', en: 'Invoices List' },
+  'invoicing.number': { fr: 'Numero', en: 'Number' },
+  'invoicing.amount': { fr: 'Montant', en: 'Amount' },
+  'invoicing.date': { fr: 'Date', en: 'Date' },
+  'invoicing.dueDate': { fr: 'Echeance', en: 'Due Date' },
+  'invoicing.manageData': { fr: 'Gerez les donnees de la facture', en: 'Manage invoice data' },
   
   // Support
   'support.title': { fr: 'Support & Maintenance', en: 'Support & Maintenance' },
@@ -79,6 +90,17 @@ const translations: Translations = {
   'common.edit': { fr: 'Modifier', en: 'Edit' },
   'common.view': { fr: 'Voir', en: 'View' },
   'common.loading': { fr: 'Chargement...', en: 'Loading...' },
+  'common.actions': { fr: 'Actions', en: 'Actions' },
+
+  // Brand
+  'brand.businessSuite': { fr: 'Suite de Gestion', en: 'Business Suite' },
+  'brand.platformActive': { fr: 'Plateforme de gestion active', en: 'Management platform active' },
+
+  // Projects extras
+  'projects.allTitle': { fr: 'Tous les Projets', en: 'All Projects' },
+  'projects.detailsHint': { fr: 'Renseignez les details du projet', en: 'Fill in the project details below' },
+  'projects.enterName': { fr: 'Nom du projet', en: 'Enter project name' },
+  'projects.clientName': { fr: 'Nom du client', en: 'Client name' },
 };
 
 interface LanguageContextType {

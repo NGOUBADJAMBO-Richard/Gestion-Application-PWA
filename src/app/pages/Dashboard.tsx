@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { mockProjects, mockClients, mockInvoices, mockRevenueData } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from '../components/ui/badge';
+import { formatCompactXAF } from '../utils/currency';
 
 export function Dashboard() {
   const { t } = useLanguage();
@@ -12,31 +13,35 @@ export function Dashboard() {
   const stats = [
     {
       title: t('dashboard.totalRevenue'),
-      value: '€328,000',
+      value: formatCompactXAF(328000000),
       change: '+12.5%',
       icon: TrendingUp,
-      color: '#004aad',
+      iconClass: 'text-[#004aad]',
+      iconBgClass: 'bg-[#004aad]/10',
     },
     {
       title: t('dashboard.activeProjects'),
       value: mockProjects.filter(p => p.status === 'active').length,
       change: '+3',
       icon: FolderKanban,
-      color: '#10b981',
+      iconClass: 'text-emerald-500',
+      iconBgClass: 'bg-emerald-500/10',
     },
     {
       title: t('dashboard.totalClients'),
       value: mockClients.length,
       change: '+2',
       icon: Users,
-      color: '#f59e0b',
+      iconClass: 'text-amber-500',
+      iconBgClass: 'bg-amber-500/10',
     },
     {
       title: t('dashboard.pendingInvoices'),
       value: mockInvoices.filter(i => i.status === 'pending').length,
       change: '-1',
       icon: FileText,
-      color: '#ef4444',
+      iconClass: 'text-red-500',
+      iconBgClass: 'bg-red-500/10',
     },
   ];
 
@@ -63,18 +68,15 @@ export function Dashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardDescription>{stat.title}</CardDescription>
-                <div 
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${stat.color}15` }}
-                >
-                  <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.iconBgClass}`}>
+                  <stat.icon className={`w-5 h-5 ${stat.iconClass}`} />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
-                <p className="font-bold" style={{ fontSize: '1.875rem' }}>{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.change} vs last month</p>
+                <p className="font-bold text-3xl">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.change} {t('dashboard.vsLastMonth')}</p>
               </div>
             </CardContent>
           </Card>
@@ -87,7 +89,7 @@ export function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle>{t('dashboard.revenueOverview')}</CardTitle>
-            <CardDescription>Monthly revenue for 2026</CardDescription>
+            <CardDescription>{t('dashboard.monthlyRevenueYear')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -121,7 +123,7 @@ export function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle>{t('dashboard.recentProjects')}</CardTitle>
-            <CardDescription>Latest project updates</CardDescription>
+            <CardDescription>{t('dashboard.latestUpdates')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

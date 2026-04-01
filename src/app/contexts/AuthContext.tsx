@@ -5,6 +5,11 @@ interface User {
   name: string;
   email: string;
   role: 'admin' | 'team';
+  phone: string;
+  company: string;
+  department: string;
+  joinedAt: string;
+  lastLoginAt: string;
   avatar?: string;
 }
 
@@ -17,29 +22,36 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data
-const MOCK_USER: User = {
-  id: '1',
-  name: 'Admin Manager',
-  email: 'admin@mgn.com',
-  role: 'admin',
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('mgn-user');
-    return saved ? JSON.parse(saved) : MOCK_USER; // Auto-login for demo
+    if (!saved) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(saved) as User;
+    } catch {
+      localStorage.removeItem('mgn-user');
+      return null;
+    }
   });
 
   const login = async (email: string, password: string) => {
     // Mock login - in real app, this would call an API
     await new Promise(resolve => setTimeout(resolve, 500));
     
+    const now = new Date().toISOString();
     const mockUser: User = {
       id: '1',
       name: email.split('@')[0],
       email,
       role: 'admin',
+      phone: '+33 6 00 00 00 00',
+      company: 'M.G.N Manager',
+      department: 'Direction',
+      joinedAt: '2026-01-01',
+      lastLoginAt: now,
     };
     
     setUser(mockUser);

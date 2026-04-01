@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Client, mockClients } from '../data/mockData';
+import { Client, mockClients, mockProjects } from '../data/mockData';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import {
   Dialog,
@@ -22,6 +22,8 @@ export function Clients() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formData, setFormData] = useState<Omit<Client, 'id'>>({
     name: '',
     email: '',
@@ -65,6 +67,11 @@ export function Clients() {
 
   const handleDelete = (id: string) => {
     setClients(prev => prev.filter(client => client.id !== id));
+  };
+
+  const handleView = (client: Client) => {
+    setSelectedClient(client);
+    setIsDetailsOpen(true);
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -158,7 +165,12 @@ export function Clients() {
                 <span>{client.projects} {t('clients.projects').toLowerCase()}</span>
               </div>
               <div className="pt-2 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleView(client)}
+                >
                   {t('common.view')}
                 </Button>
                 <Button
@@ -263,6 +275,73 @@ export function Clients() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDetailsOpen}
+        onOpenChange={(open) => {
+          setIsDetailsOpen(open);
+          if (!open) {
+            setSelectedClient(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Fiche client</DialogTitle>
+            <DialogDescription>
+              Informations detaillees du client selectionne
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedClient && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-[#004aad] text-white">
+                    {selectedClient.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{selectedClient.name}</p>
+                  <p className="text-sm text-muted-foreground">{selectedClient.company}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <p><span className="text-muted-foreground">Email:</span> {selectedClient.email}</p>
+                <p><span className="text-muted-foreground">Telephone:</span> {selectedClient.phone}</p>
+                <p><span className="text-muted-foreground">Nombre de projets:</span> {selectedClient.projects}</p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium mb-2">Projets associes</p>
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  {mockProjects
+                    .filter(project => project.client === selectedClient.company)
+                    .map(project => (
+                      <div key={project.id} className="text-sm border border-border rounded-md px-3 py-2">
+                        <p className="font-medium">{project.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Statut: {project.status} | Echeance: {project.deadline}
+                        </p>
+                      </div>
+                    ))}
+
+                  {mockProjects.filter(project => project.client === selectedClient.company).length === 0 && (
+                    <p className="text-sm text-muted-foreground">Aucun projet associe.</p>
+                  )}
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDetailsOpen(false)}>
+                  Fermer
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

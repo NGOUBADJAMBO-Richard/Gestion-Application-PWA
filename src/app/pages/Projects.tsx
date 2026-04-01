@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { Label } from '../components/ui/label';
+import { formatCurrencyXAF } from '../utils/currency';
 
 export function Projects() {
   const { t } = useLanguage();
@@ -66,13 +67,6 @@ export function Projects() {
       case 'pending': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400';
       default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
   };
 
   const handleDelete = (id: string) => {
@@ -190,7 +184,7 @@ export function Projects() {
       {/* Projects Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Projects</CardTitle>
+          <CardTitle>{t('projects.allTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -217,7 +211,7 @@ export function Projects() {
                       </Badge>
                     </TableCell>
                     <TableCell>{new Date(project.deadline).toLocaleDateString('fr-FR')}</TableCell>
-                    <TableCell>{formatCurrency(project.budget)}</TableCell>
+                    <TableCell>{formatCurrencyXAF(project.budget)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress value={project.progress} className="w-16" />
@@ -267,7 +261,7 @@ export function Projects() {
                 {editingProject ? t('projects.edit') : t('projects.new')}
               </DialogTitle>
               <DialogDescription>
-                Fill in the project details below
+                {t('projects.detailsHint')}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -277,7 +271,7 @@ export function Projects() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter project name"
+                  placeholder={t('projects.enterName')}
                   required
                 />
               </div>
@@ -287,7 +281,7 @@ export function Projects() {
                   id="client"
                   value={formData.client}
                   onChange={(e) => setFormData(prev => ({ ...prev, client: e.target.value }))}
-                  placeholder="Client name"
+                  placeholder={t('projects.clientName')}
                   required
                 />
               </div>

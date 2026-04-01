@@ -134,6 +134,28 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-family-body);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(0, 74, 173, 0.08), transparent 30%),
+      radial-gradient(circle at 85% 0%, rgba(0, 158, 96, 0.08), transparent 25%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 250, 252, 0.98));
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(0, 74, 173, 0.22), transparent 28%),
+      radial-gradient(circle at 85% 0%, rgba(0, 158, 96, 0.18), transparent 23%),
+      linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(14, 14, 14, 0.98));
+  }
+
+  .surface-card {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 10px 30px rgba(7, 28, 57, 0.08);
+  }
+
+  .brand-gradient {
+    background: linear-gradient(120deg, #004aad 0%, #0b2f63 45%, #009e60 100%);
   }
 
   /**

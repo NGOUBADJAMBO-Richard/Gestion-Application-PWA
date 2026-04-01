@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import { formatCurrencyXAF } from '../utils/currency';
 
 export function Invoicing() {
   const { t } = useLanguage();
@@ -57,13 +58,6 @@ export function Invoicing() {
       case 'overdue': return 'bg-red-500/10 text-red-600 dark:text-red-400';
       default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
   };
 
   const totalAmount = filteredInvoices.reduce((sum, inv) => sum + inv.amount, 0);
@@ -134,7 +128,7 @@ export function Invoicing() {
         <div>
           <h1>{t('invoicing.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            {filteredInvoices.length} factures - Total: {formatCurrency(totalAmount)}
+            {filteredInvoices.length} factures - Total: {formatCurrencyXAF(totalAmount)}
           </p>
         </div>
         <Button className="gap-2" style={{ backgroundColor: '#004aad' }} onClick={handleCreate}>
@@ -153,7 +147,7 @@ export function Invoicing() {
               onClick={() => setStatusFilter('all')}
               style={statusFilter === 'all' ? { backgroundColor: '#004aad' } : {}}
             >
-              All
+              {t('invoicing.all')}
             </Button>
             <Button
               variant={statusFilter === 'paid' ? 'default' : 'outline'}
@@ -186,20 +180,20 @@ export function Invoicing() {
       {/* Invoices Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Invoices List</CardTitle>
+          <CardTitle>{t('invoicing.listTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Number</TableHead>
+                  <TableHead>{t('invoicing.number')}</TableHead>
                   <TableHead>{t('projects.client')}</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Due Date</TableHead>
+                  <TableHead>{t('invoicing.amount')}</TableHead>
+                  <TableHead>{t('invoicing.date')}</TableHead>
+                  <TableHead>{t('invoicing.dueDate')}</TableHead>
                   <TableHead>{t('projects.status')}</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -207,7 +201,7 @@ export function Invoicing() {
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">{invoice.number}</TableCell>
                     <TableCell>{invoice.client}</TableCell>
-                    <TableCell className="font-semibold">{formatCurrency(invoice.amount)}</TableCell>
+                    <TableCell className="font-semibold">{formatCurrencyXAF(invoice.amount)}</TableCell>
                     <TableCell>{new Date(invoice.date).toLocaleDateString('fr-FR')}</TableCell>
                     <TableCell>{new Date(invoice.dueDate).toLocaleDateString('fr-FR')}</TableCell>
                     <TableCell>
@@ -250,13 +244,13 @@ export function Invoicing() {
             <DialogHeader>
               <DialogTitle>{editingInvoice ? t('common.edit') : t('invoicing.new')}</DialogTitle>
               <DialogDescription>
-                Gerez les donnees de la facture
+                {t('invoicing.manageData')}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="invoice-number">Number</Label>
+                  <Label htmlFor="invoice-number">{t('invoicing.number')}</Label>
                   <Input
                     id="invoice-number"
                     value={formData.number}
@@ -295,7 +289,7 @@ export function Invoicing() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="invoice-amount">Amount</Label>
+                <Label htmlFor="invoice-amount">{t('invoicing.amount')}</Label>
                 <Input
                   id="invoice-amount"
                   type="number"
@@ -310,7 +304,7 @@ export function Invoicing() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="invoice-date">Date</Label>
+                  <Label htmlFor="invoice-date">{t('invoicing.date')}</Label>
                   <Input
                     id="invoice-date"
                     type="date"
@@ -320,7 +314,7 @@ export function Invoicing() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="invoice-due-date">Due Date</Label>
+                  <Label htmlFor="invoice-due-date">{t('invoicing.dueDate')}</Label>
                   <Input
                     id="invoice-due-date"
                     type="date"
