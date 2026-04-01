@@ -1,11 +1,11 @@
-import React from 'react';
-import { Outlet, NavLink } from 'react-router';
-import { 
-  LayoutDashboard, 
-  Users, 
-  FolderKanban, 
-  FileText, 
-  Headphones, 
+import React from "react";
+import { Outlet, NavLink } from "react-router";
+import {
+  LayoutDashboard,
+  Users,
+  FolderKanban,
+  FileText,
+  Headphones,
   HelpCircle,
   Moon,
   Sun,
@@ -13,14 +13,14 @@ import {
   LogOut,
   Menu,
   UserCircle2,
-  X
-} from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
-import { Button } from './ui/button';
-import { useState } from 'react';
-import { BrandLogo } from './BrandLogo';
+  X,
+} from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "./ui/button";
+import { useState } from "react";
+import { BrandLogo } from "./BrandLogo";
 
 export function Layout() {
   const { theme, toggleTheme } = useTheme();
@@ -29,41 +29,43 @@ export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigation = [
-    { name: t('nav.dashboard'), href: '/', icon: LayoutDashboard },
-    { name: t('nav.clients'), href: '/clients', icon: Users },
-    { name: t('nav.projects'), href: '/projects', icon: FolderKanban },
-    { name: t('nav.invoicing'), href: '/invoicing', icon: FileText },
-    { name: t('nav.support'), href: '/support', icon: Headphones },
-    { name: t('nav.account'), href: '/account', icon: UserCircle2 },
-    { name: t('nav.help'), href: '/help', icon: HelpCircle },
+    { name: t("nav.dashboard"), href: "/", icon: LayoutDashboard },
+    { name: t("nav.clients"), href: "/clients", icon: Users },
+    { name: t("nav.projects"), href: "/projects", icon: FolderKanban },
+    { name: t("nav.invoicing"), href: "/invoicing", icon: FileText },
+    { name: t("nav.support"), href: "/support", icon: Headphones },
+    { name: t("nav.account"), href: "/account", icon: UserCircle2 },
+    { name: t("nav.help"), href: "/help", icon: HelpCircle },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
         fixed top-0 left-0 h-full w-72 bg-card/90 border-r border-border z-50 surface-card
         transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
-      `}>
+      `}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="h-20 flex items-center justify-between px-5 border-b border-border">
             <BrandLogo
               size="sm"
-              mode={theme === 'dark' ? 'mono' : 'color'}
-              subtitle={t('brand.businessSuite')}
+              mode={theme === "dark" ? "mono" : "color"}
+              subtitle={t("brand.businessSuite")}
             />
-            <button 
+            <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden"
               title="Fermer le menu"
@@ -82,9 +84,10 @@ export function Layout() {
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) => `
                   flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                  ${isActive 
-                    ? 'bg-[#004aad] text-white' 
-                    : 'text-foreground hover:bg-accent'
+                  ${
+                    isActive
+                      ? "bg-[#004aad] text-white"
+                      : "text-foreground hover:bg-accent"
                   }
                 `}
               >
@@ -102,18 +105,20 @@ export function Layout() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm truncate">{user?.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
               </div>
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
+
+            <Button
+              variant="outline"
+              size="sm"
               className="w-full justify-start gap-2"
               onClick={logout}
             >
               <LogOut className="w-4 h-4" />
-              {t('nav.logout')}
+              {t("nav.logout")}
             </Button>
           </div>
         </div>
@@ -135,7 +140,7 @@ export function Layout() {
 
             <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              {t('brand.platformActive')}
+              {t("brand.platformActive")}
             </div>
 
             <div className="flex-1 md:hidden" />
@@ -145,20 +150,18 @@ export function Layout() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+                onClick={() => setLanguage(language === "fr" ? "en" : "fr")}
                 className="gap-2"
               >
                 <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">{language.toUpperCase()}</span>
+                <span className="hidden sm:inline">
+                  {language.toUpperCase()}
+                </span>
               </Button>
 
               {/* Theme toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-              >
-                {theme === 'light' ? (
+              <Button variant="ghost" size="sm" onClick={toggleTheme}>
+                {theme === "light" ? (
                   <Moon className="w-4 h-4" />
                 ) : (
                   <Sun className="w-4 h-4" />

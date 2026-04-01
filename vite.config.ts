@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import path from 'path'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [
@@ -13,49 +13,49 @@ export default defineConfig({
   resolve: {
     alias: {
       // Alias @ to the src directory
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
-  assetsInclude: ['**/*.svg', '**/*.csv'],
+  assetsInclude: ["**/*.svg", "**/*.csv"],
 
   build: {
     chunkSizeWarningLimit: 650,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          const normalizedId = id.replace(/\\/g, '/');
-          if (!normalizedId.includes('node_modules')) {
+          const normalizedId = id.replace(/\\/g, "/");
+          if (!normalizedId.includes("node_modules")) {
             return undefined;
           }
 
-          if (normalizedId.includes('/@radix-ui/')) {
-            return 'vendor-radix';
+          if (normalizedId.includes("/@radix-ui/")) {
+            return "vendor-radix";
           }
 
           if (
-            normalizedId.includes('/recharts/') ||
-            normalizedId.includes('/d3-') ||
-            normalizedId.includes('/victory-vendor/')
+            normalizedId.includes("/recharts/") ||
+            normalizedId.includes("/d3-") ||
+            normalizedId.includes("/victory-vendor/")
           ) {
-            return 'vendor-charts';
+            return "vendor-charts";
           }
 
           if (
-            normalizedId.includes('/@mui/') ||
-            normalizedId.includes('/@emotion/')
+            normalizedId.includes("/@mui/") ||
+            normalizedId.includes("/@emotion/")
           ) {
-            return 'vendor-ui';
+            return "vendor-ui";
           }
 
-          if (normalizedId.includes('/motion/')) {
-            return 'vendor-motion';
+          if (normalizedId.includes("/motion/")) {
+            return "vendor-motion";
           }
 
-          return 'vendor-misc';
+          return "vendor-misc";
         },
       },
     },
   },
-})
+});

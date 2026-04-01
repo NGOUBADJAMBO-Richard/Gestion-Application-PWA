@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { useAuth } from '../contexts/AuthContext';
-import { BrandLogo } from '../components/BrandLogo';
-import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage } from '../contexts/LanguageContext';
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { useAuth } from "../contexts/AuthContext";
+import { BrandLogo } from "../components/BrandLogo";
+import { useTheme } from "../contexts/ThemeContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export function Login() {
   const { login } = useAuth();
@@ -15,26 +21,26 @@ export function Login() {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('admin@mgn.com');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("admin@mgn.com");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!email.trim() || !password.trim()) {
-      setError('Veuillez renseigner votre email et votre mot de passe.');
+      setError("Veuillez renseigner votre email et votre mot de passe.");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      setError('');
+      setError("");
       await login(email.trim(), password);
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     } catch {
-      setError('Connexion impossible. Veuillez reessayer.');
+      setError("Connexion impossible. Veuillez reessayer.");
     } finally {
       setIsSubmitting(false);
     }
@@ -62,12 +68,14 @@ export function Login() {
               <div className="md:hidden mb-4">
                 <BrandLogo
                   size="md"
-                  mode={theme === 'dark' ? 'mono' : 'color'}
-                  subtitle={t('brand.businessSuite')}
+                  mode={theme === "dark" ? "mono" : "color"}
+                  subtitle={t("brand.businessSuite")}
                 />
               </div>
               <CardTitle>Connexion</CardTitle>
-              <CardDescription>Accedez a votre espace M.G.N Manager</CardDescription>
+              <CardDescription>
+                Accedez a votre espace M.G.N Manager
+              </CardDescription>
             </CardHeader>
 
             <CardContent className="px-0 pb-0">
@@ -106,9 +114,9 @@ export function Login() {
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full"
-                  style={{ backgroundColor: '#004aad' }}
+                  style={{ backgroundColor: "#004aad" }}
                 >
-                  {isSubmitting ? 'Connexion...' : 'Se connecter'}
+                  {isSubmitting ? "Connexion..." : "Se connecter"}
                 </Button>
               </form>
             </CardContent>

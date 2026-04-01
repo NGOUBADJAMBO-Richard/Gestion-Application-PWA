@@ -2,13 +2,13 @@
 
 :root {
   --font-size: 16px;
-  --font-family-heading: 'Syne', sans-serif;
-  --font-family-body: 'Space Grotesk', sans-serif;
-  
+  --font-family-heading: "Syne", sans-serif;
+  --font-family-body: "Space Grotesk", sans-serif;
+
   /* Brand Colors */
   --brand-blue: #004aad;
   --brand-graphite: #545454;
-  
+
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
@@ -135,16 +135,36 @@
     @apply bg-background text-foreground;
     font-family: var(--font-family-body);
     background-image:
-      radial-gradient(circle at 15% 10%, rgba(0, 74, 173, 0.08), transparent 30%),
-      radial-gradient(circle at 85% 0%, rgba(0, 158, 96, 0.08), transparent 25%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 250, 252, 0.98));
+      radial-gradient(
+        circle at 15% 10%,
+        rgba(0, 74, 173, 0.08),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 85% 0%,
+        rgba(0, 158, 96, 0.08),
+        transparent 25%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.98),
+        rgba(249, 250, 252, 0.98)
+      );
     background-attachment: fixed;
   }
 
   .dark body {
     background-image:
-      radial-gradient(circle at 15% 10%, rgba(0, 74, 173, 0.22), transparent 28%),
-      radial-gradient(circle at 85% 0%, rgba(0, 158, 96, 0.18), transparent 23%),
+      radial-gradient(
+        circle at 15% 10%,
+        rgba(0, 74, 173, 0.22),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 85% 0%,
+        rgba(0, 158, 96, 0.18),
+        transparent 23%
+      ),
       linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(14, 14, 14, 0.98));
   }
 
@@ -167,7 +187,12 @@
     font-size: var(--font-size);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-family-heading);
   }
 
