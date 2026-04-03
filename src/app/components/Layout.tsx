@@ -125,7 +125,7 @@ export function Layout() {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-72">
+      <div className="lg:pl-72 min-h-screen flex flex-col">
         {/* Top bar */}
         <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30">
           <div className="h-full px-4 lg:px-6 flex items-center justify-between">
@@ -172,9 +172,23 @@ export function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-6">
+        <main className="p-4 lg:p-6 flex-1">
           <Outlet />
         </main>
+
+        <footer className="border-t border-border bg-card/60">
+          <div className="px-4 lg:px-6 py-4 text-sm text-muted-foreground">
+            Conçu par M.G.N CodeWave -{" "}
+            <a
+              href="https://code-wave-eight.vercel.app/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#004aad] hover:underline"
+            >
+              Site web de CodeWave
+            </a>
+          </div>
+        </footer>
       </div>
     </div>
   );
