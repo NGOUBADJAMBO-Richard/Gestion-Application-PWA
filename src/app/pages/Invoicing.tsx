@@ -10,6 +10,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Invoice, mockInvoices } from "../data/mockData";
+import { generateInvoicePDF } from "../utils/pdfGenerator";
 import {
   Table,
   TableBody,
@@ -261,6 +262,7 @@ export function Invoicing() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(invoice)}
+                          title="Éditer"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
@@ -268,10 +270,16 @@ export function Invoicing() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(invoice.id)}
+                          title="Supprimer"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => generateInvoicePDF(invoice)}
+                          title="Télécharger PDF"
+                        >
                           <Download className="w-4 h-4" />
                         </Button>
                       </div>
