@@ -83,7 +83,7 @@ export function generateInvoicePDF(invoice: Invoice) {
   doc.text("Montant total", margin + 2, yPosition);
   doc.setFont("Helvetica", "bold");
   doc.text(
-    `${(invoice.amount / 1000).toFixed(3)} KCFA`,
+    `${(invoice.amount / 1000).toFixed(3)} FCFA`,
     pageWidth - margin - 40,
     yPosition,
   );
