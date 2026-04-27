@@ -9,7 +9,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Invoice, mockInvoices } from "../data/mockData";
+import { Invoice, InvoiceItem, mockInvoices } from "../data/mockData";
 import { generateInvoicePDF } from "../utils/pdfGenerator";
 import {
   Table,
@@ -29,6 +29,7 @@ import {
 } from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -44,14 +45,50 @@ export function Invoicing() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const createEmptyItem = (idSeed = Date.now().toString()): InvoiceItem => ({
+    id: idSeed,
+    description: "",
+    quantity: 1,
+    unitPrice: 0,
+    taxRate: 0,
+  });
+
+  const calculateInvoiceTotals = (items: InvoiceItem[]) => {
+    const subtotal = items.reduce(
+      (sum, item) =>
+        sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
+      0,
+    );
+    const taxAmount = items.reduce(
+      (sum, item) =>
+        sum +
+        (Number(item.quantity) || 0) *
+          (Number(item.unitPrice) || 0) *
+          ((Number(item.taxRate) || 0) / 100),
+      0,
+    );
+
+    return {
+      subtotal: Math.round(subtotal),
+      taxAmount: Math.round(taxAmount),
+      total: Math.round(subtotal + taxAmount),
+    };
+  };
+
   const [formData, setFormData] = useState<Omit<Invoice, "id">>({
     number: "",
     client: "",
+    items: [createEmptyItem("item-1")],
     amount: 0,
     status: "pending",
     date: "",
     dueDate: "",
+    paymentMethod: "bank-transfer",
+    paymentTerms: "Paiement sous 30 jours",
+    notes: "",
   });
+
+  const previewTotals = calculateInvoiceTotals(formData.items);
 
   const filteredInvoices =
     statusFilter === "all"
@@ -81,10 +118,19 @@ export function Invoicing() {
     setFormData({
       number: `INV-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(3, "0")}`,
       client: "",
+      items: [
+        {
+          ...createEmptyItem(),
+          description: "Prestation de services",
+        },
+      ],
       amount: 0,
       status: "pending",
       date: new Date().toISOString().split("T")[0],
       dueDate: "",
+      paymentMethod: "bank-transfer",
+      paymentTerms: "Paiement sous 30 jours",
+      notes: "",
     });
     setIsDialogOpen(true);
   };
@@ -94,10 +140,14 @@ export function Invoicing() {
     setFormData({
       number: invoice.number,
       client: invoice.client,
+      items: invoice.items.map((item) => ({ ...item })),
       amount: invoice.amount,
       status: invoice.status,
       date: invoice.date,
       dueDate: invoice.dueDate,
+      paymentMethod: invoice.paymentMethod,
+      paymentTerms: invoice.paymentTerms,
+      notes: invoice.notes || "",
     });
     setIsDialogOpen(true);
   };
@@ -106,23 +156,86 @@ export function Invoicing() {
     setInvoices((prev) => prev.filter((invoice) => invoice.id !== id));
   };
 
+  const handleItemChange = (
+    itemId: string,
+    field: keyof Omit<InvoiceItem, "id">,
+    value: string | number,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      items: prev.items.map((item) => {
+        if (item.id !== itemId) {
+          return item;
+        }
+
+        if (field === "description") {
+          return { ...item, description: String(value) };
+        }
+
+        const numericValue = Number(value) || 0;
+        if (field === "quantity") {
+          return { ...item, quantity: Math.max(1, numericValue) };
+        }
+        if (field === "unitPrice") {
+          return { ...item, unitPrice: Math.max(0, numericValue) };
+        }
+        return { ...item, taxRate: Math.min(100, Math.max(0, numericValue)) };
+      }),
+    }));
+  };
+
+  const handleAddItem = () => {
+    setFormData((prev) => ({
+      ...prev,
+      items: [...prev.items, createEmptyItem()],
+    }));
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      items:
+        prev.items.length > 1
+          ? prev.items.filter((item) => item.id !== itemId)
+          : prev.items,
+    }));
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload: Omit<Invoice, "id"> = {
       number: formData.number.trim(),
       client: formData.client.trim(),
-      amount: Number(formData.amount) || 0,
+      items: formData.items.map((item) => ({
+        ...item,
+        description: item.description.trim(),
+        quantity: Math.max(1, Number(item.quantity) || 1),
+        unitPrice: Math.max(0, Number(item.unitPrice) || 0),
+        taxRate: Math.min(100, Math.max(0, Number(item.taxRate) || 0)),
+      })),
+      amount: 0,
       status: formData.status,
       date: formData.date,
       dueDate: formData.dueDate,
+      paymentMethod: formData.paymentMethod,
+      paymentTerms: formData.paymentTerms.trim(),
+      notes: formData.notes?.trim() || "",
     };
+
+    const totals = calculateInvoiceTotals(payload.items);
+    payload.amount = totals.total;
+
+    const hasInvalidItem = payload.items.some((item) => !item.description);
 
     if (
       !payload.number ||
       !payload.client ||
+      payload.items.length === 0 ||
+      hasInvalidItem ||
       !payload.date ||
-      !payload.dueDate
+      !payload.dueDate ||
+      !payload.paymentTerms
     ) {
       return;
     }
@@ -226,6 +339,7 @@ export function Invoicing() {
                 <TableRow>
                   <TableHead>{t("invoicing.number")}</TableHead>
                   <TableHead>{t("projects.client")}</TableHead>
+                  <TableHead>Détails</TableHead>
                   <TableHead>{t("invoicing.amount")}</TableHead>
                   <TableHead>{t("invoicing.date")}</TableHead>
                   <TableHead>{t("invoicing.dueDate")}</TableHead>
@@ -239,9 +353,13 @@ export function Invoicing() {
                 {filteredInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">
-                      {invoice.number}
+                      <div>{invoice.number}</div>
+                      <div className="text-xs text-muted-foreground truncate max-w-[220px]">
+                        {invoice.items[0]?.description || "-"}
+                      </div>
                     </TableCell>
                     <TableCell>{invoice.client}</TableCell>
+                    <TableCell>{invoice.items.length} ligne(s)</TableCell>
                     <TableCell className="font-semibold">
                       {formatCurrencyXAF(invoice.amount)}
                     </TableCell>
@@ -301,7 +419,7 @@ export function Invoicing() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleSave}>
             <DialogHeader>
               <DialogTitle>
@@ -365,20 +483,167 @@ export function Invoicing() {
                 />
               </div>
 
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>Lignes d'articles</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddItem}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Ajouter une ligne
+                  </Button>
+                </div>
+
+                {formData.items.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="grid grid-cols-12 gap-2 p-3 border rounded-lg"
+                  >
+                    <div className="col-span-12">
+                      <Label htmlFor={`item-desc-${item.id}`}>
+                        Description {index + 1}
+                      </Label>
+                      <Input
+                        id={`item-desc-${item.id}`}
+                        value={item.description}
+                        onChange={(e) =>
+                          handleItemChange(
+                            item.id,
+                            "description",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Ex: Développement module facturation"
+                        required
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Label htmlFor={`item-qty-${item.id}`}>Qté</Label>
+                      <Input
+                        id={`item-qty-${item.id}`}
+                        type="number"
+                        min={1}
+                        value={item.quantity}
+                        onChange={(e) =>
+                          handleItemChange(item.id, "quantity", e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <Label htmlFor={`item-price-${item.id}`}>PU (XAF)</Label>
+                      <Input
+                        id={`item-price-${item.id}`}
+                        type="number"
+                        min={0}
+                        value={item.unitPrice}
+                        onChange={(e) =>
+                          handleItemChange(item.id, "unitPrice", e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <Label htmlFor={`item-tax-${item.id}`}>TVA %</Label>
+                      <Input
+                        id={`item-tax-${item.id}`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={item.taxRate}
+                        onChange={(e) =>
+                          handleItemChange(item.id, "taxRate", e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="col-span-2 flex items-end justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveItem(item.id)}
+                        disabled={formData.items.length === 1}
+                        title="Supprimer la ligne"
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="invoice-amount">{t("invoicing.amount")}</Label>
+                <Label htmlFor="invoice-amount">Total TTC</Label>
                 <Input
                   id="invoice-amount"
                   type="number"
                   min={0}
-                  value={formData.amount}
+                  value={previewTotals.total}
+                  disabled
+                />
+                <p className="text-xs text-muted-foreground">
+                  Sous-total: {formatCurrencyXAF(previewTotals.subtotal)} | TVA:{" "}
+                  {formatCurrencyXAF(previewTotals.taxAmount)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invoice-payment-method">
+                    Mode de paiement
+                  </Label>
+                  <Select
+                    value={formData.paymentMethod}
+                    onValueChange={(value: Invoice["paymentMethod"]) =>
+                      setFormData((prev) => ({ ...prev, paymentMethod: value }))
+                    }
+                  >
+                    <SelectTrigger id="invoice-payment-method">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bank-transfer">
+                        Virement bancaire
+                      </SelectItem>
+                      <SelectItem value="mobile-money">Mobile Money</SelectItem>
+                      <SelectItem value="card">Carte</SelectItem>
+                      <SelectItem value="cash">Espèces</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invoice-payment-terms">
+                    Conditions de paiement
+                  </Label>
+                  <Input
+                    id="invoice-payment-terms"
+                    value={formData.paymentTerms}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        paymentTerms: e.target.value,
+                      }))
+                    }
+                    placeholder="Ex: Paiement sous 30 jours"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="invoice-notes">Notes (optionnel)</Label>
+                <Textarea
+                  id="invoice-notes"
+                  value={formData.notes || ""}
                   onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      amount: Number(e.target.value) || 0,
-                    }))
+                    setFormData((prev) => ({ ...prev, notes: e.target.value }))
                   }
-                  required
+                  placeholder="Ex: Paiement par virement bancaire sous 15 jours"
+                  rows={3}
                 />
               </div>
 
