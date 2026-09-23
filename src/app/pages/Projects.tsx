@@ -162,7 +162,9 @@ export function Projects() {
         label="les projets"
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Suivi</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
         <div>
           <h1>{t("projects.title")}</h1>
           <p className="text-muted-foreground mt-1">
@@ -176,7 +178,8 @@ export function Projects() {
           <Plus className="w-4 h-4" />
           {t("projects.new")}
         </Button>
-      </div>
+        </div>
+      </header>
 
       {/* Filters */}
       <Card>

@@ -186,7 +186,9 @@ export function Clients() {
         label="les clients"
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Répertoire</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
         <div>
           <h1>{t("clients.title")}</h1>
           <p className="text-muted-foreground mt-1">
@@ -215,7 +217,8 @@ export function Clients() {
           <Plus className="w-4 h-4" />
           {t("clients.new")}
         </Button>
-      </div>
+        </div>
+      </header>
 
       {/* Search */}
       <Card>

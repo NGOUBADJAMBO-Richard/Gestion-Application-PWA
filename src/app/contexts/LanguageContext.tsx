@@ -104,7 +104,7 @@ const translations: Translations = {
   },
 
   // Support
-  "support.title": { fr: "Support & Maintenance", en: "Support & Maintenance" },
+  "support.title": { fr: "Support et maintenance", en: "Support and maintenance" },
   "support.new": { fr: "Nouveau ticket", en: "New Ticket" },
   "support.open": { fr: "Ouvert", en: "Open" },
   "support.inProgress": { fr: "En cours", en: "In Progress" },

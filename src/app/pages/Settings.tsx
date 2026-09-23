@@ -55,7 +55,9 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Configuration</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1>Paramètres</h1>
           <p className="mt-1 text-muted-foreground">
@@ -66,7 +68,8 @@ export function Settings() {
           <Save className="h-4 w-4" aria-hidden="true" />
           Enregistrer
         </Button>
-      </div>
+        </div>
+      </header>
 
       {bloquants.length > 0 && (
         <div

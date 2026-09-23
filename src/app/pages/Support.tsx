@@ -30,6 +30,14 @@ import {
   SelectValue,
 } from '../components/ui/select';
 
+/** Filtres de la liste des tickets. « All » était resté en anglais. */
+const FILTRES_TICKET = [
+  { valeur: 'all', libelle: 'Tous' },
+  { valeur: 'open', libelle: 'Ouverts' },
+  { valeur: 'in-progress', libelle: 'En cours' },
+  { valeur: 'closed', libelle: 'Fermés' },
+] as const;
+
 export function Support() {
   const { t } = useLanguage();
   // Les donnees vivent dans le depot : la saisie survit au rechargement.
@@ -59,21 +67,26 @@ export function Support() {
     ? tickets 
     : tickets.filter(ticket => ticket.status === statusFilter);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Ticket['status']) => {
     switch (status) {
-      case 'open': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400';
-      case 'in-progress': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      case 'closed': return 'bg-green-500/10 text-green-600 dark:text-green-400';
-      default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case 'open': return 'bg-warning/10 text-warning border-warning/20';
+      case 'in-progress': return 'bg-primary/10 text-primary-ink border-primary/20';
+      case 'closed': return 'bg-success/10 text-success border-success/20';
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  /** Les priorités étaient affichées en brut : « high », « low », « medium ». */
+  const PRIORITE_LIBELLE: Record<Ticket['priority'], string> = {
+    high: 'Haute',
+    medium: 'Moyenne',
+    low: 'Basse',
+  };
+
+  const getPriorityColor = (priority: Ticket['priority']) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/10 text-red-600 dark:text-red-400';
-      case 'medium': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400';
-      case 'low': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'medium': return 'bg-warning/10 text-warning border-warning/20';
+      case 'low': return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -144,7 +157,9 @@ export function Support() {
         label="les tickets"
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Assistance</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
         <div>
           <h1>{t('support.title')}</h1>
           <p className="text-muted-foreground mt-1">
@@ -155,41 +170,32 @@ export function Support() {
           <Plus className="w-4 h-4" />
           {t('support.new')}
         </Button>
-      </div>
+        </div>
+      </header>
 
-      {/* Status Filter */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-2">
-            <Button
-              variant={statusFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('all')}
-            >
-              All
-            </Button>
-            <Button
-              variant={statusFilter === 'open' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('open')}
-            >
-              {t('support.open')}
-            </Button>
-            <Button
-              variant={statusFilter === 'in-progress' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('in-progress')}
-            >
-              {t('support.inProgress')}
-            </Button>
-            <Button
-              variant={statusFilter === 'closed' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('closed')}
-            >
-              {t('support.closed')}
-            </Button>
-          </div>
+        <CardContent className="flex flex-wrap items-center gap-2 pt-6">
+          {FILTRES_TICKET.map((filtre) => {
+            const actif = statusFilter === filtre.valeur;
+            const compte =
+              filtre.valeur === 'all'
+                ? tickets.length
+                : tickets.filter((ticket) => ticket.status === filtre.valeur)
+                    .length;
+
+            return (
+              <button
+                key={filtre.valeur}
+                type="button"
+                className="filter-pill"
+                aria-pressed={actif}
+                onClick={() => setStatusFilter(filtre.valeur)}
+              >
+                {filtre.libelle}
+                <span className="ml-2 tabular-nums opacity-70">{compte}</span>
+              </button>
+            );
+          })}
         </CardContent>
       </Card>
 
@@ -215,7 +221,7 @@ export function Support() {
                           {t(`support.${ticket.status === 'in-progress' ? 'inProgress' : ticket.status}`)}
                         </Badge>
                         <Badge className={getPriorityColor(ticket.priority)}>
-                          {ticket.priority}
+                          {PRIORITE_LIBELLE[ticket.priority]}
                         </Badge>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(ticket)}>
                           <Pencil className="w-4 h-4" />
@@ -302,7 +308,7 @@ export function Support() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="ticket-priority">Priorite</Label>
+                  <Label htmlFor="ticket-priority">Priorité</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value: Ticket['priority']) =>

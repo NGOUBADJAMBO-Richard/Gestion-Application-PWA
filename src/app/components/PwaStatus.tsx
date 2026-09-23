@@ -17,6 +17,9 @@ import { BRAND } from "../../branding";
  *   ne réémet l'événement qu'à une prochaine visite, donc insister n'aurait
  *   servi à rien.
  */
+/** Refus d’installation, mémorisé pour la session courante. */
+const CLE_REFUS = "codewave-studio:install-refuse";
+
 export function PwaStatus() {
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -25,7 +28,24 @@ export function PwaStatus() {
 
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [installMasque, setInstallMasque] = useState(false);
+  // Le refus vaut pour la session : reproposer à chaque rechargement
+  // transforme une proposition en harcèlement.
+  const [installMasque, setInstallMasque] = useState(() => {
+    try {
+      return sessionStorage.getItem(CLE_REFUS) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const refuserInstallation = () => {
+    setInstallMasque(true);
+    try {
+      sessionStorage.setItem(CLE_REFUS, "1");
+    } catch {
+      // Stockage refusé : le masquage reste valable pour cette page.
+    }
+  };
 
   useEffect(() => {
     const surInvite = (event: BeforeInstallPromptEvent) => {
@@ -94,7 +114,7 @@ export function PwaStatus() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => setInstallMasque(true)}
+              onClick={refuserInstallation}
             >
               Pas maintenant
             </Button>
@@ -103,7 +123,7 @@ export function PwaStatus() {
 
         <button
           type="button"
-          onClick={() => setInstallMasque(true)}
+          onClick={refuserInstallation}
           aria-label="Masquer la proposition d’installation"
           className="shrink-0 rounded-sm p-1 text-muted-foreground hover:text-foreground"
         >

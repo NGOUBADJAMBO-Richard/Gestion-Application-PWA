@@ -539,7 +539,9 @@ export function Invoicing() {
         label="les factures"
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Documents commerciaux</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
         <div>
           <h1>{t("invoicing.title")}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -585,7 +587,8 @@ export function Invoicing() {
             {t("invoicing.new")}
           </Button>
         </div>
-      </div>
+        </div>
+      </header>
 
       <div
         role="tablist"
