@@ -4,31 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-const NODE_MODULES = "node_modules/";
-
-/**
- * Nom du paquet de plus haut niveau auquel appartient un module.
- * On compare des noms de paquets exacts et non des fragments de chemin :
- * un test sur la sous-chaîne « /react/ » attrape aussi `react-dom`, et le
- * découpage finit par produire des chunks circulaires.
- */
-function packageOf(file: string): string | undefined {
-  const at = file.lastIndexOf(NODE_MODULES);
-  if (at === -1) return undefined;
-  const rest = file.slice(at + NODE_MODULES.length);
-  const parts = rest.split("/");
-  if (parts[0] === undefined) return undefined;
-  return parts[0].startsWith("@") ? `${parts[0]}/${parts[1] ?? ""}` : parts[0];
-}
-
-/** Familles lourdes isolées pour que le poids reste imputable à une cause. */
-const CHUNKS: ReadonlyArray<readonly [string, (pkg: string) => boolean]> = [
-  ["vendor-react", (p) => p === "react" || p === "react-dom" || p === "scheduler"],
-  ["vendor-radix", (p) => p.startsWith("@radix-ui/")],
-  ["vendor-charts", (p) => p === "recharts" || p.startsWith("d3-") || p === "victory-vendor"],
-  ["vendor-pdf", (p) => p === "jspdf" || p === "canvg" || p === "dompurify" || p === "fflate"],
-];
-
 export default defineConfig({
   plugins: [
     react(),
@@ -86,19 +61,25 @@ export default defineConfig({
   },
 
   build: {
+    /*
+     * Pas de découpage manuel.
+     *
+     * Le réglage précédent forçait chaque famille de paquets dans un fragment
+     * nommé, ce qui donnait une lecture claire des poids mais empêchait Vite
+     * de respecter les frontières d’import dynamique : jsPDF partait au
+     * démarrage — 147 ko compressés — alors qu’il n’est demandé qu’au
+     * téléchargement d’une facture.
+     *
+     * Le découpage par écran donne désormais la même lisibilité, et Vite
+     * place chaque dépendance dans le fragment qui la demande réellement.
+     */
     chunkSizeWarningLimit: 650,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          const file = id.split("\\").join("/");
-          const pkg = packageOf(file);
-          if (pkg === undefined) return undefined;
-
-          for (const [name, matches] of CHUNKS) {
-            if (matches(pkg)) return name;
-          }
-          return "vendor-misc";
-        },
+        // Le découpage automatique produisait trente-quatre fragments, dont
+        // quatorze sous 2 ko : autant de requêtes pour quelques centaines
+        // d’octets. Ceux-là sont fusionnés avec leur voisin.
+        experimentalMinChunkSize: 20_000,
       },
     },
   },

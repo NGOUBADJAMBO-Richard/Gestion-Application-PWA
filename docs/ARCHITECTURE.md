@@ -188,3 +188,38 @@ Il vaut mieux le dire que le laisser deviner :
 | Multi-utilisateur | Un seul accès par appareil |
 | Journal d'audit | À faire |
 | Comptabilité en partie double | À faire |
+
+---
+
+## Budget de chargement
+
+Mesuré sur le build de production, en gzip.
+
+| Étape | Démarrage | Fragments |
+|---|---|---|
+| Départ (état `main`) | 517 ko | 4 |
+| Après sortie de jsPDF du chargement initial | 359 ko | 5 |
+| Après découpage par écran | **128 ko** | 26 |
+
+**Ce qui a fait la différence** : chaque écran est chargé à sa première
+ouverture (`React.lazy`), si bien que Recharts — 76 ko compressés — ne part
+plus que sur le tableau de bord, et jsPDF — 151 ko — qu'au premier
+téléchargement de facture.
+
+Le découpage manuel par famille de paquets a été **retiré**. Il donnait une
+lecture claire des poids, mais forçait chaque dépendance dans un fragment
+nommé, ce qui empêchait Vite de respecter les frontières d'import dynamique :
+jsPDF partait au démarrage alors qu'il n'est demandé qu'au clic.
+
+`experimentalMinChunkSize` fusionne les fragments sous 20 ko : le découpage
+automatique en produisait trente-quatre, dont quatorze sous 2 ko, soit autant
+de requêtes pour quelques centaines d'octets.
+
+### Mesurer
+
+```bash
+npm run build
+```
+
+Les tailles s'affichent par fragment. Pour le seul démarrage, les fichiers
+référencés dans `dist/index.html` font foi — les autres sont différés.
