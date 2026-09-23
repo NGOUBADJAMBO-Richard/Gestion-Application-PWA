@@ -16,8 +16,10 @@ import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
 import { ClientSelect } from "../components/ClientSelect";
 import { useClientIndex } from "../hooks/useClientIndex";
+import { useCompanyProfile } from "../hooks/useCompanyProfile";
+import { defaultVatPercent } from "../../domain/companyProfile";
 import { computeDocumentTotals } from "../../domain/invoice";
-import { type CurrencyCode, money } from "../../domain/money";
+import { money } from "../../domain/money";
 import { toast } from "sonner";
 import {
   Table,
@@ -47,9 +49,6 @@ import {
 } from "../components/ui/select";
 import { formatCurrencyXAF } from "../utils/currency";
 
-/** Devise de facturation de l’agence. Le multi-devises viendra avec le profil. */
-const DEVISE: CurrencyCode = "XAF";
-
 export function Invoicing() {
   const { t } = useLanguage();
   // Les donnees vivent dans le depot : la saisie survit au rechargement.
@@ -63,6 +62,7 @@ export function Invoicing() {
     dismissError,
   } = useCollection(invoiceRepository);
   const { nameOf } = useClientIndex();
+  const { profile } = useCompanyProfile();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -87,12 +87,13 @@ export function Invoicing() {
       setPdfPendingId(null);
     }
   };
+  // Le taux vient des Paramètres : aucun taux fiscal n’est écrit en dur ici.
   const createEmptyItem = (idSeed = Date.now().toString()): InvoiceItem => ({
     id: idSeed,
     description: "",
     quantity: 1,
     unitPrice: 0,
-    taxRate: 0,
+    taxRate: defaultVatPercent(profile),
   });
 
   /**
@@ -114,11 +115,11 @@ export function Invoicing() {
           id: item.id,
           label: item.description,
           quantity: Number(item.quantity) || 0,
-          unitPrice: money(Math.round(Number(item.unitPrice) || 0), DEVISE),
+          unitPrice: money(Math.round(Number(item.unitPrice) || 0), profile.currency),
           discountPercent: 0,
           vatRatePercent: Number(item.taxRate) || 0,
         })),
-        DEVISE,
+        profile.currency,
       );
       return {
         subtotal: totaux.subtotal.amount,
