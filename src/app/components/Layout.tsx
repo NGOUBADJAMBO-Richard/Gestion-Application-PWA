@@ -1,4 +1,3 @@
-import React from "react";
 import { Outlet, NavLink } from "react-router";
 import {
   LayoutDashboard,
@@ -21,6 +20,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { BRAND } from "../../branding";
 
 export function Layout() {
   const { theme, toggleTheme } = useTheme();
@@ -42,7 +42,9 @@ export function Layout() {
     <div className="min-h-screen bg-background">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div
+        <button
+          type="button"
+          aria-label={t("nav.closeMenu")}
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -86,7 +88,7 @@ export function Layout() {
                   flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
                   ${
                     isActive
-                      ? "bg-[#004aad] text-white"
+                      ? "bg-primary text-primary-foreground"
                       : "text-foreground hover:bg-accent"
                   }
                 `}
@@ -100,7 +102,7 @@ export function Layout() {
           {/* User section */}
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#004aad] flex items-center justify-center text-white">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -178,14 +180,14 @@ export function Layout() {
 
         <footer className="border-t border-border bg-card/60">
           <div className="px-4 lg:px-6 py-4 text-sm text-muted-foreground">
-            Conçu par M.G.N CodeWave -{" "}
+            {BRAND.company} &middot;{" "}
             <a
-              href="https://code-wave-eight.vercel.app/index.html"
+              href={BRAND.siteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#004aad] hover:underline"
+              className="text-primary-ink hover:underline"
             >
-              Site web de CodeWave
+              Site de l&rsquo;agence
             </a>
           </div>
         </footer>

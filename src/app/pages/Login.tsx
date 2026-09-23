@@ -40,14 +40,14 @@ export function Login() {
       await login(email.trim(), password);
       navigate("/", { replace: true });
     } catch {
-      setError("Connexion impossible. Veuillez reessayer.");
+      setError("Connexion impossible. Veuillez réessayer.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="wave-surface min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl overflow-hidden border-border/70 surface-card">
         <div className="grid md:grid-cols-[1fr_1.1fr]">
           <div className="brand-gradient p-8 text-white hidden md:flex flex-col justify-between">
@@ -59,7 +59,7 @@ export function Login() {
             </div>
 
             <p className="text-sm text-white/85">
-              Concu pour les equipes locales et entreprises au Gabon.
+              Conçu pour les équipes et les entreprises au Gabon.
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export function Login() {
               </div>
               <CardTitle>Connexion</CardTitle>
               <CardDescription>
-                Accedez a votre espace M.G.N Manager
+                Accédez à votre espace CodeWave Studio
               </CardDescription>
             </CardHeader>
 
@@ -114,7 +114,6 @@ export function Login() {
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full"
-                  style={{ backgroundColor: "#004aad" }}
                 >
                   {isSubmitting ? "Connexion..." : "Se connecter"}
                 </Button>

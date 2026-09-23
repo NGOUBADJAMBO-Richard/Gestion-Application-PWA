@@ -294,7 +294,7 @@ export function generateInvoicePDF(invoice: Invoice) {
       : invoice.status === "pending"
         ? "EN ATTENTE"
         : "EN RETARD";
-  const statusColorArray =
+  const statusColorArray: readonly [number, number, number] =
     invoice.status === "paid"
       ? [34, 197, 94]
       : invoice.status === "pending"

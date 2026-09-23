@@ -1,0 +1,11 @@
+# Normalisation des fins de ligne : le dépôt stocke en LF, quel que soit le poste.
+* text=auto eol=lf
+
+# Binaires — ne jamais convertir.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

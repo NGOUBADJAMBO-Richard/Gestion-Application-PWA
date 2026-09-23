@@ -1,14 +1,19 @@
-"use client";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-import { useTheme } from "next-themes";
-import { Toaster as Sonner, ToasterProps } from "sonner";
+import { useTheme } from "../../contexts/ThemeContext";
 
-const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+/**
+ * L'export Figma d'origine lisait le thème via `next-themes`, une seconde
+ * source de vérité qui ignorait le ThemeProvider de l'application : les toasts
+ * restaient en clair quand l'interface passait en sombre. On branche ici le
+ * contexte réel, et la dépendance `next-themes` disparaît.
+ */
+const Toaster = (props: ToasterProps) => {
+  const { theme } = useTheme();
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme}
       className="toaster group"
       style={
         {

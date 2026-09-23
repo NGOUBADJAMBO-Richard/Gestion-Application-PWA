@@ -1,4 +1,4 @@
-# M.G.N Manager - PWA Configuration
+# CodeWave Studio - PWA Configuration
 
 ## 📱 Progressive Web App Features
 
@@ -59,7 +59,7 @@ src/
 #### Desktop (Chrome/Edge)
 1. Ouvrir l'application dans le navigateur
 2. Cliquer sur l'icône d'installation dans la barre d'adresse
-3. Ou Menu → "Installer M.G.N Manager"
+3. Ou Menu → "Installer CodeWave Studio"
 
 #### Mobile
 - **iOS (Safari)** : Partager → Ajouter à l'écran d'accueil
@@ -193,4 +193,4 @@ Cette version utilise des **données mockées**. Pour la production :
 
 ---
 
-**Développé avec ❤️ par Claude pour M.G.N Manager**
+**Développé avec ❤️ par Claude pour CodeWave Studio**

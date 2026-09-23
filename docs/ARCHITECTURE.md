@@ -1,4 +1,4 @@
-# 🏗️ M.G.N Manager - Architecture Technique
+# 🏗️ CodeWave Studio - Architecture Technique
 
 ## 📋 Stack Technique
 
@@ -255,8 +255,8 @@ interface Ticket {
 ### Manifest.json
 ```json
 {
-  "name": "M.G.N Manager",
-  "short_name": "MGN Manager",
+  "name": "CodeWave Studio",
+  "short_name": "Studio",
   "display": "standalone",
   "theme_color": "#004aad",
   "background_color": "#ffffff"
@@ -359,4 +359,4 @@ interface Ticket {
 
 **Version**: 1.0.0  
 **Dernière mise à jour**: Avril 2026  
-**Développé pour**: M.G.N Manager
+**Développé pour**: CodeWave Studio

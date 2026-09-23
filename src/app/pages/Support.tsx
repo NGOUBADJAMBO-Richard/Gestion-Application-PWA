@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Clock, CheckCircle2, AlertCircle, Pencil, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { todayIso } from '../../domain/date';
+import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -34,7 +35,7 @@ export function Support() {
     client: '',
     status: 'open',
     priority: 'medium',
-    created: new Date().toISOString().split('T')[0],
+    created: todayIso(),
   });
 
   const filteredTickets = statusFilter === 'all' 
@@ -75,7 +76,7 @@ export function Support() {
       client: '',
       status: 'open',
       priority: 'medium',
-      created: new Date().toISOString().split('T')[0],
+      created: todayIso(),
     });
     setIsDialogOpen(true);
   };
@@ -134,7 +135,7 @@ export function Support() {
             {filteredTickets.length} tickets
           </p>
         </div>
-        <Button className="gap-2" style={{ backgroundColor: '#004aad' }} onClick={handleCreate}>
+        <Button className="gap-2" onClick={handleCreate}>
           <Plus className="w-4 h-4" />
           {t('support.new')}
         </Button>
@@ -148,7 +149,6 @@ export function Support() {
               variant={statusFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('all')}
-              style={statusFilter === 'all' ? { backgroundColor: '#004aad' } : {}}
             >
               All
             </Button>
@@ -156,7 +156,6 @@ export function Support() {
               variant={statusFilter === 'open' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('open')}
-              style={statusFilter === 'open' ? { backgroundColor: '#004aad' } : {}}
             >
               {t('support.open')}
             </Button>
@@ -164,7 +163,6 @@ export function Support() {
               variant={statusFilter === 'in-progress' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('in-progress')}
-              style={statusFilter === 'in-progress' ? { backgroundColor: '#004aad' } : {}}
             >
               {t('support.inProgress')}
             </Button>
@@ -172,7 +170,6 @@ export function Support() {
               variant={statusFilter === 'closed' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('closed')}
-              style={statusFilter === 'closed' ? { backgroundColor: '#004aad' } : {}}
             >
               {t('support.closed')}
             </Button>
@@ -190,9 +187,9 @@ export function Support() {
                 <div className="flex items-start gap-4">
                   <div 
                     className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: '#004aad15' }}
+                    style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
                   >
-                    <StatusIcon className="w-5 h-5" style={{ color: '#004aad' }} />
+                    <StatusIcon className="w-5 h-5" style={{ color: 'var(--primary-ink)' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-2">
@@ -320,7 +317,7 @@ export function Support() {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" style={{ backgroundColor: '#004aad' }}>
+              <Button type="submit">
                 {t('common.save')}
               </Button>
             </DialogFooter>

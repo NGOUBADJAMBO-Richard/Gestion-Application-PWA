@@ -1,6 +1,6 @@
-# 📖 Guide Utilisateur - M.G.N Manager
+# 📖 Guide Utilisateur - CodeWave Studio
 
-Bienvenue dans **M.G.N Manager**, votre solution complète de gestion d'entreprise !
+Bienvenue dans **CodeWave Studio**, votre solution complète de gestion d'entreprise !
 
 ## 🚀 Démarrage Rapide
 
@@ -167,7 +167,7 @@ Instructions complètes pour installer l'application comme une app native sur :
 ### Installation Desktop
 1. Ouvrez l'app dans Chrome/Edge
 2. Cliquez sur l'icône d'installation (barre d'adresse)
-3. Ou Menu → "Installer M.G.N Manager"
+3. Ou Menu → "Installer CodeWave Studio"
 4. L'app apparaît sur votre bureau
 
 ### Installation Mobile
@@ -217,7 +217,7 @@ Pour une utilisation professionnelle réelle :
 ## 🆘 Besoin d'Aide ?
 
 ### Support Technique
-- 📧 Email : support@mgn-manager.com (fictif)
+- 📧 Email : support@codewave-studio.com (fictif)
 - 💬 Chat : Section Support de l'app
 - 📞 Téléphone : +33 1 23 45 67 89 (fictif)
 
@@ -262,7 +262,7 @@ Pour une utilisation professionnelle réelle :
 
 ## 📞 Contact
 
-**M.G.N Manager**  
+**CodeWave Studio**  
 Version 1.0.0  
 Avril 2026
 

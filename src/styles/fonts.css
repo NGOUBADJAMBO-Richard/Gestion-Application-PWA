@@ -1,2 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/*
+ * Polices auto-hébergées.
+ *
+ * Le projet chargeait Syne et Space Grotesk depuis `fonts.googleapis.com`.
+ * Deux problèmes pour une application censée tourner sur l'appareil :
+ * l'interface perd sa typographie dès que la connexion tombe — donc en mode
+ * hors ligne, c'est-à-dire précisément la raison d'être d'une PWA — et chaque
+ * ouverture signale l'usage à un tiers.
+ *
+ * Les fichiers woff2 sont maintenant servis depuis node_modules et empaquetés
+ * par Vite. Aucune requête ne sort.
+ */
+
+/* Corps et interface : Space Grotesk, fonte variable (une seule requête). */
+@import "@fontsource-variable/space-grotesk/wght.css";
+
+/* Titres et éléments d'accent : Syne. Seules les graisses réellement
+   utilisées sont importées — 600 pour les intertitres, 700 pour les boutons
+   et les titres, 800 pour le monogramme du logo. */
+@import "@fontsource/syne/latin-600.css";
+@import "@fontsource/syne/latin-700.css";
+@import "@fontsource/syne/latin-800.css";
+@import "@fontsource/syne/latin-ext-600.css";
+@import "@fontsource/syne/latin-ext-700.css";
+@import "@fontsource/syne/latin-ext-800.css";
