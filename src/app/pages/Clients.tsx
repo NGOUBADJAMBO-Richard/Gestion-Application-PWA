@@ -390,7 +390,7 @@ export function Clients() {
                   {selectedClient.email}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">Telephone:</span>{" "}
+                  <span className="text-muted-foreground">Téléphone:</span>{" "}
                   {selectedClient.phone}
                 </p>
                 <p>

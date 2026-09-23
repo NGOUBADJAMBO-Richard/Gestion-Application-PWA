@@ -46,7 +46,7 @@ const translations: Translations = {
     en: "Monthly revenue for 2026",
   },
   "dashboard.latestUpdates": {
-    fr: "Dernieres mises a jour projets",
+    fr: "Dernières mises a jour projets",
     en: "Latest project updates",
   },
   "dashboard.vsLastMonth": { fr: "vs mois précédent", en: "vs last month" },

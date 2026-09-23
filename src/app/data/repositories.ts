@@ -80,3 +80,52 @@ export const ticketRepository: Repository<Ticket> = new LocalStorageRepository<T
   parse: parseTicket,
   seed: () => mockTickets,
 });
+
+/** Toutes les collections, indexées par nom. Sert à l'export de sauvegarde. */
+export const ALL_REPOSITORIES = {
+  clients: clientRepository,
+  projects: projectRepository,
+  invoices: invoiceRepository,
+  tickets: ticketRepository,
+} as const;
+
+export type CollectionName = keyof typeof ALL_REPOSITORIES;
+
+/**
+ * État courant de toutes les collections, corbeille comprise.
+ *
+ * La corbeille est incluse volontairement : une sauvegarde qui perdrait les
+ * éléments supprimés rendrait la restauration impossible pour quelqu'un qui
+ * cherche justement à récupérer une suppression.
+ */
+export async function readAllCollections(): Promise<
+  Record<string, readonly unknown[]>
+> {
+  const entries = await Promise.all(
+    Object.entries(ALL_REPOSITORIES).map(async ([name, repository]) => {
+      const [vivants, supprimes] = await Promise.all([
+        repository.list(),
+        repository.listDeleted(),
+      ]);
+      return [name, [...vivants, ...supprimes]] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
+/**
+ * Remplace le contenu de chaque collection connue.
+ *
+ * Une collection absente de la sauvegarde est laissée telle quelle plutôt que
+ * vidée : l'aperçu d'import a déjà signalé la perte éventuelle, et détruire
+ * au-delà de ce qui a été annoncé serait une trahison de la confirmation.
+ */
+export async function restoreAllCollections(
+  collections: Record<string, readonly unknown[]>,
+): Promise<void> {
+  for (const [name, repository] of Object.entries(ALL_REPOSITORIES)) {
+    const items = collections[name];
+    if (items === undefined) continue;
+    await repository.bulkSet(items as never);
+  }
+}

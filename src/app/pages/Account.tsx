@@ -15,6 +15,8 @@ import {
 import { Badge } from "../components/ui/badge";
 import { useAuth } from "../contexts/AuthContext";
 
+import { BackupPanel } from "../components/BackupPanel";
+
 export function Account() {
   const { user } = useAuth();
 
@@ -27,7 +29,7 @@ export function Account() {
       <div>
         <h1>Mon compte</h1>
         <p className="text-muted-foreground mt-1">
-          Informations completes du compte connecte
+          Informations complètes du compte connecté
         </p>
       </div>
 
@@ -51,7 +53,7 @@ export function Account() {
             <div className="flex items-start gap-3">
               <Phone className="w-4 h-4 mt-0.5 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Telephone</p>
+                <p className="text-xs text-muted-foreground">Téléphone</p>
                 <p className="text-sm">{user.phone}</p>
               </div>
             </div>
@@ -67,7 +69,7 @@ export function Account() {
             <div className="flex items-start gap-3">
               <Shield className="w-4 h-4 mt-0.5 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Role</p>
+                <p className="text-xs text-muted-foreground">Rôle</p>
                 <Badge variant="secondary" className="mt-1">
                   {user.role}
                 </Badge>
@@ -77,7 +79,7 @@ export function Account() {
             <div className="flex items-start gap-3">
               <User className="w-4 h-4 mt-0.5 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Departement</p>
+                <p className="text-xs text-muted-foreground">Département</p>
                 <p className="text-sm">{user.department}</p>
               </div>
             </div>
@@ -86,7 +88,7 @@ export function Account() {
               <CalendarClock className="w-4 h-4 mt-0.5 text-muted-foreground" />
               <div>
                 <p className="text-xs text-muted-foreground">
-                  Derniere connexion
+                  Dernière connexion
                 </p>
                 <p className="text-sm">
                   {new Date(user.lastLoginAt).toLocaleString()}
@@ -97,11 +99,13 @@ export function Account() {
 
           <div className="border-t border-border pt-4">
             <p className="text-xs text-muted-foreground">
-              Compte cree le {new Date(user.joinedAt).toLocaleDateString()}
+              Compte créé le {new Date(user.joinedAt).toLocaleDateString()}
             </p>
           </div>
         </CardContent>
       </Card>
+
+      <BackupPanel />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-import { storageKey } from "../../branding";
+import { BRAND, storageKey } from "../../branding";
 
 interface User {
   id: string;
@@ -49,8 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: email.split("@")[0] ?? email,
       email,
       role: "admin",
-      phone: "+33 6 00 00 00 00",
-      company: "M.G.N CodeWave",
+      phone: BRAND.contact.phone,
+      company: BRAND.company,
       department: "Direction",
       joinedAt: "2026-01-01",
       lastLoginAt: now,

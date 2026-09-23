@@ -251,7 +251,7 @@ export function Support() {
             <DialogHeader>
               <DialogTitle>{editingTicket ? t('common.edit') : t('support.new')}</DialogTitle>
               <DialogDescription>
-                Gerez les informations du ticket de support
+                Gérez les informations du ticket de support
               </DialogDescription>
             </DialogHeader>
 
