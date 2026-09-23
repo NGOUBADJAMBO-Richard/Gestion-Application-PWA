@@ -21,6 +21,7 @@ import { defaultVatPercent } from "../../domain/companyProfile";
 import { nextNumber } from "../../domain/numbering";
 import { addDays } from "../../domain/date";
 import { canDeleteDocument, canEditDocument } from "../../domain/rules";
+import { daysOverdue, effectiveStatus } from "../../domain/invoiceStatus";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { computeDocumentTotals } from "../../domain/invoice";
 import { money } from "../../domain/money";
@@ -160,10 +161,15 @@ export function Invoicing() {
 
   const previewTotals = calculateInvoiceTotals(formData.items);
 
+  const aujourdHui = todayIso();
+
+  /** Statut reel : le retard se deduit de l echeance, sans ecriture en base. */
+  const statutDe = (facture: Invoice) => effectiveStatus(facture, aujourdHui);
+
   const filteredInvoices =
     statusFilter === "all"
       ? invoices
-      : invoices.filter((inv) => inv.status === statusFilter);
+      : invoices.filter((facture) => statutDe(facture) === statusFilter);
 
   const getStatusColor = (status: Invoice["status"]) => {
     switch (status) {
@@ -181,9 +187,22 @@ export function Invoicing() {
     }
   };
 
-  const totalAmount = filteredInvoices.reduce(
-    (sum, inv) => sum + inv.amount,
-    0,
+  /**
+   * Trois montants distincts plutôt qu’un total unique.
+   *
+   * Additionner le payé, l’attendu et le retard dans une seule somme ne
+   * répond à aucune question : on veut savoir ce qui est rentré, ce qui doit
+   * rentrer, et ce qui aurait déjà dû rentrer.
+   */
+  const resume = filteredInvoices.reduce(
+    (cumul, facture) => {
+      const statut = statutDe(facture);
+      if (statut === "paid") cumul.encaisse += facture.amount;
+      if (statut === "pending") cumul.attendu += facture.amount;
+      if (statut === "overdue") cumul.retard += facture.amount;
+      return cumul;
+    },
+    { encaisse: 0, attendu: 0, retard: 0 },
   );
 
   const handleCreate = () => {
@@ -365,9 +384,33 @@ export function Invoicing() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1>{t("invoicing.title")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {filteredInvoices.length} factures - Total:{" "}
-            {formatCurrencyXAF(totalAmount)}
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <span>{filteredInvoices.length} document(s)</span>
+            <span aria-hidden="true">&middot;</span>
+            <span>
+              <span className="text-success">
+                {formatCurrencyXAF(resume.encaisse)}
+              </span>{" "}
+              encaissé
+            </span>
+            <span aria-hidden="true">&middot;</span>
+            <span>
+              <span className="text-warning">
+                {formatCurrencyXAF(resume.attendu)}
+              </span>{" "}
+              attendu
+            </span>
+            {resume.retard > 0 && (
+              <>
+                <span aria-hidden="true">&middot;</span>
+                <span>
+                  <span className="text-destructive">
+                    {formatCurrencyXAF(resume.retard)}
+                  </span>{" "}
+                  en retard
+                </span>
+              </>
+            )}
           </p>
         </div>
         <Button
@@ -386,8 +429,9 @@ export function Invoicing() {
             const compte =
               filtre.valeur === "all"
                 ? invoices.length
-                : invoices.filter((facture) => facture.status === filtre.valeur)
-                    .length;
+                : invoices.filter(
+                    (facture) => statutDe(facture) === filtre.valeur,
+                  ).length;
 
             return (
               <button
@@ -453,11 +497,18 @@ export function Invoicing() {
                       {new Date(invoice.date).toLocaleDateString("fr-FR")}
                     </TableCell>
                     <TableCell>
-                      {new Date(invoice.dueDate).toLocaleDateString("fr-FR")}
+                      {invoice.dueDate === ""
+                        ? "—"
+                        : new Date(invoice.dueDate).toLocaleDateString("fr-FR")}
+                      {daysOverdue(invoice, aujourdHui) > 0 && (
+                        <span className="block text-xs text-destructive">
+                          {daysOverdue(invoice, aujourdHui)} jour(s) de retard
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(invoice.status)}>
-                        {t(`invoicing.${invoice.status}`)}
+                      <Badge className={getStatusColor(statutDe(invoice))}>
+                        {t(`invoicing.${statutDe(invoice)}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">

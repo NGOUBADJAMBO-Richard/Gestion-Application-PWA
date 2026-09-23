@@ -16,6 +16,9 @@ import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
 import { ClientSelect } from "../components/ClientSelect";
 import { useClientIndex } from "../hooks/useClientIndex";
+import { invoiceRepository } from "../data/repositories";
+import { ConfirmDelete } from "../components/ConfirmDelete";
+import { canDeleteProject } from "../../domain/rules";
 import {
   Table,
   TableBody,
@@ -56,6 +59,8 @@ export function Projects() {
     dismissError,
   } = useCollection(projectRepository);
   const { nameOf } = useClientIndex();
+  const { items: invoices } = useCollection(invoiceRepository);
+  const [projetASupprimer, setProjetASupprimer] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -92,10 +97,6 @@ export function Projects() {
       default:
         return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
     }
-  };
-
-  const handleDelete = (id: string) => {
-    void remove(id);
   };
 
   const handleEdit = (project: Project) => {
@@ -272,7 +273,7 @@ export function Projects() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(project.id)}
+                          onClick={() => setProjetASupprimer(project)}
                           aria-label={`Supprimer le projet ${project.name}`}
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
@@ -418,6 +419,32 @@ export function Projects() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDelete
+        open={projetASupprimer !== null}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setProjetASupprimer(null);
+        }}
+        subject={
+          projetASupprimer === null ? "" : `le projet ${projetASupprimer.name}`
+        }
+        decision={canDeleteProject({
+          // Une facture rattachee documente une prestation : supprimer le
+          // projet la laisserait orpheline.
+          linkedInvoiceIds: invoices
+            .filter(
+              (facture) =>
+                projetASupprimer !== null &&
+                facture.clientId === projetASupprimer.clientId,
+            )
+            .map((facture) => facture.number || "brouillon"),
+        })}
+        consequence="Le projet part à la corbeille et reste récupérable."
+        onConfirm={() => {
+          if (projetASupprimer !== null) void remove(projetASupprimer.id);
+          setProjetASupprimer(null);
+        }}
+      />
     </div>
   );
 }

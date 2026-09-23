@@ -24,7 +24,13 @@ interface ClientSelectProps {
 export function ClientSelect({ id, value, onChange }: ClientSelectProps) {
   const { clients } = useClientIndex();
 
-  if (clients.length === 0) {
+  // Un client archivé ne doit pas être proposable sur un nouveau document,
+  // mais il reste sélectionné sur ceux qui le désignent déjà.
+  const proposables = clients.filter(
+    (client) => client.archivedAt === undefined || client.id === value,
+  );
+
+  if (proposables.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         Aucun client enregistré. Crée d&rsquo;abord un client dans l&rsquo;onglet
@@ -39,7 +45,7 @@ export function ClientSelect({ id, value, onChange }: ClientSelectProps) {
         <SelectValue placeholder="Choisir un client" />
       </SelectTrigger>
       <SelectContent>
-        {clients.map((client) => (
+        {proposables.map((client) => (
           <SelectItem key={client.id} value={client.id}>
             {client.company} — {client.name}
           </SelectItem>

@@ -11,6 +11,7 @@ import { useCollection } from '../hooks/useCollection';
 import { DataStateNotice } from '../components/DataStateNotice';
 import { ClientSelect } from '../components/ClientSelect';
 import { useClientIndex } from '../hooks/useClientIndex';
+import { ConfirmDelete } from '../components/ConfirmDelete';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ export function Support() {
     dismissError,
   } = useCollection(ticketRepository);
   const { nameOf } = useClientIndex();
+  const [ticketASupprimer, setTicketASupprimer] = useState<Ticket | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
@@ -106,10 +108,6 @@ export function Support() {
       created: ticket.created,
     });
     setIsDialogOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    void remove(id);
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -222,7 +220,12 @@ export function Support() {
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(ticket)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(ticket.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setTicketASupprimer(ticket)}
+                          aria-label={`Supprimer le ticket ${ticket.title}`}
+                        >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
@@ -341,6 +344,22 @@ export function Support() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDelete
+        open={ticketASupprimer !== null}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setTicketASupprimer(null);
+        }}
+        subject={
+          ticketASupprimer === null ? "" : `le ticket « ${ticketASupprimer.title} »`
+        }
+        decision={{ allowed: true }}
+        consequence="Le ticket part à la corbeille et reste récupérable."
+        onConfirm={() => {
+          if (ticketASupprimer !== null) void remove(ticketASupprimer.id);
+          setTicketASupprimer(null);
+        }}
+      />
     </div>
   );
 }

@@ -21,6 +21,8 @@ import type { Client } from "../data/mockData";
 import { invoiceRepository, projectRepository } from "../data/repositories";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { canDeleteClient } from "../../domain/rules";
+import { Archive, ArchiveRestore } from "lucide-react";
+import { todayIso } from "../../domain/date";
 import { clientRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
@@ -55,6 +57,17 @@ export function Clients() {
   const { items: projects } = useCollection(projectRepository);
   const { items: invoices } = useCollection(invoiceRepository);
   const [clientASupprimer, setClientASupprimer] = useState<Client | null>(null);
+  const [montrerArchives, setMontrerArchives] = useState(false);
+
+  /** Archiver sort le client des listes sans rien detruire ni detacher. */
+  const basculerArchive = (client: Client) => {
+    void update(
+      client.id,
+      client.archivedAt === undefined
+        ? { archivedAt: todayIso() }
+        : { archivedAt: undefined },
+    );
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -69,12 +82,20 @@ export function Clients() {
     avatar: "",
   });
 
-  const filteredClients = clients.filter(
-    (client) =>
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.company.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const recherche = searchQuery.trim().toLowerCase();
+  const filteredClients = clients.filter((client) => {
+    if (client.archivedAt !== undefined && !montrerArchives) return false;
+    if (recherche === "") return true;
+    return (
+      client.name.toLowerCase().includes(recherche) ||
+      client.email.toLowerCase().includes(recherche) ||
+      client.company.toLowerCase().includes(recherche)
+    );
+  });
+
+  const nombreArchives = clients.filter(
+    (client) => client.archivedAt !== undefined,
+  ).length;
 
   const handleCreate = () => {
     setEditingClient(null);
@@ -169,7 +190,22 @@ export function Clients() {
         <div>
           <h1>{t("clients.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            {filteredClients.length} clients
+            {filteredClients.length} client(s)
+            {nombreArchives > 0 && (
+              <>
+                {" "}
+                &middot;{" "}
+                <button
+                  type="button"
+                  className="text-primary-ink underline-offset-4 hover:underline"
+                  onClick={() => setMontrerArchives((etat) => !etat)}
+                >
+                  {montrerArchives
+                    ? "masquer les archivés"
+                    : `${nombreArchives} archivé(s)`}
+                </button>
+              </>
+            )}
           </p>
         </div>
         <Button
@@ -230,7 +266,10 @@ export function Clients() {
               <div className="flex items-center gap-2 text-sm">
                 <Building2 className="w-4 h-4 text-muted-foreground" />
                 <span>
-                  {client.projects} {t("clients.projects").toLowerCase()}
+                  {rattachements(client.id).projets.length}{" "}
+                  {rattachements(client.id).projets.length > 1
+                    ? "projets"
+                    : "projet"}
                 </span>
               </div>
               <div className="pt-2 flex gap-2">
@@ -251,6 +290,28 @@ export function Clients() {
                 >
                   <Pencil className="w-4 h-4" />
                   {t("common.edit")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => basculerArchive(client)}
+                  aria-label={
+                    client.archivedAt === undefined
+                      ? `Archiver ${client.company}`
+                      : `Sortir ${client.company} des archives`
+                  }
+                  title={
+                    client.archivedAt === undefined
+                      ? "Archiver : le client sort des listes sans rien perdre"
+                      : "Remettre dans les listes"
+                  }
+                >
+                  {client.archivedAt === undefined ? (
+                    <Archive className="w-4 h-4" />
+                  ) : (
+                    <ArchiveRestore className="w-4 h-4" />
+                  )}
                 </Button>
                 <Button
                   variant="outline"

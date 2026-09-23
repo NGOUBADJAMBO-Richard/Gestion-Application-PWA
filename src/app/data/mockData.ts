@@ -1,6 +1,13 @@
 export interface Client {
   id: string;
   name: string;
+  /**
+   * Date d’archivage. Un client porteur de factures émises ne se supprime
+   * pas : on l’archive, ce qui le sort des listes sans rien détruire.
+   */
+  // Le `| undefined` explicite est requis par exactOptionalPropertyTypes :
+  // sans lui, on ne peut pas remettre le champ à vide pour désarchiver.
+  archivedAt?: string | undefined;
   email: string;
   phone: string;
   company: string;
