@@ -1,4 +1,3 @@
-import React from "react";
 import { useId } from "react";
 
 interface BrandLogoProps {

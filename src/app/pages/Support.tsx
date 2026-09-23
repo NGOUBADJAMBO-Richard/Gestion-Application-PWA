@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Clock, CheckCircle2, AlertCircle, Pencil, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { todayIso } from '../../domain/date';
+import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -34,7 +35,7 @@ export function Support() {
     client: '',
     status: 'open',
     priority: 'medium',
-    created: new Date().toISOString().split('T')[0],
+    created: todayIso(),
   });
 
   const filteredTickets = statusFilter === 'all' 
@@ -75,7 +76,7 @@ export function Support() {
       client: '',
       status: 'open',
       priority: 'medium',
-      created: new Date().toISOString().split('T')[0],
+      created: todayIso(),
     });
     setIsDialogOpen(true);
   };

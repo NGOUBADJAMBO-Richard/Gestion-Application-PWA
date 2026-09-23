@@ -1,0 +1,29 @@
+# Dépendances
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+dist-ssr/
+*.local
+
+# Cache d'outils
+.vite/
+.eslintcache
+coverage/
+*.tsbuildinfo
+
+# Éditeurs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Environnement — aucun secret ne doit jamais entrer dans ce dépôt
+.env
+.env.*
+!.env.example

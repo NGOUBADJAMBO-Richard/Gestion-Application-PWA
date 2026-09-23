@@ -1,4 +1,3 @@
-import React from "react";
 import { TrendingUp, Users, FolderKanban, FileText } from "lucide-react";
 import {
   Card,

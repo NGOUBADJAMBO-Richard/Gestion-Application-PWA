@@ -1,4 +1,3 @@
-import React from 'react';
 import { Book, Video, MessageCircle, FileQuestion, Zap, Shield, Globe, Smartphone } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useLanguage } from '../contexts/LanguageContext';

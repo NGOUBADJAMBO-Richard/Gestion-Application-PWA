@@ -19,6 +19,7 @@ const translations: Translations = {
   "nav.account": { fr: "Mon compte", en: "My account" },
   "nav.help": { fr: "Aide", en: "Help" },
   "nav.logout": { fr: "Déconnexion", en: "Logout" },
+  "nav.closeMenu": { fr: "Fermer le menu", en: "Close menu" },
 
   // Dashboard
   "dashboard.title": { fr: "Tableau de Bord", en: "Dashboard" },

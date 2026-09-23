@@ -1,4 +1,3 @@
-import React from "react";
 import { Outlet, NavLink } from "react-router";
 import {
   LayoutDashboard,
@@ -42,7 +41,9 @@ export function Layout() {
     <div className="min-h-screen bg-background">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div
+        <button
+          type="button"
+          aria-label={t("nav.closeMenu")}
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />

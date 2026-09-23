@@ -97,7 +97,9 @@ export function Clients() {
       phone: formData.phone.trim(),
       company: formData.company.trim(),
       projects: Number(formData.projects) || 0,
-      avatar: formData.avatar?.trim() || undefined,
+      // exactOptionalPropertyTypes : une propriete optionnelle est absente,
+      // jamais presente avec la valeur undefined.
+      ...(formData.avatar?.trim() ? { avatar: formData.avatar.trim() } : {}),
     };
 
     if (!payload.name || !payload.email || !payload.phone || !payload.company) {

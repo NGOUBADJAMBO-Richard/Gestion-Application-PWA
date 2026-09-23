@@ -1,58 +1,67 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 
+const NODE_MODULES = "node_modules/";
+
+/**
+ * Nom du paquet de plus haut niveau auquel appartient un module.
+ * On compare des noms de paquets exacts et non des fragments de chemin :
+ * un test sur la sous-chaîne « /react/ » attrape aussi `react-dom`, et le
+ * découpage finit par produire des chunks circulaires.
+ */
+function packageOf(file: string): string | undefined {
+  const at = file.lastIndexOf(NODE_MODULES);
+  if (at === -1) return undefined;
+  const rest = file.slice(at + NODE_MODULES.length);
+  const parts = rest.split("/");
+  if (parts[0] === undefined) return undefined;
+  return parts[0].startsWith("@") ? `${parts[0]}/${parts[1] ?? ""}` : parts[0];
+}
+
+/** Familles lourdes isolées pour que le poids reste imputable à une cause. */
+const CHUNKS: ReadonlyArray<readonly [string, (pkg: string) => boolean]> = [
+  ["vendor-react", (p) => p === "react" || p === "react-dom" || p === "scheduler"],
+  ["vendor-radix", (p) => p.startsWith("@radix-ui/")],
+  ["vendor-charts", (p) => p === "recharts" || p.startsWith("d3-") || p === "victory-vendor"],
+  ["vendor-pdf", (p) => p === "jspdf" || p === "canvg" || p === "dompurify" || p === "fflate"],
+];
+
 export default defineConfig({
-  plugins: [
-    // The React and Tailwind plugins are both required for Make, even if
-    // Tailwind is not being actively used – do not remove them
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
+
   resolve: {
     alias: {
-      // Alias @ to the src directory
       "@": path.resolve(__dirname, "./src"),
     },
   },
 
-  // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
-  assetsInclude: ["**/*.svg", "**/*.csv"],
+  assetsInclude: ["**/*.csv"],
+
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      include: ["src/domain/**", "src/infra/**"],
+    },
+  },
 
   build: {
     chunkSizeWarningLimit: 650,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          const normalizedId = id.replace(/\\/g, "/");
-          if (!normalizedId.includes("node_modules")) {
-            return undefined;
-          }
+          const file = id.split("\\").join("/");
+          const pkg = packageOf(file);
+          if (pkg === undefined) return undefined;
 
-          if (normalizedId.includes("/@radix-ui/")) {
-            return "vendor-radix";
+          for (const [name, matches] of CHUNKS) {
+            if (matches(pkg)) return name;
           }
-
-          if (
-            normalizedId.includes("/recharts/") ||
-            normalizedId.includes("/d3-") ||
-            normalizedId.includes("/victory-vendor/")
-          ) {
-            return "vendor-charts";
-          }
-
-          if (
-            normalizedId.includes("/@mui/") ||
-            normalizedId.includes("/@emotion/")
-          ) {
-            return "vendor-ui";
-          }
-
-          if (normalizedId.includes("/motion/")) {
-            return "vendor-motion";
-          }
-
           return "vendor-misc";
         },
       },

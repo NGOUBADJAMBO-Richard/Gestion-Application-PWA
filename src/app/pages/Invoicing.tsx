@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Download, Pencil, Trash2 } from "lucide-react";
+import { todayIso } from "../../domain/date";
 import {
   Card,
   CardContent,
@@ -10,7 +11,7 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Invoice, InvoiceItem, mockInvoices } from "../data/mockData";
-import { generateInvoicePDF } from "../utils/pdfGenerator";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -45,6 +46,27 @@ export function Invoicing() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [pdfPendingId, setPdfPendingId] = useState<string | null>(null);
+
+  /**
+   * jsPDF pèse 455 ko (148 ko compressés) et ne sert qu'au clic sur
+   * « télécharger ». Un import dynamique le sort du chargement initial :
+   * le module n'arrive qu'au premier PDF réellement demandé.
+   */
+  const handleDownloadPdf = async (invoice: Invoice) => {
+    setPdfPendingId(invoice.id);
+    try {
+      const { generateInvoicePDF } = await import("../utils/pdfGenerator");
+      generateInvoicePDF(invoice);
+    } catch (error) {
+      console.error("Génération du PDF impossible", error);
+      toast.error("Le PDF n'a pas pu être généré.", {
+        description: "Vérifie que la facture est complète, puis réessaie.",
+      });
+    } finally {
+      setPdfPendingId(null);
+    }
+  };
   const createEmptyItem = (idSeed = Date.now().toString()): InvoiceItem => ({
     id: idSeed,
     description: "",
@@ -126,7 +148,7 @@ export function Invoicing() {
       ],
       amount: 0,
       status: "pending",
-      date: new Date().toISOString().split("T")[0],
+      date: todayIso(),
       dueDate: "",
       paymentMethod: "bank-transfer",
       paymentTerms: "Paiement sous 30 jours",
@@ -395,7 +417,8 @@ export function Invoicing() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => generateInvoicePDF(invoice)}
+                          onClick={() => void handleDownloadPdf(invoice)}
+                          disabled={pdfPendingId === invoice.id}
                           title="Télécharger PDF"
                         >
                           <Download className="w-4 h-4" />

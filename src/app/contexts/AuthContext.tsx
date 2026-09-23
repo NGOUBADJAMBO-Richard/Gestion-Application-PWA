@@ -37,14 +37,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     // Mock login - in real app, this would call an API
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const now = new Date().toISOString();
     const mockUser: User = {
       id: "1",
-      name: email.split("@")[0],
+      name: email.split("@")[0] ?? email,
       email,
       role: "admin",
       phone: "+33 6 00 00 00 00",
