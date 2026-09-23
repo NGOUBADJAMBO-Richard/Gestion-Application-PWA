@@ -1,362 +1,190 @@
-# 🏗️ CodeWave Studio - Architecture Technique
+# Architecture — CodeWave Studio
 
-## 📋 Stack Technique
-
-### Frontend
-- **Framework**: React 18.3.1 avec TypeScript
-- **Bundler**: Vite 6.3.5 (Build ultra-rapide)
-- **Routing**: React Router 7.13.0 (Data mode)
-- **Styling**: Tailwind CSS 4.1.12
-- **UI Components**: Radix UI + shadcn/ui
-- **Charts**: Recharts 2.15.2
-- **Icons**: Lucide React
-
-### Design System
-- **Polices**:
-  - Titres: `Syne` (Google Fonts)
-  - Corps: `Space Grotesk` (Google Fonts)
-- **Couleurs Corporate**:
-  - Primaire: `#004aad` (Bleu)
-  - Secondaire: `#545454` (Graphite)
-- **Thèmes**: Light/Dark avec transition fluide
-
-## 📁 Structure du Projet
-
-```
-m-g-n-manager/
-│
-├── public/                      # Assets statiques
-│   ├── manifest.json           # Configuration PWA
-│   ├── favicon.svg             # Icône navigateur
-│   ├── icon-192.svg            # Icône PWA 192x192
-│   └── icon-512.svg            # Icône PWA 512x512
-│
-├── src/
-│   ├── app/
-│   │   ├── contexts/           # Contexts React
-│   │   │   ├── ThemeContext.tsx       # Gestion du thème
-│   │   │   ├── LanguageContext.tsx    # i18n FR/EN
-│   │   │   └── AuthContext.tsx        # Authentification
-│   │   │
-│   │   ├── data/
-│   │   │   └── mockData.ts            # Données de démonstration
-│   │   │
-│   │   ├── pages/              # Pages de l'application
-│   │   │   ├── Dashboard.tsx          # Tableau de bord
-│   │   │   ├── Projects.tsx           # Gestion projets (CRUD)
-│   │   │   ├── Clients.tsx            # CRM
-│   │   │   ├── Invoicing.tsx          # Facturation
-│   │   │   ├── Support.tsx            # Tickets
-│   │   │   └── Help.tsx               # Documentation
-│   │   │
-│   │   ├── components/         # Composants React
-│   │   │   ├── Layout.tsx             # Layout principal
-│   │   │   ├── ui/                    # Composants UI réutilisables
-│   │   │   └── figma/                 # Composants Figma
-│   │   │
-│   │   ├── routes.tsx                 # Configuration routing
-│   │   └── App.tsx                    # Composant racine
-│   │
-│   ├── styles/                 # Styles globaux
-│   │   ├── fonts.css                  # Import fonts
-│   │   ├── tailwind.css               # Config Tailwind
-│   │   ├── theme.css                  # Variables CSS
-│   │   └── index.css                  # Point d'entrée CSS
-│   │
-│   └── main.tsx                # Point d'entrée JS
-│
-├── index.html                  # HTML principal
-├── vite.config.ts             # Configuration Vite
-├── package.json               # Dépendances
-├── README-PWA.md              # Documentation PWA
-└── ARCHITECTURE.md            # Ce fichier
-```
-
-## 🔄 Flux de Données
-
-### Contexts (State Management)
-
-```
-ThemeContext
-├── theme: 'light' | 'dark'
-├── toggleTheme()
-└── setTheme(theme)
-
-LanguageContext
-├── language: 'fr' | 'en'
-├── setLanguage(lang)
-└── t(key) → traduction
-
-AuthContext
-├── user: User | null
-├── login(email, password)
-├── logout()
-└── isAuthenticated: boolean
-```
-
-### Routing Structure
-
-```
-/ (Layout)
-├── / (Dashboard)
-├── /clients (Clients)
-├── /projects (Projects)
-├── /invoicing (Invoicing)
-├── /support (Support)
-└── /help (Help)
-```
-
-## 🎨 Design Tokens
-
-### Couleurs (theme.css)
-
-```css
-/* Brand Colors */
---brand-blue: #004aad;
---brand-graphite: #545454;
-
-/* Light Mode */
---background: #ffffff;
---foreground: oklch(0.145 0 0);
---primary: #004aad;
---muted-foreground: #545454;
-
-/* Dark Mode */
---background: #0a0a0a;
---card: #141414;
---primary: #004aad;
-```
-
-### Typographie
-
-```css
---font-family-heading: 'Syne', sans-serif;
---font-family-body: 'Space Grotesk', sans-serif;
-```
-
-## 📊 Modèles de Données
-
-### Client
-```typescript
-interface Client {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  projects: number;
-  avatar?: string;
-}
-```
-
-### Project
-```typescript
-interface Project {
-  id: string;
-  name: string;
-  client: string;
-  status: 'active' | 'completed' | 'pending';
-  deadline: string;
-  budget: number;
-  progress: number;
-  description?: string;
-}
-```
-
-### Invoice
-```typescript
-interface Invoice {
-  id: string;
-  number: string;
-  client: string;
-  amount: number;
-  status: 'paid' | 'pending' | 'overdue';
-  date: string;
-  dueDate: string;
-}
-```
-
-### Ticket
-```typescript
-interface Ticket {
-  id: string;
-  title: string;
-  client: string;
-  status: 'open' | 'in-progress' | 'closed';
-  priority: 'low' | 'medium' | 'high';
-  created: string;
-}
-```
-
-## 🚀 Fonctionnalités Implémentées
-
-### ✅ Dashboard
-- 4 cartes statistiques avec icônes colorées
-- Graphique de revenus (Bar Chart)
-- Liste des projets récents avec badges de statut
-- Design Bento Grid moderne
-
-### ✅ Gestion Projets
-- **CRUD Complet**:
-  - Create: Dialog avec formulaire
-  - Read: Tableau avec toutes les données
-  - Update: Edition via Dialog
-  - Delete: Suppression avec confirmation
-- **Filtres**:
-  - Recherche par nom/client
-  - Filtrage par statut
-- **Affichage**:
-  - Tableau responsive
-  - Barre de progression
-  - Badges de statut colorés
-
-### ✅ CRM (Clients)
-- Vue en grille (3 colonnes desktop)
-- Cartes clients avec avatar
-- Informations de contact (email, téléphone)
-- Nombre de projets par client
-- Recherche globale
-
-### ✅ Facturation
-- Liste des factures avec statuts
-- Filtres par statut (Paid, Pending, Overdue)
-- Calcul automatique des totaux
-- Badges de statut colorés
-- Format monétaire EUR
-
-### ✅ Support
-- Système de tickets
-- Filtres par statut
-- Priorités visuelles (High, Medium, Low)
-- Icônes de statut
-- Timeline des créations
-
-### ✅ Aide
-- Ressources documentaires (4 sections)
-- FAQs avec Accordion
-- Guide d'installation PWA
-- Présentation des fonctionnalités clés
-
-### ✅ Système i18n
-- Français (par défaut)
-- Anglais
-- Traductions complètes
-- Bouton de changement de langue
-
-### ✅ Thème Dark/Light
-- Mode clair professionnel
-- Mode sombre (#0a0a0a)
-- Transition fluide
-- Persistance localStorage
-- Icône Soleil/Lune
-
-## 🔧 Configuration PWA
-
-### Manifest.json
-```json
-{
-  "name": "CodeWave Studio",
-  "short_name": "Studio",
-  "display": "standalone",
-  "theme_color": "#004aad",
-  "background_color": "#ffffff"
-}
-```
-
-### Meta Tags (index.html)
-```html
-<meta name="theme-color" content="#004aad" />
-<link rel="manifest" href="/manifest.json" />
-```
-
-## 🎯 Prochaines Étapes (Production)
-
-### 1. Backend Integration
-- [ ] Connecter Supabase ou Firebase
-- [ ] Implémenter authentification réelle
-- [ ] Migration vers base de données réelle
-- [ ] API REST ou GraphQL
-
-### 2. PWA Avancée
-- [ ] Service Worker (vite-plugin-pwa)
-- [ ] Mode hors-ligne complet
-- [ ] Cache stratégies
-- [ ] Synchronisation background
-
-### 3. Fonctionnalités Avancées
-- [ ] Génération PDF (factures)
-- [ ] Upload de fichiers
-- [ ] Notifications Push
-- [ ] Time-tracking
-- [ ] Tableau Kanban pour projets
-- [ ] Analytics & Rapports
-- [ ] Export CSV/Excel
-- [ ] Calendrier intégré
-
-### 4. Sécurité
-- [ ] JWT tokens
-- [ ] HTTPS obligatoire
-- [ ] CORS configuration
-- [ ] Rate limiting
-- [ ] Row Level Security (RLS)
-
-### 5. Performance
-- [ ] Code splitting
-- [ ] Lazy loading
-- [ ] Image optimization
-- [ ] Bundle size optimization
-- [ ] Lighthouse score > 90
-
-## 📦 Packages Principaux
-
-```json
-{
-  "react": "18.3.1",
-  "react-router": "7.13.0",
-  "tailwindcss": "4.1.12",
-  "recharts": "2.15.2",
-  "lucide-react": "0.487.0",
-  "next-themes": "0.4.6",
-  "@radix-ui/*": "latest"
-}
-```
-
-## 🎨 Composants UI Disponibles
-
-- Accordion, Alert, Avatar
-- Badge, Button, Calendar
-- Card, Checkbox, Dialog
-- Dropdown, Form, Input
-- Label, Popover, Progress
-- Select, Separator, Sheet
-- Sidebar, Skeleton, Switch
-- Table, Tabs, Textarea
-- Tooltip, Toggle
-
-## 💡 Bonnes Pratiques Utilisées
-
-1. **TypeScript strict** pour la sécurité des types
-2. **Contexts** pour state management global
-3. **Composants réutilisables** (DRY principle)
-4. **Responsive design** (Mobile-first)
-5. **Accessibilité** (Radix UI primitives)
-6. **Performance** (React.memo, lazy loading)
-7. **SEO-friendly** (Semantic HTML)
-8. **Dark mode** support natif
-9. **i18n** architecture extensible
-10. **Code organization** claire et modulaire
-
-## 🔗 Ressources
-
-- [React Documentation](https://react.dev)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Radix UI](https://radix-ui.com)
-- [Recharts](https://recharts.org)
-- [Vite](https://vitejs.dev)
-- [PWA Guide](https://web.dev/progressive-web-apps)
+> Ce document décrit l'application telle qu'elle est, vérifiable dans le code.
+> La version précédente décrivait une application en euros, adossée à Firebase,
+> avec une synchronisation temps réel — rien de tout cela n'a jamais existé.
 
 ---
 
-**Version**: 1.0.0  
-**Dernière mise à jour**: Avril 2026  
-**Développé pour**: CodeWave Studio
+## En une phrase
+
+Application de gestion d'agence, **entièrement locale** : React + TypeScript,
+aucune donnée ne quitte le navigateur, aucun serveur n'est requis.
+
+---
+
+## Les trois couches
+
+```
+src/
+├── domain/     Métier pur. Zéro React, zéro DOM, zéro accès au stockage.
+├── infra/      Accès au monde extérieur : stockage, chiffrement, PDF.
+└── app/        React. Orchestration et rendu uniquement.
+```
+
+**La direction des dépendances est une règle, pas une convention** :
+`domain/ ← infra/ ← app/`. Elle est appliquée par ESLint
+(`no-restricted-imports` dans `eslint.config.js`), donc un import qui remonte
+la chaîne fait échouer `npm run lint`.
+
+### Pourquoi cette séparation
+
+Le calcul d'une facture, la numérotation comptable et les règles d'intégrité
+sont la partie de l'application qui **doit** être juste. Les enfermer dans des
+composants React les rendrait impossibles à tester sans rendu, et impossibles
+à réutiliser le jour où un export comptable ou une API arrivent.
+
+La preuve que la séparation tient : `src/domain/` compte plus de 200 tests qui
+s'exécutent en moins d'une seconde, sans navigateur.
+
+---
+
+## `domain/` — le métier
+
+| Module | Rôle |
+|---|---|
+| `money.ts` | Arithmétique monétaire en entiers d'unité mineure |
+| `invoice.ts` | Totaux, remises, TVA par tranche, ventilation |
+| `payment.ts` | Encaissements, état de règlement, trop-perçu |
+| `numbering.ts` | Séquences DEV / FAC / AV, détection de trous |
+| `invoiceStatus.ts` | Retard déduit de l'échéance |
+| `rules.ts` | Intégrité : suppressions, transitions, avoirs |
+| `dashboard.ts` | Indicateurs et chiffre d'affaires mensuel |
+| `companyProfile.ts` | Profil fiscal, taux de TVA, mentions légales |
+| `lockout.ts` | Temporisation après échecs de connexion |
+| `date.ts` | Dates ISO, en calendrier local |
+| `id.ts` | Identifiants ULID, triés chronologiquement |
+
+**Aucun de ces modules n'importe React, ni le stockage, ni quoi que ce soit du
+navigateur.** Ils prennent des données et rendent des données.
+
+### La règle monétaire
+
+Aucun montant n'est un nombre à virgule flottante. Tout montant est un
+**entier en unité mineure** : le franc CFA n'a pas de décimale, l'euro en a
+deux. `0.1 + 0.2` vaut `0.30000000000000004` en IEEE 754 ; sur un grand livre
+de plusieurs milliers d'écritures, la dérive finit par décaler un total.
+
+L'ordre de calcul d'une facture n'est pas interchangeable :
+
+1. brut de ligne = quantité × prix unitaire, **arrondi à la ligne** ;
+2. remise appliquée **à la ligne**, arrondie à la ligne ;
+3. regroupement des bases HT **par taux de TVA** ;
+4. TVA calculée **une seule fois par taux**, sur la base remisée ;
+5. TTC = HT + TVA, **par construction**, jamais réarrondi.
+
+Inverser 2 et 3 donne un autre total. La somme de contrôle `HT + TVA = TTC` est
+vérifiée par un test sur 2 000 combinaisons générées.
+
+---
+
+## `infra/` — le monde extérieur
+
+| Module | Rôle |
+|---|---|
+| `repository.ts` | Contrat `Repository<T>`, erreurs typées, état du stockage |
+| `localStorageRepo.ts` | Implémentation `localStorage` avec corbeille |
+| `backup.ts` | Export/import vérifié par empreinte SHA-256 |
+| `crypto/credential.ts` | PBKDF2, code de récupération |
+| `storage/` | Migrations de données |
+
+**Aucune page n'appelle `localStorage` ni `indexedDB` directement.** Le jour où
+un serveur arrive, on remplace l'implémentation — pas les écrans.
+
+Toutes les méthodes du dépôt sont asynchrones, y compris dans l'implémentation
+`localStorage` qui pourrait être synchrone : une signature synchrone
+aujourd'hui obligerait à réécrire tous les appelants le jour du changement.
+
+### Validation à la relecture
+
+Chaque dépôt reçoit une fonction `parse`. Une entrée relue qui n'a pas la forme
+attendue est **écartée**, pas laissée passer. L'implémentation d'origine faisait
+`return data as T[]` — une assertion de type, pas une vérification : une donnée
+corrompue traversait sans bruit et faisait tomber un écran sans rapport, bien
+plus loin.
+
+---
+
+## `app/` — React
+
+```
+app/
+├── pages/        Un écran par fichier
+├── components/   Composants de l'application
+│   └── ui/       shadcn — ne pas modifier sans raison
+├── contexts/     Authentification, thème, langue
+├── hooks/        useCollection, useClientIndex, useCompanyProfile
+└── data/         Dépôts instanciés et données de démonstration
+```
+
+`useCollection` relie un composant à un dépôt : il expose la liste, l'état de
+chargement, l'erreur et les mutations, et se réabonne aux écritures venues des
+**autres onglets**. Sans cela, deux onglets ouverts divergent et le dernier à
+écrire écrase l'autre sans que personne ne le voie.
+
+---
+
+## Stockage
+
+Tout vit dans `localStorage`, sous le préfixe `codewave-studio:`.
+
+| Clé | Contenu |
+|---|---|
+| `clients`, `projects`, `invoices`, `tickets` | Collections, dans une enveloppe `{ schemaVersion, data }` |
+| `company-profile` | Profil d'entreprise et paramètres fiscaux |
+| `credential` | Dérivation PBKDF2 du mot de passe et du code de récupération |
+| `session`, `lockout` | Session courante, compteur d'échecs |
+| `theme`, `language`, `user` | Préférences |
+
+### Migrations
+
+Elles s'exécutent avant le premier rendu, dans `src/main.tsx` :
+
+1. `migrateLegacyStorageKeys` — clés `mgn-*` de M.G.N Manager ;
+2. `migrateClientLinks` — rattachement des documents à leur client par
+   identifiant, et passage des numéros `INV-` en `FAC-`.
+
+Toutes sont **idempotentes** et conservent l'original en cas d'échec d'écriture.
+
+### Limite connue
+
+`localStorage` plafonne autour de 5 Mo. L'écran « Données et sauvegarde »
+affiche l'occupation et alerte au-delà de 80 %. Le passage à IndexedDB pour les
+volumes lourds — lignes de document, pièces jointes — reste à faire ; le contrat
+`Repository<T>` est déjà écrit pour l'accueillir sans toucher aux écrans.
+
+---
+
+## Chaîne de vérification
+
+```bash
+npm run verify
+```
+
+Enchaîne `typecheck`, `lint`, `test` et `build`. Aucun de ces quatre n'est
+optionnel.
+
+| Réglage | Valeur |
+|---|---|
+| TypeScript | `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` |
+| ESLint | recommandé + hooks + jsx-a11y + règle de direction des dépendances |
+| Tests | Vitest + jsdom, 276 tests |
+
+`src/test/setup.ts` installe `localStorage`, `ResizeObserver` et `matchMedia` :
+jsdom 25 crée une fenêtre mais n'expose aucun des trois, et sans eux aucun
+écran ne peut être monté dans un test.
+
+---
+
+## Ce qui n'existe pas
+
+Il vaut mieux le dire que le laisser deviner :
+
+| Absent | Précision |
+|---|---|
+| Serveur, API, base distante | Aucun. Zéro `fetch` dans le code applicatif |
+| Synchronisation entre appareils | Aucune. Le transfert passe par l'export de sauvegarde |
+| Chiffrement des données au repos | Aucun, par choix assumé — voir `SECURITE.md` |
+| Multi-utilisateur | Un seul accès par appareil |
+| Journal d'audit | À faire |
+| Comptabilité en partie double | À faire |
