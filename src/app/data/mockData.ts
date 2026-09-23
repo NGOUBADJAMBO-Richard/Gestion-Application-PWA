@@ -11,7 +11,8 @@ export interface Client {
 export interface Project {
   id: string;
   name: string;
-  client: string;
+  /** Reference au client par identifiant : un nom d’entreprise n’est pas une clé. */
+  clientId: string;
   status: "active" | "completed" | "pending";
   deadline: string;
   budget: number;
@@ -22,7 +23,8 @@ export interface Project {
 export interface Invoice {
   id: string;
   number: string;
-  client: string;
+  /** Reference au client par identifiant : un nom d’entreprise n’est pas une clé. */
+  clientId: string;
   items: InvoiceItem[];
   amount: number;
   status: "paid" | "pending" | "overdue";
@@ -44,7 +46,8 @@ export interface InvoiceItem {
 export interface Ticket {
   id: string;
   title: string;
-  client: string;
+  /** Reference au client par identifiant : un nom d’entreprise n’est pas une clé. */
+  clientId: string;
   status: "open" | "in-progress" | "closed";
   priority: "low" | "medium" | "high";
   created: string;
@@ -89,7 +92,7 @@ export const mockProjects: Project[] = [
   {
     id: "1",
     name: "Refonte Site E-commerce",
-    client: "TechCorp",
+    clientId: "1",
     status: "active",
     deadline: "2026-05-15",
     budget: 25000,
@@ -100,7 +103,7 @@ export const mockProjects: Project[] = [
   {
     id: "2",
     name: "Application Mobile iOS",
-    client: "Innovate Solutions",
+    clientId: "2",
     status: "active",
     deadline: "2026-06-30",
     budget: 45000,
@@ -110,7 +113,7 @@ export const mockProjects: Project[] = [
   {
     id: "3",
     name: "Dashboard Analytics",
-    client: "Digital Agency",
+    clientId: "3",
     status: "pending",
     deadline: "2026-04-20",
     budget: 15000,
@@ -120,7 +123,7 @@ export const mockProjects: Project[] = [
   {
     id: "4",
     name: "Identité Visuelle",
-    client: "Startup Inc",
+    clientId: "4",
     status: "completed",
     deadline: "2026-03-15",
     budget: 8000,
@@ -130,7 +133,7 @@ export const mockProjects: Project[] = [
   {
     id: "5",
     name: "SEO & Content Marketing",
-    client: "TechCorp",
+    clientId: "1",
     status: "active",
     deadline: "2026-07-10",
     budget: 12000,
@@ -140,7 +143,7 @@ export const mockProjects: Project[] = [
   {
     id: "6",
     name: "Maintenance Site Web",
-    client: "Digital Agency",
+    clientId: "3",
     status: "active",
     deadline: "2026-12-31",
     budget: 6000,
@@ -152,8 +155,8 @@ export const mockProjects: Project[] = [
 export const mockInvoices: Invoice[] = [
   {
     id: "1",
-    number: "INV-2026-001",
-    client: "TechCorp",
+    number: "FAC-2026-001",
+    clientId: "1",
     items: [
       {
         id: "1-1",
@@ -180,8 +183,8 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: "2",
-    number: "INV-2026-002",
-    client: "Innovate Solutions",
+    number: "FAC-2026-002",
+    clientId: "2",
     items: [
       {
         id: "2-1",
@@ -208,8 +211,8 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: "3",
-    number: "INV-2026-003",
-    client: "Digital Agency",
+    number: "FAC-2026-003",
+    clientId: "3",
     items: [
       {
         id: "3-1",
@@ -236,8 +239,8 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: "4",
-    number: "INV-2026-004",
-    client: "Startup Inc",
+    number: "FAC-2026-004",
+    clientId: "4",
     items: [
       {
         id: "4-1",
@@ -268,7 +271,7 @@ export const mockTickets: Ticket[] = [
   {
     id: "1",
     title: "Bug sur la page de paiement",
-    client: "TechCorp",
+    clientId: "1",
     status: "in-progress",
     priority: "high",
     created: "2026-03-28",
@@ -276,7 +279,7 @@ export const mockTickets: Ticket[] = [
   {
     id: "2",
     title: "Demande de modification du logo",
-    client: "Innovate Solutions",
+    clientId: "2",
     status: "open",
     priority: "low",
     created: "2026-03-30",
@@ -284,7 +287,7 @@ export const mockTickets: Ticket[] = [
   {
     id: "3",
     title: "Performance lente sur mobile",
-    client: "Digital Agency",
+    clientId: "3",
     status: "closed",
     priority: "medium",
     created: "2026-03-25",

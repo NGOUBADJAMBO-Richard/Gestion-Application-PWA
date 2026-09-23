@@ -6,7 +6,12 @@ function formatCurrencyForPdf(amount: number): string {
   return formatCurrencyXAF(amount).replace(/\u202F|\u00A0/g, " ");
 }
 
-export function generateInvoicePDF(invoice: Invoice) {
+/**
+ * Le nom du client est passe en argument : le generateur ne connait que le
+ * document, pas le repertoire des clients, et une facture ne retient plus
+ * quun identifiant.
+ */
+export function generateInvoicePDF(invoice: Invoice, clientName: string) {
   const doc = new jsPDF();
 
   // Configuration
@@ -100,7 +105,7 @@ export function generateInvoicePDF(invoice: Invoice) {
   doc.setFontSize(10);
   doc.setFont("Helvetica", "normal");
   doc.setTextColor(71, 85, 105);
-  doc.text(invoice.client, leftCardX + 4, cardTop + 14);
+  doc.text(clientName, leftCardX + 4, cardTop + 14);
   doc.text("Adresse de facturation: N/A", leftCardX + 4, cardTop + 20);
 
   doc.text(
@@ -128,7 +133,7 @@ export function generateInvoicePDF(invoice: Invoice) {
 
   doc.setFont("Helvetica", "normal");
   doc.setFontSize(10);
-  doc.text(invoice.client, margin, yPosition);
+  doc.text(clientName, margin, yPosition);
 
   yPosition += 5;
   doc.setTextColor(100, 100, 100);

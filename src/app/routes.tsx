@@ -9,6 +9,7 @@ import { Help } from "./pages/Help";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { Account } from "./pages/Account";
+import { Settings } from "./pages/Settings";
 import { useAuth } from "./contexts/AuthContext";
 
 function ProtectedLayout() {
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: "projects", Component: Projects },
       { path: "invoicing", Component: Invoicing },
       { path: "support", Component: Support },
+      { path: "settings", Component: Settings },
       { path: "help", Component: Help },
       { path: "*", Component: NotFound },
     ],

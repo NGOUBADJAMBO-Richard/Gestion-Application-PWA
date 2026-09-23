@@ -14,6 +14,8 @@ import type { Project } from "../data/mockData";
 import { projectRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
+import { ClientSelect } from "../components/ClientSelect";
+import { useClientIndex } from "../hooks/useClientIndex";
 import {
   Table,
   TableBody,
@@ -53,13 +55,14 @@ export function Projects() {
     remove,
     dismissError,
   } = useCollection(projectRepository);
+  const { nameOf } = useClientIndex();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<Omit<Project, "id">>({
     name: "",
-    client: "",
+    clientId: "",
     status: "pending",
     deadline: "",
     budget: 0,
@@ -70,7 +73,7 @@ export function Projects() {
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchQuery.toLowerCase());
+      nameOf(project.clientId).toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || project.status === statusFilter;
@@ -99,7 +102,7 @@ export function Projects() {
     setEditingProject(project);
     setFormData({
       name: project.name,
-      client: project.client,
+      clientId: project.clientId,
       status: project.status,
       deadline: project.deadline,
       budget: project.budget,
@@ -113,7 +116,7 @@ export function Projects() {
     setEditingProject(null);
     setFormData({
       name: "",
-      client: "",
+      clientId: "",
       status: "pending",
       deadline: "",
       budget: 0,
@@ -127,7 +130,7 @@ export function Projects() {
     e.preventDefault();
     const payload: Omit<Project, "id"> = {
       name: formData.name.trim(),
-      client: formData.client.trim(),
+      clientId: formData.clientId,
       status: formData.status,
       deadline: formData.deadline,
       budget: Number(formData.budget) || 0,
@@ -135,7 +138,7 @@ export function Projects() {
       description: formData.description?.trim() || "",
     };
 
-    if (!payload.name || !payload.client || !payload.deadline) {
+    if (!payload.name || !payload.clientId || !payload.deadline) {
       return;
     }
 
@@ -238,7 +241,7 @@ export function Projects() {
                     <TableCell className="font-medium">
                       {project.name}
                     </TableCell>
-                    <TableCell>{project.client}</TableCell>
+                    <TableCell>{nameOf(project.clientId)}</TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(project.status)}>
                         {t(`projects.status.${project.status}`)}
@@ -315,14 +318,12 @@ export function Projects() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="client">{t("projects.client")}</Label>
-                <Input
+                <ClientSelect
                   id="client"
-                  value={formData.client}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, client: e.target.value }))
+                  value={formData.clientId}
+                  onChange={(clientId) =>
+                    setFormData((prev) => ({ ...prev, clientId }))
                   }
-                  placeholder={t("projects.clientName")}
-                  required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">

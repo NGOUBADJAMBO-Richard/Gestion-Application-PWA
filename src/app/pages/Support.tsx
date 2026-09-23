@@ -9,6 +9,8 @@ import type { Ticket } from '../data/mockData';
 import { ticketRepository } from '../data/repositories';
 import { useCollection } from '../hooks/useCollection';
 import { DataStateNotice } from '../components/DataStateNotice';
+import { ClientSelect } from '../components/ClientSelect';
+import { useClientIndex } from '../hooks/useClientIndex';
 import {
   Dialog,
   DialogContent,
@@ -39,12 +41,13 @@ export function Support() {
     remove,
     dismissError,
   } = useCollection(ticketRepository);
+  const { nameOf } = useClientIndex();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [formData, setFormData] = useState<Omit<Ticket, 'id'>>({
     title: '',
-    client: '',
+    clientId: '',
     status: 'open',
     priority: 'medium',
     created: todayIso(),
@@ -85,7 +88,7 @@ export function Support() {
     setEditingTicket(null);
     setFormData({
       title: '',
-      client: '',
+      clientId: '',
       status: 'open',
       priority: 'medium',
       created: todayIso(),
@@ -97,7 +100,7 @@ export function Support() {
     setEditingTicket(ticket);
     setFormData({
       title: ticket.title,
-      client: ticket.client,
+      clientId: ticket.clientId,
       status: ticket.status,
       priority: ticket.priority,
       created: ticket.created,
@@ -114,13 +117,13 @@ export function Support() {
 
     const payload: Omit<Ticket, 'id'> = {
       title: formData.title.trim(),
-      client: formData.client.trim(),
+      clientId: formData.clientId,
       status: formData.status,
       priority: formData.priority,
       created: formData.created,
     };
 
-    if (!payload.title || !payload.client || !payload.created) {
+    if (!payload.title || !payload.clientId || !payload.created) {
       return;
     }
 
@@ -225,7 +228,7 @@ export function Support() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{ticket.client}</span>
+                      <span>{nameOf(ticket.clientId)}</span>
                       <span>•</span>
                       <span>{new Date(ticket.created).toLocaleDateString('fr-FR')}</span>
                     </div>
@@ -268,11 +271,10 @@ export function Support() {
 
               <div className="space-y-2">
                 <Label htmlFor="ticket-client">{t('projects.client')}</Label>
-                <Input
+                <ClientSelect
                   id="ticket-client"
-                  value={formData.client}
-                  onChange={(e) => setFormData(prev => ({ ...prev, client: e.target.value }))}
-                  required
+                  value={formData.clientId}
+                  onChange={(clientId) => setFormData(prev => ({ ...prev, clientId }))}
                 />
               </div>
 

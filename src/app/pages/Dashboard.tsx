@@ -24,8 +24,10 @@ import {
 } from "recharts";
 import { Badge } from "../components/ui/badge";
 import { formatCompactXAF } from "../utils/currency";
+import { useClientIndex } from "../hooks/useClientIndex";
 
 export function Dashboard() {
+  const { nameOf } = useClientIndex();
   const { t } = useLanguage();
 
   const stats = [
@@ -163,7 +165,7 @@ export function Dashboard() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{project.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {project.client}
+                      {nameOf(project.clientId)}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 ml-4">

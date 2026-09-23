@@ -406,7 +406,7 @@ export function Clients() {
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                   {mockProjects
                     .filter(
-                      (project) => project.client === selectedClient.company,
+                      (project) => project.clientId === selectedClient.id,
                     )
                     .map((project) => (
                       <div
@@ -422,7 +422,7 @@ export function Clients() {
                     ))}
 
                   {mockProjects.filter(
-                    (project) => project.client === selectedClient.company,
+                    (project) => project.clientId === selectedClient.id,
                   ).length === 0 && (
                     <p className="text-sm text-muted-foreground">
                       Aucun projet associe.

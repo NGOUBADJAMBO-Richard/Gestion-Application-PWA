@@ -16,6 +16,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { BrandLogo } from "../components/BrandLogo";
 import { useTheme } from "../contexts/ThemeContext";
 import { RecoveryCodeNotice } from "../components/RecoveryCodeNotice";
+import { PasswordInput } from "../components/PasswordInput";
 
 type Mode = "setup" | "unlock" | "recover";
 
@@ -178,15 +179,14 @@ export function Login() {
                   <Label htmlFor="password">
                     {mode === "unlock" ? "Mot de passe" : "Nouveau mot de passe"}
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
                     required
                     autoComplete={
                       mode === "unlock" ? "current-password" : "new-password"
                     }
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={setPassword}
                   />
                   {mode !== "unlock" && (
                     <p className="text-xs text-muted-foreground">
@@ -199,13 +199,12 @@ export function Login() {
                 {mode !== "unlock" && (
                   <div className="space-y-2">
                     <Label htmlFor="confirmation">Confirmer le mot de passe</Label>
-                    <Input
+                    <PasswordInput
                       id="confirmation"
-                      type="password"
                       required
                       autoComplete="new-password"
                       value={confirmation}
-                      onChange={(event) => setConfirmation(event.target.value)}
+                      onChange={setConfirmation}
                     />
                   </div>
                 )}

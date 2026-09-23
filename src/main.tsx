@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import App from "./app/App";
+import { migrateClientLinks } from "./infra/storage/clientLinkMigration";
 import { migrateLegacyStorageKeys } from "./infra/storage/legacyMigration";
 import "./styles/index.css";
 
@@ -9,6 +10,10 @@ import "./styles/index.css";
 // préfixe « codewave-studio ». Un utilisateur qui met à jour ne doit pas
 // retrouver une session fermée et un thème réinitialisé.
 migrateLegacyStorageKeys();
+
+// Puis la reprise des données elles-mêmes : rattachement des documents à leur
+// client par identifiant, et passage des numéros INV- en FAC-.
+migrateClientLinks();
 
 const container = document.getElementById("root");
 if (container === null) {

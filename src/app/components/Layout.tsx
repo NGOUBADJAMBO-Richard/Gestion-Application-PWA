@@ -13,6 +13,7 @@ import {
   Menu,
   UserCircle2,
   X,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -34,6 +35,7 @@ export function Layout() {
     { name: t("nav.projects"), href: "/projects", icon: FolderKanban },
     { name: t("nav.invoicing"), href: "/invoicing", icon: FileText },
     { name: t("nav.support"), href: "/support", icon: Headphones },
+    { name: t("nav.settings"), href: "/settings", icon: SlidersHorizontal },
     { name: t("nav.account"), href: "/account", icon: UserCircle2 },
     { name: t("nav.help"), href: "/help", icon: HelpCircle },
   ];

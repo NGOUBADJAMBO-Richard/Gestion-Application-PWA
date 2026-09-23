@@ -14,6 +14,8 @@ import type { Invoice, InvoiceItem } from "../data/mockData";
 import { invoiceRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
+import { ClientSelect } from "../components/ClientSelect";
+import { useClientIndex } from "../hooks/useClientIndex";
 import { computeDocumentTotals } from "../../domain/invoice";
 import { type CurrencyCode, money } from "../../domain/money";
 import { toast } from "sonner";
@@ -60,6 +62,7 @@ export function Invoicing() {
     remove,
     dismissError,
   } = useCollection(invoiceRepository);
+  const { nameOf } = useClientIndex();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -74,7 +77,7 @@ export function Invoicing() {
     setPdfPendingId(invoice.id);
     try {
       const { generateInvoicePDF } = await import("../utils/pdfGenerator");
-      generateInvoicePDF(invoice);
+      generateInvoicePDF(invoice, nameOf(invoice.clientId));
     } catch (error) {
       console.error("Génération du PDF impossible", error);
       toast.error("Le PDF n'a pas pu être généré.", {
@@ -128,7 +131,7 @@ export function Invoicing() {
   };
   const [formData, setFormData] = useState<Omit<Invoice, "id">>({
     number: "",
-    client: "",
+    clientId: "",
     items: [createEmptyItem("item-1")],
     amount: 0,
     status: "pending",
@@ -168,7 +171,7 @@ export function Invoicing() {
     setEditingInvoice(null);
     setFormData({
       number: `INV-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(3, "0")}`,
-      client: "",
+      clientId: "",
       items: [
         {
           ...createEmptyItem(),
@@ -190,7 +193,7 @@ export function Invoicing() {
     setEditingInvoice(invoice);
     setFormData({
       number: invoice.number,
-      client: invoice.client,
+      clientId: invoice.clientId,
       items: invoice.items.map((item) => ({ ...item })),
       amount: invoice.amount,
       status: invoice.status,
@@ -257,7 +260,7 @@ export function Invoicing() {
 
     const payload: Omit<Invoice, "id"> = {
       number: formData.number.trim(),
-      client: formData.client.trim(),
+      clientId: formData.clientId,
       items: formData.items.map((item) => ({
         ...item,
         description: item.description.trim(),
@@ -281,7 +284,7 @@ export function Invoicing() {
 
     if (
       !payload.number ||
-      !payload.client ||
+      !payload.clientId ||
       payload.items.length === 0 ||
       hasInvalidItem ||
       !payload.date ||
@@ -394,7 +397,7 @@ export function Invoicing() {
                         {invoice.items[0]?.description || "-"}
                       </div>
                     </TableCell>
-                    <TableCell>{invoice.client}</TableCell>
+                    <TableCell>{nameOf(invoice.clientId)}</TableCell>
                     <TableCell>{invoice.items.length} ligne(s)</TableCell>
                     <TableCell className="font-semibold">
                       {formatCurrencyXAF(invoice.amount)}
@@ -510,13 +513,12 @@ export function Invoicing() {
 
               <div className="space-y-2">
                 <Label htmlFor="invoice-client">{t("projects.client")}</Label>
-                <Input
+                <ClientSelect
                   id="invoice-client"
-                  value={formData.client}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, client: e.target.value }))
+                  value={formData.clientId}
+                  onChange={(clientId) =>
+                    setFormData((prev) => ({ ...prev, clientId }))
                   }
-                  required
                 />
               </div>
 
