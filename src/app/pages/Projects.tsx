@@ -10,7 +10,10 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
-import { mockProjects, Project } from "../data/mockData";
+import type { Project } from "../data/mockData";
+import { projectRepository } from "../data/repositories";
+import { useCollection } from "../hooks/useCollection";
+import { DataStateNotice } from "../components/DataStateNotice";
 import {
   Table,
   TableBody,
@@ -40,7 +43,16 @@ import { formatCurrencyXAF } from "../utils/currency";
 
 export function Projects() {
   const { t } = useLanguage();
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  // Les donnees vivent dans le depot : la saisie survit au rechargement.
+  const {
+    items: projects,
+    isLoading,
+    error,
+    create,
+    update,
+    remove,
+    dismissError,
+  } = useCollection(projectRepository);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -80,7 +92,7 @@ export function Projects() {
   };
 
   const handleDelete = (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+    void remove(id);
   };
 
   const handleEdit = (project: Project) => {
@@ -128,18 +140,9 @@ export function Projects() {
     }
 
     if (editingProject) {
-      setProjects((prev) =>
-        prev.map((project) =>
-          project.id === editingProject.id
-            ? { ...project, ...payload }
-            : project,
-        ),
-      );
+      void update(editingProject.id, payload);
     } else {
-      setProjects((prev) => [
-        ...prev,
-        { id: Date.now().toString(), ...payload },
-      ]);
+      void create(payload);
     }
 
     setIsDialogOpen(false);
@@ -148,6 +151,13 @@ export function Projects() {
 
   return (
     <div className="space-y-6">
+      <DataStateNotice
+        isLoading={isLoading}
+        error={error}
+        onDismiss={dismissError}
+        label="les projets"
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1>{t("projects.title")}</h1>

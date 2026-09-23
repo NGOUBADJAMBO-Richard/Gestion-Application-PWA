@@ -5,7 +5,10 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Ticket, mockTickets } from '../data/mockData';
+import type { Ticket } from '../data/mockData';
+import { ticketRepository } from '../data/repositories';
+import { useCollection } from '../hooks/useCollection';
+import { DataStateNotice } from '../components/DataStateNotice';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +29,16 @@ import {
 
 export function Support() {
   const { t } = useLanguage();
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  // Les donnees vivent dans le depot : la saisie survit au rechargement.
+  const {
+    items: tickets,
+    isLoading,
+    error,
+    create,
+    update,
+    remove,
+    dismissError,
+  } = useCollection(ticketRepository);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
@@ -94,7 +106,7 @@ export function Support() {
   };
 
   const handleDelete = (id: string) => {
-    setTickets(prev => prev.filter(ticket => ticket.id !== id));
+    void remove(id);
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -113,13 +125,9 @@ export function Support() {
     }
 
     if (editingTicket) {
-      setTickets(prev =>
-        prev.map(ticket =>
-          ticket.id === editingTicket.id ? { ...ticket, ...payload } : ticket,
-        ),
-      );
+      void update(editingTicket.id, payload);
     } else {
-      setTickets(prev => [...prev, { id: Date.now().toString(), ...payload }]);
+      void create(payload);
     }
 
     setIsDialogOpen(false);
@@ -128,6 +136,13 @@ export function Support() {
 
   return (
     <div className="space-y-6">
+      <DataStateNotice
+        isLoading={isLoading}
+        error={error}
+        onDismiss={dismissError}
+        label="les tickets"
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1>{t('support.title')}</h1>

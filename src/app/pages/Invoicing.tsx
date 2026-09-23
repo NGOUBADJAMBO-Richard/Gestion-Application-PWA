@@ -10,7 +10,12 @@ import {
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Invoice, InvoiceItem, mockInvoices } from "../data/mockData";
+import type { Invoice, InvoiceItem } from "../data/mockData";
+import { invoiceRepository } from "../data/repositories";
+import { useCollection } from "../hooks/useCollection";
+import { DataStateNotice } from "../components/DataStateNotice";
+import { computeDocumentTotals } from "../../domain/invoice";
+import { type CurrencyCode, money } from "../../domain/money";
 import { toast } from "sonner";
 import {
   Table,
@@ -40,9 +45,21 @@ import {
 } from "../components/ui/select";
 import { formatCurrencyXAF } from "../utils/currency";
 
+/** Devise de facturation de l’agence. Le multi-devises viendra avec le profil. */
+const DEVISE: CurrencyCode = "XAF";
+
 export function Invoicing() {
   const { t } = useLanguage();
-  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  // Les donnees vivent dans le depot : la saisie survit au rechargement.
+  const {
+    items: invoices,
+    isLoading,
+    error,
+    create,
+    update,
+    remove,
+    dismissError,
+  } = useCollection(invoiceRepository);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -75,28 +92,40 @@ export function Invoicing() {
     taxRate: 0,
   });
 
+  /**
+   * Totaux de la facture, calculés par le domaine.
+   *
+   * Le calcul qui vivait ici arrondissait trois fois de façon indépendante :
+   * le sous-total, la TVA, puis leur somme. Le pied de facture ne se
+   * recomposait pas — 3,5 x 1 XAF à 18 % affichait sous-total 4, TVA 1 et
+   * total 4. computeDocumentTotals garantit HT + TVA = TTC par construction.
+   *
+   * Une saisie en cours peut être invalide (quantité vide, prix négatif) : on
+   * n’affiche pas un total faux, on renvoie zéro et on laisse la validation
+   * du formulaire faire son travail.
+  */
   const calculateInvoiceTotals = (items: InvoiceItem[]) => {
-    const subtotal = items.reduce(
-      (sum, item) =>
-        sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
-      0,
-    );
-    const taxAmount = items.reduce(
-      (sum, item) =>
-        sum +
-        (Number(item.quantity) || 0) *
-          (Number(item.unitPrice) || 0) *
-          ((Number(item.taxRate) || 0) / 100),
-      0,
-    );
-
-    return {
-      subtotal: Math.round(subtotal),
-      taxAmount: Math.round(taxAmount),
-      total: Math.round(subtotal + taxAmount),
-    };
+    try {
+      const totaux = computeDocumentTotals(
+        items.map((item) => ({
+          id: item.id,
+          label: item.description,
+          quantity: Number(item.quantity) || 0,
+          unitPrice: money(Math.round(Number(item.unitPrice) || 0), DEVISE),
+          discountPercent: 0,
+          vatRatePercent: Number(item.taxRate) || 0,
+        })),
+        DEVISE,
+      );
+      return {
+        subtotal: totaux.subtotal.amount,
+        taxAmount: totaux.totalVat.amount,
+        total: totaux.total.amount,
+      };
+    } catch {
+      return { subtotal: 0, taxAmount: 0, total: 0 };
+    }
   };
-
   const [formData, setFormData] = useState<Omit<Invoice, "id">>({
     number: "",
     client: "",
@@ -175,7 +204,7 @@ export function Invoicing() {
   };
 
   const handleDelete = (id: string) => {
-    setInvoices((prev) => prev.filter((invoice) => invoice.id !== id));
+    void remove(id);
   };
 
   const handleItemChange = (
@@ -263,18 +292,9 @@ export function Invoicing() {
     }
 
     if (editingInvoice) {
-      setInvoices((prev) =>
-        prev.map((invoice) =>
-          invoice.id === editingInvoice.id
-            ? { ...invoice, ...payload }
-            : invoice,
-        ),
-      );
+      void update(editingInvoice.id, payload);
     } else {
-      setInvoices((prev) => [
-        ...prev,
-        { id: Date.now().toString(), ...payload },
-      ]);
+      void create(payload);
     }
 
     setIsDialogOpen(false);
@@ -283,6 +303,13 @@ export function Invoicing() {
 
   return (
     <div className="space-y-6">
+      <DataStateNotice
+        isLoading={isLoading}
+        error={error}
+        onDismiss={dismissError}
+        label="les factures"
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1>{t("invoicing.title")}</h1>

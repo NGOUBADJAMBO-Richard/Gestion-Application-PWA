@@ -17,8 +17,11 @@ import {
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Client, mockClients, mockProjects } from "../data/mockData";
+import { type Client, mockProjects } from "../data/mockData";
+import { clientRepository } from "../data/repositories";
+import { useCollection } from "../hooks/useCollection";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
+import { DataStateNotice } from "../components/DataStateNotice";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +34,17 @@ import { Label } from "../components/ui/label";
 
 export function Clients() {
   const { t } = useLanguage();
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  // Les donnees vivent dans le depot, pas dans la memoire du composant :
+  // la saisie survit au rechargement et se propage aux autres onglets.
+  const {
+    items: clients,
+    isLoading,
+    error,
+    create,
+    update,
+    remove,
+    dismissError,
+  } = useCollection(clientRepository);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -80,7 +93,8 @@ export function Clients() {
   };
 
   const handleDelete = (id: string) => {
-    setClients((prev) => prev.filter((client) => client.id !== id));
+    // Suppression douce : le client part en corbeille et reste recuperable.
+    void remove(id);
   };
 
   const handleView = (client: Client) => {
@@ -107,16 +121,11 @@ export function Clients() {
     }
 
     if (editingClient) {
-      setClients((prev) =>
-        prev.map((client) =>
-          client.id === editingClient.id ? { ...client, ...payload } : client,
-        ),
-      );
+      void update(editingClient.id, payload);
     } else {
-      setClients((prev) => [
-        ...prev,
-        { id: Date.now().toString(), ...payload },
-      ]);
+      // Identifiant attribue par le depot : Date.now() collisionne des que deux
+      // creations tombent dans la meme milliseconde.
+      void create(payload);
     }
 
     setIsDialogOpen(false);
@@ -125,6 +134,13 @@ export function Clients() {
 
   return (
     <div className="space-y-6">
+      <DataStateNotice
+        isLoading={isLoading}
+        error={error}
+        onDismiss={dismissError}
+        label="les clients"
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1>{t("clients.title")}</h1>
