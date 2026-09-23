@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
   Undo2,
+  Wallet,
 } from "lucide-react";
 import { todayIso } from "../../domain/date";
 import {
@@ -34,6 +35,8 @@ import {
 } from "../../domain/rules";
 import { daysOverdue, effectiveStatus } from "../../domain/invoiceStatus";
 import { ConfirmDelete } from "../components/ConfirmDelete";
+import { PaymentDialog } from "../components/PaymentDialog";
+import { type Payment, computeSettlement } from "../../domain/payment";
 import { computeDocumentTotals } from "../../domain/invoice";
 import { money } from "../../domain/money";
 import { toast } from "sonner";
@@ -103,6 +106,7 @@ export function Invoicing() {
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [pdfPendingId, setPdfPendingId] = useState<string | null>(null);
   const [factureASupprimer, setFactureASupprimer] = useState<Invoice | null>(null);
+  const [factureAEncaisser, setFactureAEncaisser] = useState<Invoice | null>(null);
 
   /**
    * jsPDF pèse 455 ko (148 ko compressés) et ne sert qu'au clic sur
@@ -392,6 +396,30 @@ export function Invoicing() {
     });
   };
 
+  /**
+   * Enregistrement d’un encaissement.
+   *
+   * Le statut suit le solde : la facture passe payée quand il tombe à zéro,
+   * et le reste dû s’en déduit. Laisser l’utilisateur cocher « payée » à la
+   * main alors qu’il reste un solde est exactement ce qu’on cherche à éviter.
+   */
+  const handleRecordPayment = (facture: Invoice, encaissement: Payment) => {
+    const encaissements = [...(facture.payments ?? []), encaissement];
+    const reglement = computeSettlement(facture.amount, encaissements);
+
+    void update(facture.id, {
+      payments: encaissements,
+      ...(reglement.balance <= 0 ? { status: "paid" as const } : {}),
+    }).then(() =>
+      toast.success("Encaissement enregistré.", {
+        description:
+          reglement.balance <= 0
+            ? "La facture est soldée."
+            : `Reste ${formatCurrencyXAF(reglement.balance)} à encaisser.`,
+      }),
+    );
+  };
+
   const handleEditGuarded = (invoice: Invoice) => {
     const decision = canEditDocument(
       invoice.status === "draft" ? "draft" : "issued",
@@ -665,8 +693,21 @@ export function Invoicing() {
                     </TableCell>
                     <TableCell>{nameOf(invoice.clientId)}</TableCell>
                     <TableCell>{invoice.items.length} ligne(s)</TableCell>
-                    <TableCell className="font-semibold">
+                    <TableCell className="font-semibold tabular-nums">
                       {formatCurrencyXAF(invoice.amount)}
+                      {(invoice.payments?.length ?? 0) > 0 && (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          {formatCurrencyXAF(
+                            computeSettlement(invoice.amount, invoice.payments ?? [])
+                              .paid,
+                          )}{" "}
+                          encaissé &middot; reste{" "}
+                          {formatCurrencyXAF(
+                            computeSettlement(invoice.amount, invoice.payments ?? [])
+                              .balance,
+                          )}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       {new Date(invoice.date).toLocaleDateString("fr-FR")}
@@ -710,6 +751,28 @@ export function Invoicing() {
                             >
                               <FileOutput className="h-4 w-4" />
                               Facturer
+                            </Button>
+                          )}
+
+                        {invoice.kind === "invoice" &&
+                          invoice.status !== "draft" &&
+                          invoice.status !== "cancelled" &&
+                          // Une facture déjà soldée ne propose plus d’encaissement,
+                          // qu’elle l’ait été par saisie ou par cumul.
+                          invoice.status !== "paid" &&
+                          computeSettlement(
+                            invoice.amount,
+                            invoice.payments ?? [],
+                          ).balance > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-1 gap-1"
+                              onClick={() => setFactureAEncaisser(invoice)}
+                              title="Enregistrer un encaissement"
+                            >
+                              <Wallet className="h-4 w-4" />
+                              Encaisser
                             </Button>
                           )}
 
@@ -1076,6 +1139,23 @@ export function Invoicing() {
           setFactureASupprimer(null);
         }}
       />
+
+      {factureAEncaisser !== null && (
+        <PaymentDialog
+          open
+          onOpenChange={(ouvert) => {
+            if (!ouvert) setFactureAEncaisser(null);
+          }}
+          documentNumber={factureAEncaisser.number}
+          documentDate={factureAEncaisser.date}
+          total={factureAEncaisser.amount}
+          payments={factureAEncaisser.payments ?? []}
+          onRecord={(encaissement) => {
+            handleRecordPayment(factureAEncaisser, encaissement);
+            setFactureAEncaisser(null);
+          }}
+        />
+      )}
     </div>
   );
 }

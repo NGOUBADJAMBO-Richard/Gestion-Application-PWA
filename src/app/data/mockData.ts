@@ -1,3 +1,5 @@
+import type { Payment } from "../../domain/payment";
+
 export interface Client {
   id: string;
   name: string;
@@ -43,6 +45,12 @@ export interface Invoice {
   cancels?: string | undefined;
   /** Devis à l’origine de cette facture, pour la traçabilité commerciale. */
   convertedFrom?: string | undefined;
+  /**
+   * Encaissements. Une facture se règle souvent en plusieurs fois — acompte
+   * à la commande, solde à la livraison — et sans ce suivi il faut choisir
+   * entre la marquer payée à tort ou impayée à tort.
+   */
+  payments?: Payment[] | undefined;
   /** Reference au client par identifiant : un nom d’entreprise n’est pas une clé. */
   clientId: string;
   items: InvoiceItem[];

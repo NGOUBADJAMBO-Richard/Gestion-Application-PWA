@@ -59,6 +59,7 @@ function parseInvoice(raw: unknown): Invoice | undefined {
       raw.kind === "quote" || raw.kind === "creditNote"
         ? raw.kind
         : "invoice",
+    payments: Array.isArray(raw.payments) ? raw.payments : [],
   };
 }
 
