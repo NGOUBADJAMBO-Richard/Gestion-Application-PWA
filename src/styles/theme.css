@@ -1,88 +1,155 @@
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Charte graphique de CodeWave Studio.
+ *
+ * Source unique : `codewave-website-com/assets/css/base.css`. Ce fichier n'est
+ * pas une interprétation du site, c'est son portage. Chaque valeur vient de
+ * là, et les écarts sont justifiés sur place.
+ *
+ * Ce qui différait avant ce lot, et expliquait que l'application ne ressemblait
+ * pas au site : elle était bâtie sur une palette de gris purs (#0a0a0a,
+ * #141414, #888888) quand la charte est en bleus ardoise (#1e293b, #0f172a,
+ * #94a3b8). Deux familles chromatiques distinctes — aucun réglage de teinte
+ * ne pouvait les rapprocher.
+ */
+
 :root {
   --font-size: 16px;
-  --font-family-heading: "Syne", sans-serif;
-  --font-family-body: "Space Grotesk", sans-serif;
+  --font-family-heading: "Syne", system-ui, sans-serif;
+  --font-family-body: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
+  --font-family-code: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
 
-  /* Brand Colors */
-  --brand-blue: #004aad;
-  --brand-graphite: #545454;
-
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  /* ---- Charte, thème clair -------------------------------------------- */
+  --background: #f4f3f3;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
   --primary: #004aad;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #545454;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+  --primary-foreground: #ffffff;
+
+  /* Accent typographique, distinct de --primary : une couleur lisible en
+     aplat ne l'est pas forcément en texte, et inversement.
+     #004AAD sur #f4f3f3 = 7,4:1. */
+  --primary-ink: #004aad;
+
+  --secondary: #e8f0fb;
+  --secondary-foreground: #0f172a;
+  --muted: #e9ecf1;
+  /* #64748b ne donnait que 4,3:1 sur #f4f3f3. #475569 = 6,4:1. */
+  --muted-foreground: #475569;
+  --accent: #e8f0fb;
+  --accent-foreground: #004aad;
+
+  --destructive: #b42318;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
+  --success: #067647;
+  --warning: #b54708;
+
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --input-background: #ffffff;
+  --switch-background: #7c8ba1;
   --ring: #004aad;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+
+  /* La bordure d un champ est un composant d interface, pas une decoration :
+     WCAG 2.2 critere 1.4.11 exige 3:1. #e2e8f0 sur blanc ne fait que 1,23:1.
+     #7c8ba1 = 3,46:1. La bordure decorative des cartes reste en --border. */
+  --input-border: #7c8ba1;
+
+  /* Fond des zones d'en-tête, repris de --hero-bg du site. */
+  --hero: #e8f0fb;
+
+  --chart-1: #004aad;
+  --chart-2: #0ea5e9;
+  --chart-3: #0f9d8f;
+  --chart-4: #b54708;
+  --chart-5: #6d28d9;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
   --sidebar-primary: #004aad;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8f0fb;
+  --sidebar-accent-foreground: #004aad;
+  --sidebar-border: #e2e8f0;
   --sidebar-ring: #004aad;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Arbitrage de rayon, conforme à la charte : angles droits pour les actions
+     primaires, rayon conservé pour cartes, champs et badges — un tableau de
+     gestion dense devient hostile si tout est anguleux. */
+  --radius: 0.5rem;
+
+  /* Motif d ondes du site, encode en SVG inline (aucun fichier a charger). */
+  --wave-pattern-light: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221200%22%20height%3D%22200%22%20viewBox%3D%220%200%201200%20200%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23004AAD%22%20stroke-width%3D%221.5%22%3E%3Cpath%20d%3D%22M0%2060q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%2090q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%20120q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%20150q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%20180q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --wave-pattern-dark: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221200%22%20height%3D%22200%22%20viewBox%3D%220%200%201200%20200%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2360A5FA%22%20stroke-width%3D%221.5%22%3E%3Cpath%20d%3D%22M0%2060q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%2090q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%20120q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%20150q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3Cpath%20d%3D%22M0%20180q150-55%20300%200t300%200%20300%200%20300%200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+
+  /* Encre du logo en variante monochrome. */
+  --brand-mono-ink: #ffffff;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: oklch(0.985 0 0);
-  --card: #141414;
-  --card-foreground: oklch(0.985 0 0);
-  --popover: #141414;
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: #004aad;
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: #888888;
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: #004aad;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: #004aad;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: #004aad;
+  /* ---- Charte, thème sombre ------------------------------------------- */
+  --background: #1e293b;
+  --foreground: #f1f5f9;
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+
+  --primary: #0062e6;
+  --primary-foreground: #ffffff;
+
+  /* #004AAD et #0062E6 tombent sous 3:1 en texte sur #1E293B.
+     #60A5FA tient 5,8:1. */
+  --primary-ink: #60a5fa;
+
+  --secondary: #16213a;
+  --secondary-foreground: #f1f5f9;
+  --muted: #24344d;
+  --muted-foreground: #94a3b8;
+  --accent: #16213a;
+  --accent-foreground: #60a5fa;
+
+  --destructive: #fca5a5;
+  --destructive-foreground: #450a0a;
+  --success: #6ee7b7;
+  --warning: #fcd34d;
+
+  --border: #334155;
+  --input: #0f172a;
+  --input-background: #0f172a;
+  --switch-background: #64748b;
+  --ring: #60a5fa;
+
+  /* #334155 sur #0f172a ne fait que 1,72:1. #64748b = 3,75:1. */
+  --input-border: #64748b;
+
+  --hero: #16213a;
+
+  --chart-1: #60a5fa;
+  --chart-2: #38bdf8;
+  --chart-3: #2dd4bf;
+  --chart-4: #fbbf24;
+  --chart-5: #c084fc;
+
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #0062e6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #16213a;
+  --sidebar-accent-foreground: #60a5fa;
+  --sidebar-border: #334155;
+  --sidebar-ring: #60a5fa;
+
+  --brand-mono-ink: #0f172a;
 }
 
 @theme inline {
@@ -94,6 +161,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-ink: var(--primary-ink);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -102,9 +170,13 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-hero: var(--hero);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
+  --color-input-border: var(--input-border);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -124,6 +196,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-display: var(--font-family-heading);
+  --font-sans: var(--font-family-body);
+  --font-mono: var(--font-family-code);
 }
 
 @layer base {
@@ -131,60 +206,14 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    font-size: var(--font-size);
+    background-color: var(--background);
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-family-body);
-    background-image:
-      radial-gradient(
-        circle at 15% 10%,
-        rgba(0, 74, 173, 0.08),
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at 85% 0%,
-        rgba(0, 158, 96, 0.08),
-        transparent 25%
-      ),
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.98),
-        rgba(249, 250, 252, 0.98)
-      );
-    background-attachment: fixed;
-  }
-
-  .dark body {
-    background-image:
-      radial-gradient(
-        circle at 15% 10%,
-        rgba(0, 74, 173, 0.22),
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 85% 0%,
-        rgba(0, 158, 96, 0.18),
-        transparent 23%
-      ),
-      linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(14, 14, 14, 0.98));
-  }
-
-  .surface-card {
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 10px 30px rgba(7, 28, 57, 0.08);
-  }
-
-  .brand-gradient {
-    background: linear-gradient(120deg, #004aad 0%, #0b2f63 45%, #009e60 100%);
-  }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
-
-  html {
-    font-size: var(--font-size);
   }
 
   h1,
@@ -192,49 +221,130 @@
   h3,
   h4,
   h5,
-  h6 {
+  h6,
+  .font-display {
     font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
   }
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.375rem; }
+  h3 { font-size: 1.125rem; }
+  h4 { font-size: 1rem; }
 
   label {
-    font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  }
+}
+
+@layer components {
+  /* ---- Signatures reprises du site ------------------------------------ */
+
+  /* Charte : bordure supérieure bleue de 3 px sur les cartes. */
+  [data-slot="card"] {
+    border-top: 3px solid var(--primary);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  /* Le relèvement au survol n'a de sens que sur une carte cliquable.
+     Appliqué à toutes, il fait vibrer un tableau de bord au passage de la
+     souris. */
+  a[data-slot="card"]:hover,
+  button[data-slot="card"]:hover,
+  [data-slot="card"].card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 74, 173, 0.12);
   }
 
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
+  /* Charte : intertitre en chasse fixe, préfixé d'un commentaire de code. */
+  .section-label {
+    font-family: var(--font-family-code);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary-ink);
+  }
+  .section-label::before {
+    content: "// ";
+    opacity: 0.7;
+  }
+
+  /* Charte : pastille de filtre à angles droits. */
+  .filter-pill {
+    padding: 6px 18px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted-foreground);
+    font-family: var(--font-family-heading);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-pill:hover,
+  .filter-pill[aria-pressed="true"] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  /* Charte : fond d'ondes à 10 % (15 % en sombre).
+     Réservé aux en-têtes de page et à l'écran de connexion ; jamais derrière
+     un tableau, où il gênerait la lecture des montants. */
+  .wave-surface {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--hero);
+  }
+  .wave-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.1;
+    background-image: var(--wave-pattern-light);
+    background-size: 1200px 200px;
+    background-repeat: repeat;
+  }
+  .dark .wave-surface::after {
+    opacity: 0.15;
+    background-image: var(--wave-pattern-dark);
+  }
+
+  /* Bordure des champs, portee au contraste exige par WCAG 1.4.11. */
+  [data-slot="input"],
+  [data-slot="textarea"],
+  [data-slot="select-trigger"] {
+    border-color: var(--input-border);
+  }
+
+  /* Dégradé de marque, pour les surfaces d'accueil. */
+  .brand-gradient {
+    background-image: linear-gradient(135deg, #004aad 0%, #0062e6 100%);
+  }
+
+  .surface-card {
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  }
+  .dark .surface-card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Une animation décorative ne doit jamais s'imposer à qui la refuse. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

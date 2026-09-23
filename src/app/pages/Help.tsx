@@ -11,25 +11,25 @@ export function Help() {
       title: 'Documentation',
       description: 'Complete guides and API references',
       icon: Book,
-      color: '#004aad',
+      color: 'var(--primary-ink)',
     },
     {
       title: 'Video Tutorials',
       description: 'Step-by-step video walkthroughs',
       icon: Video,
-      color: '#10b981',
+      color: 'var(--success)',
     },
     {
       title: 'Community Forum',
       description: 'Connect with other users',
       icon: MessageCircle,
-      color: '#f59e0b',
+      color: 'var(--warning)',
     },
     {
       title: 'FAQs',
       description: 'Frequently asked questions',
       icon: FileQuestion,
-      color: '#ef4444',
+      color: 'var(--destructive)',
     },
   ];
 
@@ -116,9 +116,9 @@ export function Help() {
               <div key={index} className="flex gap-4">
                 <div 
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: '#004aad15' }}
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
                 >
-                  <feature.icon className="w-5 h-5" style={{ color: '#004aad' }} />
+                  <feature.icon className="w-5 h-5" style={{ color: 'var(--primary-ink)' }} />
                 </div>
                 <div>
                   <h4 className="font-medium mb-1">{feature.title}</h4>
@@ -151,7 +151,7 @@ export function Help() {
       </Card>
 
       {/* Quick Start */}
-      <Card style={{ borderColor: '#004aad' }}>
+      <Card className="border-primary">
         <CardHeader>
           <CardTitle>Installation PWA</CardTitle>
           <CardDescription>Installez CodeWave Studio comme une application</CardDescription>

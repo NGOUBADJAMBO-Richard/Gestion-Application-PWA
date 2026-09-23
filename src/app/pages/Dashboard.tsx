@@ -34,8 +34,8 @@ export function Dashboard() {
       value: formatCompactXAF(328000000),
       change: "+12.5%",
       icon: TrendingUp,
-      iconClass: "text-[#004aad]",
-      iconBgClass: "bg-[#004aad]/10",
+      iconClass: "text-primary-ink",
+      iconBgClass: "bg-primary/10",
     },
     {
       title: t("dashboard.activeProjects"),
@@ -141,7 +141,7 @@ export function Dashboard() {
                     borderRadius: "8px",
                   }}
                 />
-                <Bar dataKey="revenue" fill="#004aad" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="revenue" fill="var(--chart-1)" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -11,7 +11,7 @@ export function NotFound() {
       <Card className="max-w-md w-full">
         <CardContent className="pt-6 text-center space-y-6">
           <div className="space-y-2">
-            <h1 className="text-6xl font-bold" style={{ color: '#004aad' }}>404</h1>
+            <h1 className="text-6xl font-bold" style={{ color: 'var(--primary-ink)' }}>404</h1>
             <h2 className="text-2xl font-semibold">Page Not Found</h2>
             <p className="text-muted-foreground">
               La page que vous recherchez n'existe pas ou a été déplacée.
@@ -30,7 +30,6 @@ export function NotFound() {
             <Button
               onClick={() => navigate('/')}
               className="gap-2"
-              style={{ backgroundColor: '#004aad' }}
             >
               <Home className="w-4 h-4" />
               Accueil

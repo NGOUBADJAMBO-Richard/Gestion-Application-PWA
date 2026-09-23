@@ -293,7 +293,6 @@ export function Invoicing() {
         </div>
         <Button
           className="gap-2"
-          style={{ backgroundColor: "#004aad" }}
           onClick={handleCreate}
         >
           <Plus className="w-4 h-4" />
@@ -309,9 +308,6 @@ export function Invoicing() {
               variant={statusFilter === "all" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("all")}
-              style={
-                statusFilter === "all" ? { backgroundColor: "#004aad" } : {}
-              }
             >
               {t("invoicing.all")}
             </Button>
@@ -319,9 +315,6 @@ export function Invoicing() {
               variant={statusFilter === "paid" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("paid")}
-              style={
-                statusFilter === "paid" ? { backgroundColor: "#004aad" } : {}
-              }
             >
               {t("invoicing.paid")}
             </Button>
@@ -329,9 +322,6 @@ export function Invoicing() {
               variant={statusFilter === "pending" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("pending")}
-              style={
-                statusFilter === "pending" ? { backgroundColor: "#004aad" } : {}
-              }
             >
               {t("invoicing.pending")}
             </Button>
@@ -339,9 +329,6 @@ export function Invoicing() {
               variant={statusFilter === "overdue" ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter("overdue")}
-              style={
-                statusFilter === "overdue" ? { backgroundColor: "#004aad" } : {}
-              }
             >
               {t("invoicing.overdue")}
             </Button>
@@ -711,7 +698,7 @@ export function Invoicing() {
               >
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" style={{ backgroundColor: "#004aad" }}>
+              <Button type="submit">
                 {t("common.save")}
               </Button>
             </DialogFooter>

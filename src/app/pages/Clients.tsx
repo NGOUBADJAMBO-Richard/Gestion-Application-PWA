@@ -134,7 +134,6 @@ export function Clients() {
         </div>
         <Button
           className="gap-2"
-          style={{ backgroundColor: "#004aad" }}
           onClick={handleCreate}
         >
           <Plus className="w-4 h-4" />
@@ -164,7 +163,7 @@ export function Clients() {
             <CardHeader>
               <div className="flex items-start gap-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-[#004aad] text-white">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
                     {client.name
                       .split(" ")
                       .map((n) => n[0])
@@ -325,7 +324,7 @@ export function Clients() {
               >
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" style={{ backgroundColor: "#004aad" }}>
+              <Button type="submit">
                 {t("common.save")}
               </Button>
             </DialogFooter>
@@ -354,7 +353,7 @@ export function Clients() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-[#004aad] text-white">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
                     {selectedClient.name
                       .split(" ")
                       .map((n) => n[0])

@@ -88,7 +88,7 @@ export function Layout() {
                   flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
                   ${
                     isActive
-                      ? "bg-[#004aad] text-white"
+                      ? "bg-primary text-primary-foreground"
                       : "text-foreground hover:bg-accent"
                   }
                 `}
@@ -102,7 +102,7 @@ export function Layout() {
           {/* User section */}
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#004aad] flex items-center justify-center text-white">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -185,7 +185,7 @@ export function Layout() {
               href={BRAND.siteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#004aad] hover:underline"
+              className="text-primary-ink hover:underline"
             >
               Site de l&rsquo;agence
             </a>

@@ -157,7 +157,6 @@ export function Projects() {
         </div>
         <Button
           className="gap-2"
-          style={{ backgroundColor: "#004aad" }}
           onClick={handleCreate}
         >
           <Plus className="w-4 h-4" />
@@ -399,7 +398,7 @@ export function Projects() {
               >
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" style={{ backgroundColor: "#004aad" }}>
+              <Button type="submit">
                 {t("common.save")}
               </Button>
             </DialogFooter>
