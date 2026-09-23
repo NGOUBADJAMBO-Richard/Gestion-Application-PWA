@@ -106,3 +106,43 @@ grep -rnE "fetch\(|XMLHttpRequest|sendBeacon|new WebSocket" src --include=*.ts -
 
 La seule URL externe du code est le lien vers le site de l'agence, en pied de
 page — une navigation déclenchée par un clic, jamais une requête automatique.
+
+---
+
+## Vulnérabilités des dépendances
+
+État au 23 septembre 2026, après traitement : **23 → 7 vulnérabilités**.
+
+### Traitées
+
+Quinze vulnérabilités transitives corrigées par mise à jour du fichier de
+verrouillage, sans changer aucune version déclarée : `tar`, `lodash`,
+`brace-expansion`, `browserslist`, `fast-uri`, `nanoid`, `postcss`,
+`serialize-javascript`, `dompurify`, `fflate`, `@babel/*`, `workbox-build`,
+`@rollup/plugin-terser`, `baseline-browser-mapping`.
+
+**`react-router` 7.13.0 → 7.18.4** — c'était la seule vulnérabilité de gravité
+haute portant sur du code réellement livré au navigateur.
+
+### Non traitées, et pourquoi
+
+| Paquet | Gravité | Décision |
+|---|---|---|
+| `vitest` et sa dépendance `@vitest/mocker` | critique | **Conservé en 2.x.** Le correctif impose vitest 5, qui casse la configuration (`assetsInclude`) et rend les 276 tests inexécutables. Essayé, constaté, annulé |
+| `vite` | haute | Lié au même correctif majeur |
+| `@tailwindcss/vite`, `@vitejs/plugin-react`, `vite-plugin-pwa`, `vite-node` | basses | Conséquences de la version de `vite` |
+
+**Ce qui justifie de les laisser** : aucun de ces paquets ne part dans le
+navigateur. Ce sont des outils de construction et de test. Les exploiter
+suppose de pouvoir déjà exécuter du code sur la machine de développement —
+auquel cas la vulnérabilité n'est plus le problème principal.
+
+**Ce qui reste à faire** : la migration vers vitest 5 et vite 7, comme un
+chantier à part entière, avec revalidation complète de la suite de tests. Ce
+n'est pas un `npm audit fix`.
+
+### Vérifier
+
+```bash
+npm audit
+```
