@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Plus, Download, Pencil, Trash2 } from "lucide-react";
+import {
+  Download,
+  FileOutput,
+  Pencil,
+  Plus,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import { todayIso } from "../../domain/date";
 import {
   Card,
@@ -20,7 +27,11 @@ import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { defaultVatPercent } from "../../domain/companyProfile";
 import { nextNumber } from "../../domain/numbering";
 import { addDays } from "../../domain/date";
-import { canDeleteDocument, canEditDocument } from "../../domain/rules";
+import {
+  canDeleteDocument,
+  canEditDocument,
+  canIssueCreditNote,
+} from "../../domain/rules";
 import { daysOverdue, effectiveStatus } from "../../domain/invoiceStatus";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { computeDocumentTotals } from "../../domain/invoice";
@@ -55,6 +66,13 @@ import {
 import { formatCurrencyXAF } from "../utils/currency";
 
 /** Filtres de la liste. Un compteur par état évite d’avoir à ouvrir chacun. */
+/** Natures de document. Chacune a sa séquence de numérotation. */
+const NATURES = [
+  { valeur: "invoice", libelle: "Factures", prefixe: "FAC" },
+  { valeur: "quote", libelle: "Devis", prefixe: "DEV" },
+  { valeur: "creditNote", libelle: "Avoirs", prefixe: "AV" },
+] as const;
+
 const FILTRES = [
   { valeur: "all", cle: "invoicing.all" },
   { valeur: "draft", cle: "invoicing.draft" },
@@ -79,6 +97,8 @@ export function Invoicing() {
   const { nameOf } = useClientIndex();
   const { profile } = useCompanyProfile();
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [natureFilter, setNatureFilter] =
+    useState<Invoice["kind"]>("invoice");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [pdfPendingId, setPdfPendingId] = useState<string | null>(null);
@@ -148,6 +168,7 @@ export function Invoicing() {
   };
   const [formData, setFormData] = useState<Omit<Invoice, "id">>({
     number: "",
+    kind: "invoice",
     clientId: "",
     items: [createEmptyItem("item-1")],
     amount: 0,
@@ -166,10 +187,16 @@ export function Invoicing() {
   /** Statut reel : le retard se deduit de l echeance, sans ecriture en base. */
   const statutDe = (facture: Invoice) => effectiveStatus(facture, aujourdHui);
 
+  const documentsDeLaNature = invoices.filter(
+    (facture) => facture.kind === natureFilter,
+  );
+
   const filteredInvoices =
     statusFilter === "all"
-      ? invoices
-      : invoices.filter((facture) => statutDe(facture) === statusFilter);
+      ? documentsDeLaNature
+      : documentsDeLaNature.filter(
+          (facture) => statutDe(facture) === statusFilter,
+        );
 
   const getStatusColor = (status: Invoice["status"]) => {
     switch (status) {
@@ -205,9 +232,10 @@ export function Invoicing() {
     { encaisse: 0, attendu: 0, retard: 0 },
   );
 
-  const handleCreate = () => {
+  const handleCreate = (kind: Invoice["kind"] = "invoice") => {
     setEditingInvoice(null);
     setFormData({
+      kind,
       // Pas de numero : il est attribue a l emission, jamais a la creation.
       // Le calcul precedent utilisait invoices.length + 1, qui reattribue un
       // numero deja pris des qu une facture est supprimee.
@@ -222,7 +250,12 @@ export function Invoicing() {
       amount: 0,
       status: "draft",
       date: todayIso(),
-      dueDate: addDays(todayIso(), profile.paymentTermDays),
+      // Un devis porte une date de validité, une facture une échéance de
+      // règlement : les deux se rangent dans le même champ.
+      dueDate: addDays(
+        todayIso(),
+        kind === "quote" ? 30 : profile.paymentTermDays,
+      ),
       paymentMethod: "bank-transfer",
       paymentTerms: "Paiement sous 30 jours",
       notes: "",
@@ -234,6 +267,11 @@ export function Invoicing() {
     setEditingInvoice(invoice);
     setFormData({
       number: invoice.number,
+      kind: invoice.kind,
+      ...(invoice.cancels === undefined ? {} : { cancels: invoice.cancels }),
+      ...(invoice.convertedFrom === undefined
+        ? {}
+        : { convertedFrom: invoice.convertedFrom }),
       clientId: invoice.clientId,
       items: invoice.items.map((item) => ({ ...item })),
       amount: invoice.amount,
@@ -257,14 +295,101 @@ export function Invoicing() {
   const handleIssue = (invoice: Invoice) => {
     const numero = nextNumber(
       invoices.map((facture) => facture.number),
-      "invoice",
+      invoice.kind,
       Number(invoice.date.slice(0, 4)) || new Date().getFullYear(),
     );
-    void update(invoice.id, { number: numero, status: "pending" }).then(() =>
-      toast.success(`Facture ${numero} émise.`, {
-        description: "Elle ne peut plus être modifiée ni supprimée.",
-      }),
+    void update(invoice.id, { number: numero, status: "pending" }).then(() => {
+      // Émettre un avoir annule la facture qu’il désigne : sans cela, la
+      // créance resterait au restant dû alors qu’elle a été neutralisée.
+      if (invoice.kind === "creditNote" && invoice.cancels !== undefined) {
+        const annulee = invoices.find(
+          (facture) => facture.number === invoice.cancels,
+        );
+        if (annulee !== undefined) {
+          void update(annulee.id, { status: "cancelled" });
+        }
+      }
+
+      toast.success(`Document ${numero} émis.`, {
+        description: "Il ne peut plus être modifié ni supprimé.",
+      });
+    });
+  };
+
+  /**
+   * Conversion d’un devis accepté en facture.
+   *
+   * Le devis n’est pas transformé : il reste en place, accepté, et la facture
+   * garde une référence vers lui. Un devis qui disparaîtrait en devenant
+   * facture rendrait impossible de justifier ce qui avait été proposé.
+   */
+  const handleConvertToInvoice = (devis: Invoice) => {
+    void create({
+      number: "",
+      kind: "invoice",
+      convertedFrom: devis.number || devis.id,
+      clientId: devis.clientId,
+      items: devis.items.map((ligne) => ({ ...ligne })),
+      amount: devis.amount,
+      status: "draft",
+      date: todayIso(),
+      dueDate: addDays(todayIso(), profile.paymentTermDays),
+      paymentMethod: devis.paymentMethod,
+      paymentTerms: devis.paymentTerms,
+      notes: devis.notes ?? "",
+    }).then(() => {
+      setNatureFilter("invoice");
+      toast.success("Facture créée depuis le devis.", {
+        description: "Elle est en brouillon : vérifie-la avant de l’émettre.",
+      });
+    });
+  };
+
+  /**
+   * Avoir d’annulation.
+   *
+   * Les lignes sont reprises au négatif : la somme de la facture et de son
+   * avoir vaut exactement zéro, ce qu’un test du domaine vérifie.
+   */
+  const handleCreateCreditNote = (facture: Invoice) => {
+    const decision = canIssueCreditNote(
+      { status: facture.status === "draft" ? "draft" : "issued" },
+      [],
     );
+    if (!decision.allowed) {
+      toast.error("Avoir impossible", { description: decision.reason });
+      return;
+    }
+    if (facture.status === "cancelled") {
+      toast.error("Avoir impossible", {
+        description:
+          "Cette facture est déjà annulée. Un second avoir annulerait deux fois le même montant.",
+      });
+      return;
+    }
+
+    void create({
+      number: "",
+      kind: "creditNote",
+      cancels: facture.number || facture.id,
+      clientId: facture.clientId,
+      items: facture.items.map((ligne) => ({
+        ...ligne,
+        unitPrice: -ligne.unitPrice,
+      })),
+      amount: -facture.amount,
+      status: "draft",
+      date: todayIso(),
+      dueDate: todayIso(),
+      paymentMethod: facture.paymentMethod,
+      paymentTerms: facture.paymentTerms,
+      notes: `Annulation de la facture ${facture.number}`,
+    }).then(() => {
+      setNatureFilter("creditNote");
+      toast.success("Avoir créé en brouillon.", {
+        description: `Il annulera la facture ${facture.number} à son émission.`,
+      });
+    });
   };
 
   const handleEditGuarded = (invoice: Invoice) => {
@@ -328,6 +453,11 @@ export function Invoicing() {
 
     const payload: Omit<Invoice, "id"> = {
       number: formData.number.trim(),
+      kind: formData.kind,
+      ...(formData.cancels === undefined ? {} : { cancels: formData.cancels }),
+      ...(formData.convertedFrom === undefined
+        ? {}
+        : { convertedFrom: formData.convertedFrom }),
       clientId: formData.clientId,
       items: formData.items.map((item) => ({
         ...item,
@@ -413,13 +543,54 @@ export function Invoicing() {
             )}
           </p>
         </div>
-        <Button
-          className="gap-2"
-          onClick={handleCreate}
-        >
-          <Plus className="w-4 h-4" />
-          {t("invoicing.new")}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => handleCreate("quote")}
+          >
+            <Plus className="w-4 h-4" />
+            Nouveau devis
+          </Button>
+          <Button className="gap-2" onClick={() => handleCreate("invoice")}>
+            <Plus className="w-4 h-4" />
+            {t("invoicing.new")}
+          </Button>
+        </div>
+      </div>
+
+      <div
+        role="tablist"
+        aria-label="Nature du document"
+        className="flex flex-wrap gap-1 border-b border-border"
+      >
+        {NATURES.map((nature) => {
+          const actif = natureFilter === nature.valeur;
+          const compte = invoices.filter(
+            (facture) => facture.kind === nature.valeur,
+          ).length;
+
+          return (
+            <button
+              key={nature.valeur}
+              type="button"
+              role="tab"
+              aria-selected={actif}
+              onClick={() => {
+                setNatureFilter(nature.valeur);
+                setStatusFilter("all");
+              }}
+              className={`-mb-px border-b-2 px-4 py-2 font-display text-sm font-bold uppercase tracking-[0.04em] transition-colors ${
+                actif
+                  ? "border-primary text-primary-ink"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {nature.libelle}
+              <span className="ml-2 tabular-nums opacity-70">{compte}</span>
+            </button>
+          );
+        })}
       </div>
 
       <Card>
@@ -428,8 +599,8 @@ export function Invoicing() {
             const actif = statusFilter === filtre.valeur;
             const compte =
               filtre.valeur === "all"
-                ? invoices.length
-                : invoices.filter(
+                ? documentsDeLaNature.length
+                : documentsDeLaNature.filter(
                     (facture) => statutDe(facture) === filtre.valeur,
                   ).length;
 
@@ -484,8 +655,12 @@ export function Invoicing() {
                           invoice.number
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground truncate max-w-[220px]">
-                        {invoice.items[0]?.description || "-"}
+                      <div className="max-w-[240px] truncate text-xs text-muted-foreground">
+                        {invoice.cancels !== undefined
+                          ? `Annule ${invoice.cancels}`
+                          : invoice.convertedFrom !== undefined
+                            ? `Issu du devis ${invoice.convertedFrom}`
+                            : (invoice.items[0]?.description ?? "—")}
                       </div>
                     </TableCell>
                     <TableCell>{nameOf(invoice.clientId)}</TableCell>
@@ -518,11 +693,40 @@ export function Invoicing() {
                             size="sm"
                             onClick={() => handleIssue(invoice)}
                             className="mr-1"
-                            title="Attribuer un numéro et émettre la facture"
+                            title="Attribuer un numéro et émettre le document"
                           >
                             {t("invoicing.issue")}
                           </Button>
                         )}
+
+                        {invoice.kind === "quote" &&
+                          invoice.status !== "draft" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-1 gap-1"
+                              onClick={() => handleConvertToInvoice(invoice)}
+                              title="Créer une facture reprenant ce devis"
+                            >
+                              <FileOutput className="h-4 w-4" />
+                              Facturer
+                            </Button>
+                          )}
+
+                        {invoice.kind === "invoice" &&
+                          invoice.status !== "draft" &&
+                          invoice.status !== "cancelled" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mr-1"
+                              onClick={() => handleCreateCreditNote(invoice)}
+                              aria-label={`Émettre un avoir pour ${invoice.number}`}
+                              title="Annuler cette facture par un avoir"
+                            >
+                              <Undo2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         <Button
                           variant="ghost"
                           size="sm"

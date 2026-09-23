@@ -59,10 +59,19 @@ export function Dashboard() {
 
   const aujourdhui = todayIso();
 
+  /**
+   * Un devis n’engage rien : il ne doit compter ni dans le chiffre d’affaires
+   * ni dans le restant dû. Les avoirs, eux, comptent au négatif et viennent
+   * donc légitimement en déduction.
+   */
+  const documentsComptables = invoices.filter(
+    (facture) => facture.kind !== "quote",
+  );
+
   const metrics = useMemo(
     () =>
       computeDashboardMetrics(
-        invoices.map((f) => ({
+        documentsComptables.map((f) => ({
           amount: f.amount,
           status: f.status,
           date: f.date,
@@ -73,7 +82,7 @@ export function Dashboard() {
         profile.currency,
         aujourdhui,
       ),
-    [invoices, projects, clients.length, profile.currency, aujourdhui],
+    [documentsComptables, projects, clients.length, profile.currency, aujourdhui],
   );
 
   const pipeline = useMemo(
@@ -88,7 +97,7 @@ export function Dashboard() {
   const revenus = useMemo(
     () =>
       computeMonthlyRevenue(
-        invoices.map((f) => ({
+        documentsComptables.map((f) => ({
           amount: f.amount,
           status: f.status,
           date: f.date,
@@ -97,7 +106,7 @@ export function Dashboard() {
         6,
         aujourdhui,
       ),
-    [invoices, aujourdhui],
+    [documentsComptables, aujourdhui],
   );
 
   const projetsRecents = useMemo(

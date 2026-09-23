@@ -46,9 +46,20 @@ function parseProject(raw: unknown): Project | undefined {
 
 function parseInvoice(raw: unknown): Invoice | undefined {
   if (!isRecord(raw)) return undefined;
-  if (!hasText(raw.id) || !hasText(raw.number)) return undefined;
+  if (!hasText(raw.id)) return undefined;
   if (!Array.isArray(raw.items)) return undefined;
-  return raw as unknown as Invoice;
+
+  // Normalisation à la lecture, pour les documents enregistrés avant que ces
+  // champs existent : un brouillon n’a pas de numéro, et un document antérieur
+  // à la distinction devis/facture/avoir est une facture.
+  return {
+    ...(raw as unknown as Invoice),
+    number: typeof raw.number === "string" ? raw.number : "",
+    kind:
+      raw.kind === "quote" || raw.kind === "creditNote"
+        ? raw.kind
+        : "invoice",
+  };
 }
 
 function parseTicket(raw: unknown): Ticket | undefined {

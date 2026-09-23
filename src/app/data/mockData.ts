@@ -30,6 +30,19 @@ export interface Project {
 export interface Invoice {
   id: string;
   number: string;
+  /**
+   * Nature du document.
+   *
+   * Devis, facture et avoir partagent la même structure — un client, des
+   * lignes, des totaux — et ne diffèrent que par leur portée comptable. En
+   * faire trois entités distinctes dupliquerait le calcul des totaux, la
+   * numérotation et le rendu PDF, avec la certitude de les voir diverger.
+   */
+  kind: "quote" | "invoice" | "creditNote";
+  /** Facture annulée par cet avoir. */
+  cancels?: string | undefined;
+  /** Devis à l’origine de cette facture, pour la traçabilité commerciale. */
+  convertedFrom?: string | undefined;
   /** Reference au client par identifiant : un nom d’entreprise n’est pas une clé. */
   clientId: string;
   items: InvoiceItem[];
@@ -172,6 +185,7 @@ export const mockInvoices: Invoice[] = [
   {
     id: "1",
     number: "FAC-2026-001",
+    kind: "invoice",
     clientId: "1",
     items: [
       {
@@ -200,6 +214,7 @@ export const mockInvoices: Invoice[] = [
   {
     id: "2",
     number: "FAC-2026-002",
+    kind: "invoice",
     clientId: "2",
     items: [
       {
@@ -220,6 +235,7 @@ export const mockInvoices: Invoice[] = [
   {
     id: "3",
     number: "FAC-2026-003",
+    kind: "invoice",
     clientId: "3",
     items: [
       {
@@ -247,6 +263,7 @@ export const mockInvoices: Invoice[] = [
   {
     id: "4",
     number: "FAC-2026-004",
+    kind: "invoice",
     clientId: "4",
     items: [
       {
