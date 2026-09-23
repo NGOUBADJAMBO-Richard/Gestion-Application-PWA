@@ -854,7 +854,7 @@ export function Invoicing() {
               <DialogDescription>{t("invoicing.manageData")}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="invoice-number">
                     {t("invoicing.number")}
@@ -1016,7 +1016,7 @@ export function Invoicing() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="invoice-payment-method">
                     Mode de paiement
@@ -1072,7 +1072,7 @@ export function Invoicing() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="invoice-date">{t("invoicing.date")}</Label>
                   <Input

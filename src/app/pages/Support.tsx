@@ -287,7 +287,7 @@ export function Support() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="ticket-status">{t('projects.status')}</Label>
                   <Select
