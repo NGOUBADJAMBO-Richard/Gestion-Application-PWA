@@ -22,9 +22,11 @@ function ProtectedLayout() {
 }
 
 function LoginRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, pendingRecoveryCode } = useAuth();
 
-  if (isAuthenticated) {
+  // Un code de récupération vient d’être émis : il n’est affiché qu’une seule
+  // fois. On ne quitte pas l’écran avant confirmation qu’il a été noté.
+  if (isAuthenticated && pendingRecoveryCode === null) {
     return <Navigate to="/" replace />;
   }
 

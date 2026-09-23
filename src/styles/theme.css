@@ -50,15 +50,14 @@
   --warning: #b54708;
 
   --border: #e2e8f0;
-  --input: #ffffff;
+  /* Convention shadcn : --input est la couleur de BORDURE du champ.
+     WCAG 1.4.11 exige 3:1 pour un composant d’interface ; #7c8ba1 = 3,46:1
+     sur blanc, la valeur precedente #e2e8f0 ne faisait que 1,23:1. */
+  --input: #7c8ba1;
   --input-background: #ffffff;
   --switch-background: #7c8ba1;
   --ring: #004aad;
 
-  /* La bordure d un champ est un composant d interface, pas une decoration :
-     WCAG 2.2 critere 1.4.11 exige 3:1. #e2e8f0 sur blanc ne fait que 1,23:1.
-     #7c8ba1 = 3,46:1. La bordure decorative des cartes reste en --border. */
-  --input-border: #7c8ba1;
 
   /* Fond des zones d'en-tête, repris de --hero-bg du site. */
   --hero: #e8f0fb;
@@ -124,13 +123,13 @@
   --warning: #fcd34d;
 
   --border: #334155;
-  --input: #0f172a;
-  --input-background: #0f172a;
+  /* #64748b = 3,75:1 sur #0f172a. Le remplissage est legerement plus clair
+     que la carte, sinon le champ se confond avec elle. */
+  --input: #64748b;
+  --input-background: #1e293b;
   --switch-background: #64748b;
   --ring: #60a5fa;
 
-  /* #334155 sur #0f172a ne fait que 1,72:1. #64748b = 3,75:1. */
-  --input-border: #64748b;
 
   --hero: #16213a;
 
@@ -176,7 +175,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
-  --color-input-border: var(--input-border);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -302,10 +300,18 @@
     overflow: hidden;
     background-color: var(--hero);
   }
+  /* Un pseudo-element ::after est peint apres les enfants : sans cette mise
+     en plan, le motif d’ondes recouvrait le contenu au lieu de rester au
+     fond. */
+  .wave-surface > * {
+    position: relative;
+    z-index: 1;
+  }
   .wave-surface::after {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 0;
     pointer-events: none;
     opacity: 0.1;
     background-image: var(--wave-pattern-light);
@@ -317,12 +323,6 @@
     background-image: var(--wave-pattern-dark);
   }
 
-  /* Bordure des champs, portee au contraste exige par WCAG 1.4.11. */
-  [data-slot="input"],
-  [data-slot="textarea"],
-  [data-slot="select-trigger"] {
-    border-color: var(--input-border);
-  }
 
   /* Dégradé de marque, pour les surfaces d'accueil. */
   .brand-gradient {

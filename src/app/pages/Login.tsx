@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
+import { KeyRound, ShieldCheck } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -13,38 +15,97 @@ import { Label } from "../components/ui/label";
 import { useAuth } from "../contexts/AuthContext";
 import { BrandLogo } from "../components/BrandLogo";
 import { useTheme } from "../contexts/ThemeContext";
-import { useLanguage } from "../contexts/LanguageContext";
+import { RecoveryCodeNotice } from "../components/RecoveryCodeNotice";
+
+type Mode = "setup" | "unlock" | "recover";
 
 export function Login() {
-  const { login } = useAuth();
+  const {
+    status,
+    setUp,
+    unlock,
+    recover,
+    pendingRecoveryCode,
+    acknowledgeRecoveryCode,
+  } = useAuth();
   const { theme } = useTheme();
-  const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("admin@mgn.com");
+  const [mode, setMode] = useState<Mode>(
+    status === "unconfigured" ? "setup" : "unlock",
+  );
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!email.trim() || !password.trim()) {
-      setError("Veuillez renseigner votre email et votre mot de passe.");
-      return;
-    }
+    setError("");
 
     try {
-      setIsSubmitting(true);
-      setError("");
-      await login(email.trim(), password);
+      setBusy(true);
+
+      if (mode === "setup") {
+        if (password !== confirmation) {
+          setError("Les deux mots de passe ne correspondent pas.");
+          return;
+        }
+        await setUp(email.trim(), password);
+        return;
+      }
+
+      if (mode === "recover") {
+        if (password !== confirmation) {
+          setError("Les deux mots de passe ne correspondent pas.");
+          return;
+        }
+        await recover(recoveryCode, password);
+        return;
+      }
+
+      await unlock(password);
       navigate("/", { replace: true });
-    } catch {
-      setError("Connexion impossible. Veuillez réessayer.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Opération impossible. Réessaie.",
+      );
     } finally {
-      setIsSubmitting(false);
+      setBusy(false);
     }
   };
+
+  if (pendingRecoveryCode !== null) {
+    return (
+      <div className="wave-surface min-h-screen flex items-center justify-center p-4">
+        <RecoveryCodeNotice
+          code={pendingRecoveryCode}
+          onAcknowledge={() => {
+            acknowledgeRecoveryCode();
+            navigate("/", { replace: true });
+          }}
+        />
+      </div>
+    );
+  }
+
+  const titre =
+    mode === "setup"
+      ? "Protéger cet appareil"
+      : mode === "recover"
+        ? "Récupérer l'accès"
+        : "Connexion";
+
+  const description =
+    mode === "setup"
+      ? "Choisis le mot de passe qui ouvrira CodeWave Studio sur cet appareil."
+      : mode === "recover"
+        ? "Saisis ton code de récupération, puis choisis un nouveau mot de passe."
+        : "Saisis ton mot de passe pour ouvrir ton espace.";
 
   return (
     <div className="wave-surface min-h-screen flex items-center justify-center p-4">
@@ -53,70 +114,135 @@ export function Login() {
           <div className="brand-gradient p-8 text-white hidden md:flex flex-col justify-between">
             <div>
               <BrandLogo size="lg" showText={false} mode="color" />
-              <p className="mt-6 text-2xl font-semibold leading-tight">
+              <p className="mt-6 text-2xl font-display font-bold leading-tight">
                 Pilotez vos clients, projets et factures depuis un seul espace.
               </p>
             </div>
 
-            <p className="text-sm text-white/85">
-              Conçu pour les équipes et les entreprises au Gabon.
-            </p>
+            <div className="space-y-3 text-sm text-white/85">
+              <p className="flex items-start gap-2">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                Vos données restent sur cet appareil. Aucune n&rsquo;est envoyée
+                sur un serveur.
+              </p>
+              <p>Conçu pour les équipes et les entreprises au Gabon.</p>
+            </div>
           </div>
 
           <div className="p-6 sm:p-8">
             <CardHeader className="px-0 pt-0">
               <div className="md:hidden mb-4">
-                <BrandLogo
-                  size="md"
-                  mode={theme === "dark" ? "mono" : "color"}
-                  subtitle={t("brand.businessSuite")}
-                />
+                <BrandLogo size="md" mode={theme === "dark" ? "mono" : "color"} />
               </div>
-              <CardTitle>Connexion</CardTitle>
-              <CardDescription>
-                Accédez à votre espace CodeWave Studio
-              </CardDescription>
+              <CardTitle>{titre}</CardTitle>
+              <CardDescription>{description}</CardDescription>
             </CardHeader>
 
             <CardContent className="px-0 pb-0">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="admin@mgn.com"
-                  />
-                </div>
+                {mode === "setup" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Adresse e-mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="prenom@exemple.com"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Elle identifie le compte sur cet appareil. Elle n&rsquo;est
+                      envoyée nulle part.
+                    </p>
+                  </div>
+                )}
+
+                {mode === "recover" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="recovery">Code de récupération</Label>
+                    <Input
+                      id="recovery"
+                      required
+                      value={recoveryCode}
+                      onChange={(event) => setRecoveryCode(event.target.value)}
+                      placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password">
+                    {mode === "unlock" ? "Mot de passe" : "Nouveau mot de passe"}
+                  </Label>
                   <Input
                     id="password"
                     type="password"
-                    autoComplete="current-password"
+                    required
+                    autoComplete={
+                      mode === "unlock" ? "current-password" : "new-password"
+                    }
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    placeholder="********"
                   />
+                  {mode !== "unlock" && (
+                    <p className="text-xs text-muted-foreground">
+                      Au moins 10 caractères. Une phrase facile à retenir fait un
+                      bon mot de passe.
+                    </p>
+                  )}
                 </div>
 
-                {error && (
+                {mode !== "unlock" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmation">Confirmer le mot de passe</Label>
+                    <Input
+                      id="confirmation"
+                      type="password"
+                      required
+                      autoComplete="new-password"
+                      value={confirmation}
+                      onChange={(event) => setConfirmation(event.target.value)}
+                    />
+                  </div>
+                )}
+
+                {error !== "" && (
                   <p className="text-sm text-destructive" role="alert">
                     {error}
                   </p>
                 )}
 
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  {isSubmitting ? "Connexion..." : "Se connecter"}
+                <Button type="submit" disabled={busy} className="w-full">
+                  {busy
+                    ? "Vérification…"
+                    : mode === "setup"
+                      ? "Protéger et entrer"
+                      : mode === "recover"
+                        ? "Récupérer l'accès"
+                        : "Se connecter"}
                 </Button>
+
+                {status !== "unconfigured" && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-center gap-2 text-sm text-primary-ink underline-offset-4 hover:underline"
+                    onClick={() => {
+                      setMode(mode === "recover" ? "unlock" : "recover");
+                      setError("");
+                      setPassword("");
+                      setConfirmation("");
+                    }}
+                  >
+                    <KeyRound className="h-4 w-4" aria-hidden="true" />
+                    {mode === "recover"
+                      ? "Revenir à la connexion"
+                      : "Mot de passe oublié ?"}
+                  </button>
+                )}
               </form>
             </CardContent>
           </div>
