@@ -1,294 +1,105 @@
-# 🚀 CodeWave Studio
+# CodeWave Studio
 
-**Application de Gestion Complète - Progressive Web App**
+Suite de gestion de **M.G.N CodeWave** — agence web à Libreville.
+Clients, projets, devis, factures, avoirs, encaissements et support.
 
-Une solution professionnelle tout-en-un pour la gestion d'entreprise : CRM, Projets, Facturation, Support.
-
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![React](https://img.shields.io/badge/React-18.3.1-61dafb.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg)
-
-## ✨ Fonctionnalités
-
-### 📊 Tableau de Bord
-- Vue d'ensemble en temps réel
-- Statistiques clés (Revenus, Projets, Clients, Factures)
-- Graphique de revenus mensuel
-- Liste des projets récents
-
-### 👥 Gestion Clientèle (CRM)
-- Base de données clients complète
-- Fiches détaillées avec contact
-- Historique des projets par client
-- Recherche et filtrage avancés
-
-### 📁 Gestion de Projets
-- CRUD complet (Create, Read, Update, Delete)
-- Suivi de progression en temps réel
-- Gestion des délais et budgets
-- Filtrage multi-critères
-- Badges de statut visuels
-
-### 💰 Facturation & Devis
-- Génération de factures
-- Suivi des paiements (Payé, En attente, En retard)
-- Calcul automatique des totaux
-- Export PDF (à venir)
-
-### 🎧 Support & Maintenance
-- Système de tickets
-- Gestion des priorités
-- Statuts de suivi
-- Timeline des interventions
-
-### ❓ Centre d'Aide
-- Documentation intégrée
-- FAQs interactives
-- Guides d'installation PWA
-- Tutoriels vidéo (à venir)
-
-## 🎨 Design & UX
-
-### Thème
-- **Mode Clair** - Interface professionnelle épurée
-- **Mode Sombre** - Confort visuel pour travail prolongé
-- Transition fluide entre les modes
-- Sauvegarde automatique des préférences
-
-### Typographie
-- **Titres** : Syne (Google Fonts)
-- **Corps** : Space Grotesk (Google Fonts)
-- Hiérarchie claire et lisible
-
-### Couleurs Corporate
-- **Primaire** : `#004aad` (Bleu professionnel)
-- **Secondaire** : `#545454` (Graphite élégant)
-- Palette harmonieuse en Light/Dark
-
-### Responsive Design
-- Mobile-first approach
-- Adaptatif de 320px à 4K
-- Sidebar collapsible sur mobile
-- Grilles fluides et flexibles
-
-## 🌐 Internationalisation
-
-- 🇫🇷 **Français** (par défaut)
-- 🇬🇧 **English**
-- Changement instantané de langue
-- Traductions complètes de l'interface
-
-## 📱 Progressive Web App
-
-### Installation
-L'application peut être installée comme une app native sur :
-- 💻 **Desktop** (Chrome, Edge, Safari)
-- 📱 **iOS** (Safari)
-- 🤖 **Android** (Chrome)
-
-### Avantages PWA
-- ⚡ Chargement ultra-rapide
-- 📴 Mode hors-ligne (à venir)
-- 🔔 Notifications Push (à venir)
-- 💾 Installation sans store
-- 🔄 Mises à jour automatiques
-
-## 🛠️ Stack Technique
-
-### Frontend
-- **React** 18.3.1 - Bibliothèque UI
-- **TypeScript** - Typage statique
-- **Vite** 6.3.5 - Bundler moderne
-- **React Router** 7.13.0 - Routing
-
-### Styling
-- **Tailwind CSS** 4.1.12 - Framework CSS
-- **Radix UI** - Composants accessibles
-- **shadcn/ui** - Design system
-
-### Visualisation
-- **Recharts** 2.15.2 - Graphiques
-- **Lucide React** - Icônes
-
-### State Management
-- React Context API
-- localStorage pour persistance
-
-## 📦 Installation
-
-### Prérequis
-- Node.js 18+ 
-- pnpm, npm ou yarn
-
-### Cloner le Projet
-```bash
-git clone https://github.com/votre-org/codewave-studio.git
-cd codewave-studio
-```
-
-### Installer les Dépendances
-```bash
-npm install
-# ou
-pnpm install
-# ou
-yarn install
-```
-
-### Lancer en Développement
-```bash
-npm run dev
-```
-
-L'application sera accessible sur `http://localhost:5173`
-
-### Build Production
-```bash
-npm run build
-```
-
-Les fichiers optimisés seront dans `/dist`
-
-## 📁 Structure du Projet
-
-```
-src/
-├── app/
-│   ├── contexts/          # State management
-│   ├── data/              # Mock data
-│   ├── pages/             # Pages principales
-│   ├── components/        # Composants React
-│   ├── routes.tsx         # Configuration routing
-│   └── App.tsx            # Composant racine
-├── styles/                # CSS globaux
-└── main.tsx               # Point d'entrée
-```
-
-Pour plus de détails, consultez [ARCHITECTURE.md](./ARCHITECTURE.md)
-
-## 📖 Documentation
-
-- **[Guide Utilisateur](./GUIDE-UTILISATEUR.md)** - Mode d'emploi complet
-- **[Architecture](./ARCHITECTURE.md)** - Documentation technique
-- **[PWA Guide](./README-PWA.md)** - Configuration PWA
-
-## 🚀 Déploiement
-
-### Netlify
-```bash
-npm run build
-# Déployez le dossier /dist
-```
-
-### Vercel
-```bash
-vercel deploy
-```
-
-### Docker
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "run", "preview"]
-```
-
-## 🔐 Sécurité
-
-### Version Démo
-Cette version utilise des **données mockées** et une authentification simulée.
-
-### Pour Production
-⚠️ **Important** : Pour un usage professionnel, vous devez :
-
-1. **Backend** : Connecter Supabase ou Firebase
-2. **Auth** : Implémenter JWT ou OAuth
-3. **HTTPS** : Obligatoire en production
-4. **Secrets** : Variables d'environnement sécurisées
-5. **Backup** : Sauvegardes automatiques
-
-Consultez [ARCHITECTURE.md](./ARCHITECTURE.md) pour les recommandations.
-
-## 🧪 Tests (À venir)
-
-```bash
-# Tests unitaires
-npm run test
-
-# Tests E2E
-npm run test:e2e
-
-# Coverage
-npm run test:coverage
-```
-
-## 🛣️ Roadmap
-
-### v1.1 (Q2 2026)
-- [ ] Mode hors-ligne complet
-- [ ] Service Worker
-- [ ] Génération PDF factures
-- [ ] Export CSV/Excel
-
-### v1.2 (Q3 2026)
-- [ ] Time-tracking
-- [ ] Tableau Kanban
-- [ ] Calendrier visuel
-- [ ] Notifications Push
-
-### v2.0 (Q4 2026)
-- [ ] Application mobile native (Flutter)
-- [ ] Analytics avancées
-- [ ] Intégrations (Stripe, PayPal)
-- [ ] API publique
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues !
-
-1. Fork le projet
-2. Créez une branche (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Commitez vos changements (`git commit -m 'Ajout fonctionnalité'`)
-4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. Ouvrez une Pull Request
-
-## 📄 Licence
-
-MIT License - voir [LICENSE](./LICENSE) pour plus de détails.
-
-## 👨‍💻 Auteurs
-
-- **Développement** - Architecture & Code
-- **Design** - UI/UX Design System
-- **Documentation** - Guides & Tutoriels
-
-## 🙏 Remerciements
-
-- [React](https://react.dev) - Bibliothèque UI
-- [Tailwind CSS](https://tailwindcss.com) - Framework CSS
-- [Radix UI](https://radix-ui.com) - Composants accessibles
-- [shadcn/ui](https://ui.shadcn.com) - Design system
-- [Lucide](https://lucide.dev) - Icônes
-- [Recharts](https://recharts.org) - Graphiques
-
-## 📞 Support
-
-- 📧 **Email** : support@codewave-studio.com
-- 💬 **Discord** : [Rejoindre la communauté](#)
-- 📖 **Docs** : [documentation.codewave-studio.com](#)
-- 🐛 **Issues** : [GitHub Issues](https://github.com/votre-org/codewave-studio/issues)
-
-## 🌟 Étoile le Projet
-
-Si ce projet vous a été utile, n'hésitez pas à lui donner une ⭐ sur GitHub !
+**Entièrement locale.** Aucune donnée ne quitte l'appareil, aucun serveur
+n'est requis, aucun compte n'est à créer ailleurs.
 
 ---
 
-**CodeWave Studio** - Gestion d'entreprise simplifiée et professionnelle.
+## Démarrer
 
-Fait avec ❤️ pour les entrepreneurs et les équipes.
+```bash
+npm install
+npm run dev
+```
+
+À la première ouverture, l'application demande de définir un mot de passe et
+affiche **une seule fois** un code de récupération. Note-le : sans lui ni le
+mot de passe, il n'y a pas d'autre issue qu'une sauvegarde exportée.
+
+---
+
+## Commandes
+
+| Commande | Effet |
+|---|---|
+| `npm run dev` | Serveur de développement |
+| `npm run build` | Build de production |
+| `npm run preview` | Sert le build, seul endroit où le service worker est actif |
+| `npm run verify` | **typecheck + lint + tests + build** |
+| `npm test` | Tests seuls |
+| `npm run test:watch` | Tests en continu |
+
+`npm run verify` est la commande qui fait foi. Aucune de ses quatre étapes
+n'est optionnelle.
+
+---
+
+## Ce que fait l'application
+
+- **Clients** — répertoire, archivage, rattachement par identifiant
+- **Projets** — budget, échéance, avancement
+- **Facturation** — devis, factures, avoirs ; brouillon puis émission ;
+  numérotation séquentielle sans trou ; TVA par tranche ; encaissements
+  partiels ; retard déduit de l'échéance
+- **Support** — tickets avec statut et priorité
+- **Paramètres** — identité, fiscalité, mentions légales, préfixes
+- **Sauvegarde** — export et restauration vérifiés par empreinte SHA-256
+- **Installable** — fonctionne hors ligne une fois installée
+
+Le détail, avec ce qui reste à faire, est dans [docs/FEATURES.md](docs/FEATURES.md).
+
+---
+
+## Ce qu'elle ne fait pas
+
+| Absent | Précision |
+|---|---|
+| Serveur, API, base distante | Aucun. Zéro requête sortante |
+| Synchronisation entre appareils | Le transfert passe par l'export de sauvegarde |
+| Chiffrement des données au repos | Choix assumé — voir [docs/SECURITE.md](docs/SECURITE.md) |
+| Multi-utilisateur | Un seul accès par appareil |
+| Comptabilité en partie double | Pas de grand livre |
+| Suivi du temps, dépenses | Pas de rentabilité par projet |
+
+---
+
+## Avertissement fiscal
+
+Le taux de TVA de 18 % livré par défaut **n'a pas été vérifié auprès d'une
+source officielle**, et la liste des mentions légales obligatoires n'est pas
+connue. Tout est paramétrable, et rien ne doit être utilisé en production
+sans validation par un comptable.
+
+Voir [docs/FISCALITE.md](docs/FISCALITE.md).
+
+---
+
+## Pile technique
+
+React 18 · TypeScript en `strict` intégral · Vite 6 · Tailwind 4 ·
+React Router 7 · Radix / shadcn · Recharts · Vitest
+
+Architecture en trois couches — `domain/ ← infra/ ← app/` — avec la direction
+des dépendances appliquée par ESLint. Voir
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+## Documentation
+
+| Fichier | Contenu |
+|---|---|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Couches, stockage, migrations |
+| [FEATURES.md](docs/FEATURES.md) | Ce qui est fait, ce qui ne l'est pas |
+| [DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) | Charte, jetons, contrastes calculés |
+| [SECURITE.md](docs/SECURITE.md) | Ce qui est protégé, et ce qui ne l'est pas |
+| [FISCALITE.md](docs/FISCALITE.md) | Paramétrage à faire valider |
+| [RGPD.md](docs/RGPD.md) | Registre des traitements |
+| [GUIDE-UTILISATEUR.md](docs/GUIDE-UTILISATEUR.md) | Prise en main |
+
+---
+
+Conçu et développé pour **M.G.N CodeWave** · [Site de l'agence](https://ngoubadjambo-richard.github.io/CodeWave/)
