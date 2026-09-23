@@ -67,7 +67,7 @@ export function Help() {
     },
     {
       question: 'Puis-je utiliser l\'application hors ligne ?',
-      answer: 'Oui ! M.G.N Manager est une Progressive Web App (PWA). Une fois installée, vous pouvez accéder aux données critiques même sans connexion internet.',
+      answer: 'Oui ! CodeWave Studio est une Progressive Web App (PWA). Une fois installée, vous pouvez accéder aux données critiques même sans connexion internet.',
     },
     {
       question: 'Comment changer le thème ?',
@@ -108,7 +108,7 @@ export function Help() {
       <Card>
         <CardHeader>
           <CardTitle>Key Features</CardTitle>
-          <CardDescription>Discover what makes M.G.N Manager powerful</CardDescription>
+          <CardDescription>Discover what makes CodeWave Studio powerful</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -154,14 +154,14 @@ export function Help() {
       <Card style={{ borderColor: '#004aad' }}>
         <CardHeader>
           <CardTitle>Installation PWA</CardTitle>
-          <CardDescription>Installez M.G.N Manager comme une application</CardDescription>
+          <CardDescription>Installez CodeWave Studio comme une application</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium">Sur Desktop (Chrome/Edge)</h4>
             <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
               <li>Cliquez sur l'icône d'installation dans la barre d'adresse</li>
-              <li>Ou Menu → Installer M.G.N Manager</li>
+              <li>Ou Menu → Installer CodeWave Studio</li>
               <li>L'application sera ajoutée à votre bureau</li>
             </ol>
           </div>

@@ -1,27 +1,51 @@
 {
-  "name": "M.G.N Manager",
-  "short_name": "MGN Manager",
-  "description": "Application de Gestion Complète - CRM, Projets, Facturation",
-  "start_url": "/",
+  "id": "/?source=pwa",
+  "name": "CodeWave Studio",
+  "short_name": "Studio",
+  "description": "Suite de gestion de M.G.N CodeWave : clients, projets, devis, factures et comptabilité. Fonctionne entièrement sur cet appareil.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#004aad",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#0F172A",
+  "theme_color": "#004AAD",
   "orientation": "any",
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "categories": ["business", "productivity"],
-  "screenshots": [],
-  "lang": "fr-FR"
+  "shortcuts": [
+    {
+      "name": "Nouvelle facture",
+      "short_name": "Facture",
+      "url": "/invoicing?action=new",
+      "description": "Créer une facture immédiatement"
+    },
+    {
+      "name": "Clients",
+      "short_name": "Clients",
+      "url": "/clients",
+      "description": "Consulter le répertoire des clients"
+    },
+    {
+      "name": "Projets",
+      "short_name": "Projets",
+      "url": "/projects",
+      "description": "Suivre l'avancement des projets"
+    }
+  ],
+  "screenshots": []
 }

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
+import { storageKey } from "../../branding";
+
 interface User {
   id: string;
   name: string;
@@ -24,7 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem("mgn-user");
+    const saved = localStorage.getItem(storageKey("user"));
     if (!saved) {
       return null;
     }
@@ -32,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       return JSON.parse(saved) as User;
     } catch {
-      localStorage.removeItem("mgn-user");
+      localStorage.removeItem(storageKey("user"));
       return null;
     }
   });
@@ -48,19 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       role: "admin",
       phone: "+33 6 00 00 00 00",
-      company: "M.G.N Manager",
+      company: "M.G.N CodeWave",
       department: "Direction",
       joinedAt: "2026-01-01",
       lastLoginAt: now,
     };
 
     setUser(mockUser);
-    localStorage.setItem("mgn-user", JSON.stringify(mockUser));
+    localStorage.setItem(storageKey("user"), JSON.stringify(mockUser));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("mgn-user");
+    localStorage.removeItem(storageKey("user"));
   };
 
   return (

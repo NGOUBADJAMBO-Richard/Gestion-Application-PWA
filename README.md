@@ -1,4 +1,4 @@
-# 🚀 M.G.N Manager
+# 🚀 CodeWave Studio
 
 **Application de Gestion Complète - Progressive Web App**
 
@@ -123,8 +123,8 @@ L'application peut être installée comme une app native sur :
 
 ### Cloner le Projet
 ```bash
-git clone https://github.com/votre-org/mgn-manager.git
-cd mgn-manager
+git clone https://github.com/votre-org/codewave-studio.git
+cd codewave-studio
 ```
 
 ### Installer les Dépendances
@@ -278,10 +278,10 @@ MIT License - voir [LICENSE](./LICENSE) pour plus de détails.
 
 ## 📞 Support
 
-- 📧 **Email** : support@mgn-manager.com
+- 📧 **Email** : support@codewave-studio.com
 - 💬 **Discord** : [Rejoindre la communauté](#)
-- 📖 **Docs** : [documentation.mgn-manager.com](#)
-- 🐛 **Issues** : [GitHub Issues](https://github.com/votre-org/mgn-manager/issues)
+- 📖 **Docs** : [documentation.codewave-studio.com](#)
+- 🐛 **Issues** : [GitHub Issues](https://github.com/votre-org/codewave-studio/issues)
 
 ## 🌟 Étoile le Projet
 
@@ -289,6 +289,6 @@ Si ce projet vous a été utile, n'hésitez pas à lui donner une ⭐ sur GitHub
 
 ---
 
-**M.G.N Manager** - Gestion d'entreprise simplifiée et professionnelle.
+**CodeWave Studio** - Gestion d'entreprise simplifiée et professionnelle.
 
 Fait avec ❤️ pour les entrepreneurs et les équipes.

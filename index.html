@@ -2,18 +2,33 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta
       name="description"
-      content="M.G.N Manager - Application de Gestion Complète pour votre entreprise"
+      content="CodeWave Studio — suite de gestion de M.G.N CodeWave : clients, projets, devis, factures et comptabilité. Toutes les données restent sur cet appareil."
     />
-    <meta name="theme-color" content="#004aad" />
+    <meta name="theme-color" content="#004AAD" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
+
+    <!-- Application locale : aucune donnée ne doit être indexée ni partagée. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>M.G.N Manager - Application de Gestion</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Studio" />
+
+    <title>CodeWave Studio — Gestion M.G.N CodeWave</title>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      CodeWave Studio a besoin de JavaScript pour fonctionner. Activez-le dans
+      les réglages de votre navigateur, puis rechargez la page.
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

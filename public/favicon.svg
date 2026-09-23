@@ -1,13 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="mgn-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#004aad"/>
-      <stop offset="100%" stop-color="#0b2f63"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#mgn-bg)"/>
-  <rect x="11" y="13" width="42" height="12" rx="6" fill="#fcd116"/>
-  <rect x="11" y="27" width="42" height="10" rx="5" fill="#ffffff"/>
-  <rect x="11" y="39" width="42" height="12" rx="6" fill="#009e60"/>
-  <path d="M24 44V20l8 11 8-11v24" stroke="#0b2f63" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CodeWave Studio">
+  <rect width="64" height="64" rx="12.5" fill="#0F172A"/>
+  <text x="32" y="41" text-anchor="middle" font-family="Syne, Arial, sans-serif" font-size="26" font-weight="800" textLength="48" lengthAdjust="spacingAndGlyphs">
+    <tspan fill="#E2E8F0">M</tspan><tspan fill="#60A5FA">G</tspan><tspan fill="#E2E8F0">N</tspan>
+  </text>
+  <path d="M8 52q8-6 16 0t16 0t16 0" fill="none" stroke="#60A5FA" stroke-width="3.5" stroke-linecap="round"/>
 </svg>

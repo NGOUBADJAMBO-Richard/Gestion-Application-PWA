@@ -1,4 +1,4 @@
-# 🎯 M.G.N Manager - Fonctionnalités Détaillées
+# 🎯 CodeWave Studio - Fonctionnalités Détaillées
 
 ## 📊 Dashboard - Tableau de Bord
 
@@ -479,4 +479,4 @@ const translations = {
 
 ---
 
-**M.G.N Manager** - Une application pensée pour la productivité et l'efficacité.
+**CodeWave Studio** - Une application pensée pour la productivité et l'efficacité.

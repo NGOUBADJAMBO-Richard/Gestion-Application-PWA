@@ -1,132 +1,113 @@
 import { useId } from "react";
 
+import { BRAND } from "../../branding";
+
+type LogoSize = "sm" | "md" | "lg";
+
 interface BrandLogoProps {
-  size?: "sm" | "md" | "lg";
+  size?: LogoSize;
+  /** Affiche le nom et la signature à côté de la marque. */
   showText?: boolean;
+  /**
+   * `color` : la marque telle qu'elle est, tuile navy comprise.
+   * `mono`  : une seule couleur héritée du texte, pour les surfaces déjà
+   *           colorées où la tuile navy ferait une tache.
+   */
   mode?: "color" | "mono";
   subtitle?: string;
+  className?: string;
 }
 
+const TILE: Record<LogoSize, string> = {
+  sm: "w-8 h-8",
+  md: "w-10 h-10",
+  lg: "w-12 h-12",
+};
+
+const TITLE: Record<LogoSize, string> = {
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
+};
+
+/** Couleurs de la marque, reprises de `public/icon-512.png`. */
+const INK = "#E2E8F0";
+const ACCENT = "#60A5FA";
+const TILE_BG = "#0F172A";
+
+/**
+ * Marque de CodeWave Studio.
+ *
+ * Le logo d'agence complet — monogramme, mot-symbole CODEWAVE et signature
+ * manuscrite — devient illisible en dessous de 120 px : dans une barre
+ * latérale de 40 px, c'est une tache. La marque applicative existe déjà
+ * (`icon-512.png`) : tuile navy, « MGN » dont le G porte l'accent bleu, et
+ * l'onde CodeWave. On la redessine ici en SVG.
+ *
+ * Pourquoi pas le PNG directement : à 32 px le PNG est flou sur écran
+ * standard, il ne suit pas le thème, et il impose son fond. Le SVG inline est
+ * net à toute taille et accepte une variante monochrome.
+ */
 export function BrandLogo({
   size = "md",
   showText = true,
   mode = "color",
-  subtitle = "Business Suite",
+  subtitle = BRAND.tagline.fr,
+  className = "",
 }: BrandLogoProps) {
-  const gradientId = useId();
-  const dimensions = {
-    sm: "w-8 h-8",
-    md: "w-10 h-10",
-    lg: "w-12 h-12",
-  };
+  const titleId = useId();
+  const isMono = mode === "mono";
 
-  const textSize = {
-    sm: "text-base",
-    md: "text-lg",
-    lg: "text-xl",
-  };
+  const ink = isMono ? "currentColor" : INK;
+  const accent = isMono ? "currentColor" : ACCENT;
 
   return (
-    <div className="flex items-center gap-3">
-      <div
-        className={`${dimensions[size]} rounded-xl overflow-hidden shadow-sm border border-white/40`}
+    <div className={`flex items-center gap-3 ${className}`}>
+      <svg
+        viewBox="0 0 64 64"
+        className={`${TILE[size]} shrink-0`}
+        role="img"
+        aria-labelledby={titleId}
       >
-        <svg viewBox="0 0 64 64" className="w-full h-full" aria-hidden="true">
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#004aad" />
-              <stop offset="100%" stopColor="#0b2f63" />
-            </linearGradient>
-          </defs>
-          {mode === "color" ? (
-            <>
-              <rect
-                width="64"
-                height="64"
-                rx="14"
-                fill={`url(#${gradientId})`}
-              />
-              <rect
-                x="11"
-                y="13"
-                width="42"
-                height="12"
-                rx="6"
-                fill="#fcd116"
-              />
-              <rect
-                x="11"
-                y="27"
-                width="42"
-                height="10"
-                rx="5"
-                fill="#ffffff"
-              />
-              <rect
-                x="11"
-                y="39"
-                width="42"
-                height="12"
-                rx="6"
-                fill="#009e60"
-              />
-              <path
-                d="M24 44V20l8 11 8-11v24"
-                stroke="#0b2f63"
-                strokeWidth="4"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </>
-          ) : (
-            <>
-              <rect
-                width="64"
-                height="64"
-                rx="14"
-                fill="currentColor"
-                className="text-foreground"
-              />
-              <path
-                d="M24 44V20l8 11 8-11v24"
-                stroke="var(--color-background)"
-                strokeWidth="4"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <rect
-                x="11"
-                y="13"
-                width="42"
-                height="2"
-                rx="1"
-                fill="var(--color-background)"
-                opacity="0.7"
-              />
-              <rect
-                x="11"
-                y="49"
-                width="42"
-                height="2"
-                rx="1"
-                fill="var(--color-background)"
-                opacity="0.7"
-              />
-            </>
-          )}
-        </svg>
-      </div>
+        <title id={titleId}>{`${BRAND.name} — ${BRAND.company}`}</title>
+
+        {!isMono && <rect width="64" height="64" rx="12.5" fill={TILE_BG} />}
+
+        {/* textLength fige la largeur du monogramme : le logo ne doit pas
+            deborder de sa tuile selon que Syne est chargee ou non. */}
+        <text
+          x="32"
+          y="41"
+          textAnchor="middle"
+          fontFamily="Syne, system-ui, sans-serif"
+          fontSize="26"
+          fontWeight="800"
+          textLength="48"
+          lengthAdjust="spacingAndGlyphs"
+        >
+          <tspan fill={ink}>M</tspan>
+          <tspan fill={accent}>G</tspan>
+          <tspan fill={ink}>N</tspan>
+        </text>
+
+        {/* L'onde : la signature graphique de CodeWave. */}
+        <path
+          d="M8 52q8-6 16 0t16 0t16 0"
+          fill="none"
+          stroke={accent}
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+      </svg>
 
       {showText && (
-        <div>
+        <div className="min-w-0">
           <p
-            className={`${textSize[size]} font-semibold leading-none tracking-tight text-foreground`}
+            className={`${TITLE[size]} font-display font-bold leading-tight tracking-tight text-foreground truncate`}
           >
-            M.G.N Manager
+            {BRAND.name}
           </p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-[0.12em]">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground truncate">
             {subtitle}
           </p>
         </div>

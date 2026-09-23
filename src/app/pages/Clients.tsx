@@ -400,7 +400,7 @@ export function Clients() {
                       >
                         <p className="font-medium">{project.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          Statut: {project.status} | Echeance:{" "}
+                          Statut: {project.status} | Échéance :{" "}
                           {project.deadline}
                         </p>
                       </div>

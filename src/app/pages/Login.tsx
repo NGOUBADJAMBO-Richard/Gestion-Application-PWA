@@ -59,7 +59,7 @@ export function Login() {
             </div>
 
             <p className="text-sm text-white/85">
-              Concu pour les equipes locales et entreprises au Gabon.
+              Conçu pour les équipes et les entreprises au Gabon.
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export function Login() {
               </div>
               <CardTitle>Connexion</CardTitle>
               <CardDescription>
-                Accedez a votre espace M.G.N Manager
+                Accédez à votre espace CodeWave Studio
               </CardDescription>
             </CardHeader>
 

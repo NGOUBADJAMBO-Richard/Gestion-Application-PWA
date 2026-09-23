@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+import { storageKey } from '../../branding';
+
 type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
@@ -12,7 +14,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('mgn-theme');
+    const saved = localStorage.getItem(storageKey('theme'));
     return (saved as Theme) || 'light';
   });
 
@@ -20,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    localStorage.setItem('mgn-theme', theme);
+    localStorage.setItem(storageKey('theme'), theme);
   }, [theme]);
 
   const toggleTheme = () => {

@@ -20,6 +20,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { BRAND } from "../../branding";
 
 export function Layout() {
   const { theme, toggleTheme } = useTheme();
@@ -179,14 +180,14 @@ export function Layout() {
 
         <footer className="border-t border-border bg-card/60">
           <div className="px-4 lg:px-6 py-4 text-sm text-muted-foreground">
-            Conçu par M.G.N CodeWave -{" "}
+            {BRAND.company} &middot;{" "}
             <a
-              href="https://code-wave-eight.vercel.app/index.html"
+              href={BRAND.siteUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#004aad] hover:underline"
             >
-              Site web de CodeWave
+              Site de l&rsquo;agence
             </a>
           </div>
         </footer>

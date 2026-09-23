@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
+import { storageKey } from "../../branding";
+
 type Language = "fr" | "en";
 
 interface Translations {
@@ -24,8 +26,8 @@ const translations: Translations = {
   // Dashboard
   "dashboard.title": { fr: "Tableau de Bord", en: "Dashboard" },
   "dashboard.welcome": {
-    fr: "Bienvenue sur M.G.N Manager",
-    en: "Welcome to M.G.N Manager",
+    fr: "Bienvenue sur CodeWave Studio",
+    en: "Welcome to CodeWave Studio",
   },
   "dashboard.totalRevenue": { fr: "Chiffre d'Affaires", en: "Total Revenue" },
   "dashboard.activeProjects": { fr: "Projets Actifs", en: "Active Projects" },
@@ -47,7 +49,7 @@ const translations: Translations = {
     fr: "Dernieres mises a jour projets",
     en: "Latest project updates",
   },
-  "dashboard.vsLastMonth": { fr: "vs mois precedent", en: "vs last month" },
+  "dashboard.vsLastMonth": { fr: "vs mois précédent", en: "vs last month" },
 
   // Projects
   "projects.title": { fr: "Gestion des Projets", en: "Project Management" },
@@ -88,12 +90,12 @@ const translations: Translations = {
   "invoicing.overdue": { fr: "En Retard", en: "Overdue" },
   "invoicing.all": { fr: "Toutes", en: "All" },
   "invoicing.listTitle": { fr: "Liste des Factures", en: "Invoices List" },
-  "invoicing.number": { fr: "Numero", en: "Number" },
+  "invoicing.number": { fr: "Numéro", en: "Number" },
   "invoicing.amount": { fr: "Montant", en: "Amount" },
   "invoicing.date": { fr: "Date", en: "Date" },
-  "invoicing.dueDate": { fr: "Echeance", en: "Due Date" },
+  "invoicing.dueDate": { fr: "Échéance", en: "Due Date" },
   "invoicing.manageData": {
-    fr: "Gerez les donnees de la facture",
+    fr: "Gérez les données de la facture",
     en: "Manage invoice data",
   },
 
@@ -143,13 +145,13 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem("mgn-language");
+    const saved = localStorage.getItem(storageKey("language"));
     return (saved as Language) || "fr";
   });
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("mgn-language", lang);
+    localStorage.setItem(storageKey("language"), lang);
   };
 
   const t = (key: string): string => {
