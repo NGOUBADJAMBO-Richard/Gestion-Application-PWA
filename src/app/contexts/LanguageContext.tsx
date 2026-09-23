@@ -13,7 +13,7 @@ interface Translations {
 
 const translations: Translations = {
   // Navigation
-  "nav.dashboard": { fr: "Tableau de Bord", en: "Dashboard" },
+  "nav.dashboard": { fr: "Tableau de bord", en: "Dashboard" },
   "nav.clients": { fr: "Clients", en: "Clients" },
   "nav.projects": { fr: "Projets", en: "Projects" },
   "nav.invoicing": { fr: "Facturation", en: "Invoicing" },
@@ -25,21 +25,21 @@ const translations: Translations = {
   "nav.closeMenu": { fr: "Fermer le menu", en: "Close menu" },
 
   // Dashboard
-  "dashboard.title": { fr: "Tableau de Bord", en: "Dashboard" },
+  "dashboard.title": { fr: "Tableau de bord", en: "Dashboard" },
   "dashboard.welcome": {
     fr: "Bienvenue sur CodeWave Studio",
     en: "Welcome to CodeWave Studio",
   },
   "dashboard.totalRevenue": { fr: "Chiffre d'Affaires", en: "Total Revenue" },
-  "dashboard.activeProjects": { fr: "Projets Actifs", en: "Active Projects" },
-  "dashboard.totalClients": { fr: "Clients Total", en: "Total Clients" },
+  "dashboard.activeProjects": { fr: "Projets actifs", en: "Active Projects" },
+  "dashboard.totalClients": { fr: "Clients", en: "Total Clients" },
   "dashboard.pendingInvoices": {
-    fr: "Factures en Attente",
+    fr: "Factures en attente",
     en: "Pending Invoices",
   },
-  "dashboard.recentProjects": { fr: "Projets Récents", en: "Recent Projects" },
+  "dashboard.recentProjects": { fr: "Projets récents", en: "Recent Projects" },
   "dashboard.revenueOverview": {
-    fr: "Aperçu des Revenus",
+    fr: "Aperçu des revenus",
     en: "Revenue Overview",
   },
   "dashboard.monthlyRevenueYear": {
@@ -53,18 +53,18 @@ const translations: Translations = {
   "dashboard.vsLastMonth": { fr: "vs mois précédent", en: "vs last month" },
 
   // Projects
-  "projects.title": { fr: "Gestion des Projets", en: "Project Management" },
-  "projects.new": { fr: "Nouveau Projet", en: "New Project" },
+  "projects.title": { fr: "Projets", en: "Project Management" },
+  "projects.new": { fr: "Nouveau projet", en: "New Project" },
   "projects.search": {
     fr: "Rechercher un projet...",
     en: "Search projects...",
   },
   "projects.filter": { fr: "Filtrer", en: "Filter" },
   "projects.all": { fr: "Tous", en: "All" },
-  "projects.status.active": { fr: "En Cours", en: "Active" },
+  "projects.status.active": { fr: "En cours", en: "Active" },
   "projects.status.completed": { fr: "Terminé", en: "Completed" },
-  "projects.status.pending": { fr: "En Attente", en: "Pending" },
-  "projects.name": { fr: "Nom du Projet", en: "Project Name" },
+  "projects.status.pending": { fr: "En attente", en: "Pending" },
+  "projects.name": { fr: "Nom du projet", en: "Project Name" },
   "projects.client": { fr: "Client", en: "Client" },
   "projects.status": { fr: "Statut", en: "Status" },
   "projects.deadline": { fr: "Échéance", en: "Deadline" },
@@ -75,8 +75,8 @@ const translations: Translations = {
   "projects.delete": { fr: "Supprimer", en: "Delete" },
 
   // Clients
-  "clients.title": { fr: "Gestion Clientèle", en: "Client Management" },
-  "clients.new": { fr: "Nouveau Client", en: "New Client" },
+  "clients.title": { fr: "Clients", en: "Client Management" },
+  "clients.new": { fr: "Nouveau client", en: "New Client" },
   "clients.name": { fr: "Nom", en: "Name" },
   "clients.email": { fr: "Email", en: "Email" },
   "clients.phone": { fr: "Téléphone", en: "Phone" },
@@ -84,13 +84,13 @@ const translations: Translations = {
   "clients.projects": { fr: "Projets", en: "Projects" },
 
   // Invoicing
-  "invoicing.title": { fr: "Facturation & Devis", en: "Invoicing & Quotes" },
-  "invoicing.new": { fr: "Nouvelle Facture", en: "New Invoice" },
+  "invoicing.title": { fr: "Facturation et devis", en: "Invoicing & Quotes" },
+  "invoicing.new": { fr: "Nouvelle facture", en: "New Invoice" },
   "invoicing.paid": { fr: "Payée", en: "Paid" },
-  "invoicing.pending": { fr: "En Attente", en: "Pending" },
-  "invoicing.overdue": { fr: "En Retard", en: "Overdue" },
+  "invoicing.pending": { fr: "En attente", en: "Pending" },
+  "invoicing.overdue": { fr: "En retard", en: "Overdue" },
   "invoicing.all": { fr: "Toutes", en: "All" },
-  "invoicing.listTitle": { fr: "Liste des Factures", en: "Invoices List" },
+  "invoicing.listTitle": { fr: "Liste des factures", en: "Invoices List" },
   "invoicing.number": { fr: "Numéro", en: "Number" },
   "invoicing.amount": { fr: "Montant", en: "Amount" },
   "invoicing.date": { fr: "Date", en: "Date" },
@@ -102,9 +102,9 @@ const translations: Translations = {
 
   // Support
   "support.title": { fr: "Support & Maintenance", en: "Support & Maintenance" },
-  "support.new": { fr: "Nouveau Ticket", en: "New Ticket" },
+  "support.new": { fr: "Nouveau ticket", en: "New Ticket" },
   "support.open": { fr: "Ouvert", en: "Open" },
-  "support.inProgress": { fr: "En Cours", en: "In Progress" },
+  "support.inProgress": { fr: "En cours", en: "In Progress" },
   "support.closed": { fr: "Fermé", en: "Closed" },
 
   // Common
@@ -118,14 +118,14 @@ const translations: Translations = {
   "common.actions": { fr: "Actions", en: "Actions" },
 
   // Brand
-  "brand.businessSuite": { fr: "Suite de Gestion", en: "Business Suite" },
+  "brand.businessSuite": { fr: "Suite de gestion", en: "Business Suite" },
   "brand.platformActive": {
     fr: "Plateforme de gestion active",
     en: "Management platform active",
   },
 
   // Projects extras
-  "projects.allTitle": { fr: "Tous les Projets", en: "All Projects" },
+  "projects.allTitle": { fr: "Tous les projets", en: "All Projects" },
   "projects.detailsHint": {
     fr: "Renseignez les details du projet",
     en: "Fill in the project details below",
