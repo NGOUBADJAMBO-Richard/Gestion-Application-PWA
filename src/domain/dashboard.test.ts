@@ -159,3 +159,49 @@ describe("portefeuille en cours", () => {
     expect(computeActivePipeline([], "XAF")).toEqual(xaf(0));
   });
 });
+
+describe("brouillons et factures annulées", () => {
+  it("un brouillon ne compte dans aucun indicateur", () => {
+    const m = computeDashboardMetrics(
+      [
+        { amount: 900000, status: "draft", date: "2026-03-05", dueDate: "2026-04-05" },
+        facture(150000, "pending", "2026-03-20"),
+      ],
+      [],
+      0,
+      "XAF",
+      "2026-03-31",
+    );
+    // Un brouillon n'a pas de numéro et n'engage rien.
+    expect(m.outstanding).toEqual(xaf(150000));
+    expect(m.pendingInvoices).toBe(1);
+  });
+
+  it("une facture annulée ne figure plus dans le restant dû", () => {
+    const m = computeDashboardMetrics(
+      [
+        { amount: 500000, status: "cancelled", date: "2026-03-05", dueDate: "2026-04-05" },
+        facture(150000, "pending", "2026-03-20"),
+      ],
+      [],
+      0,
+      "XAF",
+      "2026-03-31",
+    );
+    // Elle a été neutralisée par un avoir : la créance n'existe plus.
+    expect(m.outstanding).toEqual(xaf(150000));
+  });
+
+  it("ni brouillon ni annulation n'entrent dans le chiffre d'affaires", () => {
+    const mois = computeMonthlyRevenue(
+      [
+        { amount: 900000, status: "draft", date: "2026-03-05", dueDate: "2026-04-05" },
+        { amount: 500000, status: "cancelled", date: "2026-03-06", dueDate: "2026-04-06" },
+        facture(120000, "paid", "2026-03-07"),
+      ],
+      1,
+      "2026-03-31",
+    );
+    expect(mois[0]?.revenue).toBe(120000);
+  });
+});

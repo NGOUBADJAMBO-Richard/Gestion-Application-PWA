@@ -18,6 +18,10 @@ import { ClientSelect } from "../components/ClientSelect";
 import { useClientIndex } from "../hooks/useClientIndex";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { defaultVatPercent } from "../../domain/companyProfile";
+import { nextNumber } from "../../domain/numbering";
+import { addDays } from "../../domain/date";
+import { canDeleteDocument, canEditDocument } from "../../domain/rules";
+import { ConfirmDelete } from "../components/ConfirmDelete";
 import { computeDocumentTotals } from "../../domain/invoice";
 import { money } from "../../domain/money";
 import { toast } from "sonner";
@@ -49,6 +53,16 @@ import {
 } from "../components/ui/select";
 import { formatCurrencyXAF } from "../utils/currency";
 
+/** Filtres de la liste. Un compteur par état évite d’avoir à ouvrir chacun. */
+const FILTRES = [
+  { valeur: "all", cle: "invoicing.all" },
+  { valeur: "draft", cle: "invoicing.draft" },
+  { valeur: "pending", cle: "invoicing.pending" },
+  { valeur: "overdue", cle: "invoicing.overdue" },
+  { valeur: "paid", cle: "invoicing.paid" },
+  { valeur: "cancelled", cle: "invoicing.cancelled" },
+] as const;
+
 export function Invoicing() {
   const { t } = useLanguage();
   // Les donnees vivent dans le depot : la saisie survit au rechargement.
@@ -67,6 +81,7 @@ export function Invoicing() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [pdfPendingId, setPdfPendingId] = useState<string | null>(null);
+  const [factureASupprimer, setFactureASupprimer] = useState<Invoice | null>(null);
 
   /**
    * jsPDF pèse 455 ko (148 ko compressés) et ne sert qu'au clic sur
@@ -135,7 +150,7 @@ export function Invoicing() {
     clientId: "",
     items: [createEmptyItem("item-1")],
     amount: 0,
-    status: "pending",
+    status: "draft",
     date: "",
     dueDate: "",
     paymentMethod: "bank-transfer",
@@ -150,16 +165,19 @@ export function Invoicing() {
       ? invoices
       : invoices.filter((inv) => inv.status === statusFilter);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Invoice["status"]) => {
     switch (status) {
       case "paid":
-        return "bg-green-500/10 text-green-600 dark:text-green-400";
+        return "bg-success/10 text-success border-success/20";
       case "pending":
-        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400";
+        return "bg-warning/10 text-warning border-warning/20";
       case "overdue":
-        return "bg-red-500/10 text-red-600 dark:text-red-400";
+        return "bg-destructive/10 text-destructive border-destructive/20";
+      case "cancelled":
+        return "bg-muted text-muted-foreground border-border line-through";
+      case "draft":
       default:
-        return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
@@ -171,7 +189,10 @@ export function Invoicing() {
   const handleCreate = () => {
     setEditingInvoice(null);
     setFormData({
-      number: `INV-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(3, "0")}`,
+      // Pas de numero : il est attribue a l emission, jamais a la creation.
+      // Le calcul precedent utilisait invoices.length + 1, qui reattribue un
+      // numero deja pris des qu une facture est supprimee.
+      number: "",
       clientId: "",
       items: [
         {
@@ -180,9 +201,9 @@ export function Invoicing() {
         },
       ],
       amount: 0,
-      status: "pending",
+      status: "draft",
       date: todayIso(),
-      dueDate: "",
+      dueDate: addDays(todayIso(), profile.paymentTermDays),
       paymentMethod: "bank-transfer",
       paymentTerms: "Paiement sous 30 jours",
       notes: "",
@@ -207,8 +228,35 @@ export function Invoicing() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    void remove(id);
+  /**
+   * Emission.
+   *
+   * Le numero nest attribue quici, a partir des numeros deja pris, et jamais
+   * a la creation du brouillon : un brouillon abandonne ne doit pas laisser
+   * de trou dans la sequence.
+   */
+  const handleIssue = (invoice: Invoice) => {
+    const numero = nextNumber(
+      invoices.map((facture) => facture.number),
+      "invoice",
+      Number(invoice.date.slice(0, 4)) || new Date().getFullYear(),
+    );
+    void update(invoice.id, { number: numero, status: "pending" }).then(() =>
+      toast.success(`Facture ${numero} émise.`, {
+        description: "Elle ne peut plus être modifiée ni supprimée.",
+      }),
+    );
+  };
+
+  const handleEditGuarded = (invoice: Invoice) => {
+    const decision = canEditDocument(
+      invoice.status === "draft" ? "draft" : "issued",
+    );
+    if (!decision.allowed) {
+      toast.error("Modification impossible", { description: decision.reason });
+      return;
+    }
+    handleEdit(invoice);
   };
 
   const handleItemChange = (
@@ -331,39 +379,29 @@ export function Invoicing() {
         </Button>
       </div>
 
-      {/* Status Filter */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-2">
-            <Button
-              variant={statusFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("all")}
-            >
-              {t("invoicing.all")}
-            </Button>
-            <Button
-              variant={statusFilter === "paid" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("paid")}
-            >
-              {t("invoicing.paid")}
-            </Button>
-            <Button
-              variant={statusFilter === "pending" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("pending")}
-            >
-              {t("invoicing.pending")}
-            </Button>
-            <Button
-              variant={statusFilter === "overdue" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("overdue")}
-            >
-              {t("invoicing.overdue")}
-            </Button>
-          </div>
+        <CardContent className="flex flex-wrap items-center gap-2 pt-6">
+          {FILTRES.map((filtre) => {
+            const actif = statusFilter === filtre.valeur;
+            const compte =
+              filtre.valeur === "all"
+                ? invoices.length
+                : invoices.filter((facture) => facture.status === filtre.valeur)
+                    .length;
+
+            return (
+              <button
+                key={filtre.valeur}
+                type="button"
+                className="filter-pill"
+                aria-pressed={actif}
+                onClick={() => setStatusFilter(filtre.valeur)}
+              >
+                {t(filtre.cle)}
+                <span className="ml-2 tabular-nums opacity-70">{compte}</span>
+              </button>
+            );
+          })}
         </CardContent>
       </Card>
 
@@ -393,7 +431,15 @@ export function Invoicing() {
                 {filteredInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">
-                      <div>{invoice.number}</div>
+                      <div>
+                        {invoice.number === "" ? (
+                          <span className="text-muted-foreground">
+                            Sans numéro
+                          </span>
+                        ) : (
+                          invoice.number
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground truncate max-w-[220px]">
                         {invoice.items[0]?.description || "-"}
                       </div>
@@ -416,18 +462,35 @@ export function Invoicing() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {invoice.status === "draft" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleIssue(invoice)}
+                            className="mr-1"
+                            title="Attribuer un numéro et émettre la facture"
+                          >
+                            {t("invoicing.issue")}
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEdit(invoice)}
-                          title="Éditer"
+                          onClick={() => handleEditGuarded(invoice)}
+                          aria-label={`Modifier la facture ${invoice.number || "en brouillon"}`}
+                          disabled={invoice.status !== "draft"}
+                          title={
+                            invoice.status === "draft"
+                              ? "Modifier ce brouillon"
+                              : "Une facture émise ne se modifie plus : émets un avoir"
+                          }
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(invoice.id)}
+                          onClick={() => setFactureASupprimer(invoice)}
+                          aria-label={`Supprimer la facture ${invoice.number || "en brouillon"}`}
                           title="Supprimer"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
@@ -436,6 +499,7 @@ export function Invoicing() {
                           variant="ghost"
                           size="sm"
                           onClick={() => void handleDownloadPdf(invoice)}
+                          aria-label={`Télécharger le PDF de la facture ${invoice.number}`}
                           disabled={pdfPendingId === invoice.id}
                           title="Télécharger PDF"
                         >
@@ -735,6 +799,28 @@ export function Invoicing() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDelete
+        open={factureASupprimer !== null}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setFactureASupprimer(null);
+        }}
+        subject={
+          factureASupprimer === null
+            ? ""
+            : factureASupprimer.number === ""
+              ? "ce brouillon"
+              : `la facture ${factureASupprimer.number}`
+        }
+        decision={canDeleteDocument(
+          factureASupprimer?.status === "draft" ? "draft" : "issued",
+        )}
+        consequence="Ce brouillon n’a pas de numéro : le supprimer ne laisse aucun trou dans la séquence comptable."
+        onConfirm={() => {
+          if (factureASupprimer !== null) void remove(factureASupprimer.id);
+          setFactureASupprimer(null);
+        }}
+      />
     </div>
   );
 }

@@ -86,6 +86,9 @@ const translations: Translations = {
   // Invoicing
   "invoicing.title": { fr: "Facturation et devis", en: "Invoicing & Quotes" },
   "invoicing.new": { fr: "Nouvelle facture", en: "New Invoice" },
+  "invoicing.draft": { fr: "Brouillon", en: "Draft" },
+  "invoicing.cancelled": { fr: "Annulée", en: "Cancelled" },
+  "invoicing.issue": { fr: "Émettre", en: "Issue" },
   "invoicing.paid": { fr: "Payée", en: "Paid" },
   "invoicing.pending": { fr: "En attente", en: "Pending" },
   "invoicing.overdue": { fr: "En retard", en: "Overdue" },

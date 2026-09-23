@@ -27,7 +27,15 @@ export interface Invoice {
   clientId: string;
   items: InvoiceItem[];
   amount: number;
-  status: "paid" | "pending" | "overdue";
+  /**
+   * Cycle de vie comptable.
+   * `draft`     : brouillon, sans numero, librement modifiable et supprimable.
+   * `pending`   : emise, en attente de reglement.
+   * `paid`      : reglee.
+   * `overdue`   : emise, echeance depassee.
+   * `cancelled` : annulee par un avoir.
+   */
+  status: "draft" | "pending" | "paid" | "overdue" | "cancelled";
   date: string;
   dueDate: string;
   paymentMethod: "bank-transfer" | "mobile-money" | "cash" | "card";

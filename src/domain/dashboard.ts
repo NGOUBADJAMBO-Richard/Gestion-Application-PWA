@@ -11,7 +11,18 @@ import { type CurrencyCode, type Money, money, sum, zero } from "./money";
  * Tout est calculé ici, à partir des documents réels, et testé.
  */
 
-export type InvoiceStatus = "paid" | "pending" | "overdue";
+/**
+ * Un brouillon ne compte dans aucun indicateur : il n’a pas de numéro et
+ * n’engage rien. Une facture annulee non plus : elle a ete neutralisee par un
+ * avoir, et la compter dans le restant dû ferait apparaitre une creance qui
+ * n’existe plus.
+ */
+export type InvoiceStatus =
+  | "draft"
+  | "pending"
+  | "paid"
+  | "overdue"
+  | "cancelled";
 
 /** Vue minimale d'une facture, pour que le domaine ignore la forme des écrans. */
 export interface InvoiceSnapshot {

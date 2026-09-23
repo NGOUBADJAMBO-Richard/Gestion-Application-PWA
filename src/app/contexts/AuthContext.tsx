@@ -132,6 +132,44 @@ function makeUser(email: string, now: string): User {
   };
 }
 
+
+interface SessionRestauree {
+  readonly user: User | null;
+  readonly status: AuthStatus;
+}
+
+/**
+ * État d’ouverture, calcule avant le premier rendu.
+ *
+ * Cette lecture se faisait dans un useEffect : au premier rendu l application
+ * se croyait déconnectée, la route protégée renvoyait vers /login, et le
+ * rebond suivant atterrissait sur l’accueil. Conséquence visible : recharger
+ * la page sur /invoicing ramenait au tableau de bord, et tout lien profond
+ * était perdu.
+ */
+function restaurerSession(): SessionRestauree {
+  const credential = readJson<StoredCredential>(CREDENTIAL_KEY);
+  if (credential === null) return { user: null, status: "unconfigured" };
+
+  const session = readJson<{ email: string; lastActivityAt: number }>(SESSION_KEY);
+  if (session === null) return { user: null, status: "locked" };
+
+  if (Date.now() - session.lastActivityAt > INACTIVITY_LIMIT_MS) {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch {
+      // Sans consequence : la session est de toute façon considérée fermée.
+    }
+    return { user: null, status: "locked" };
+  }
+
+  const profil = readJson<User>(PROFILE_KEY);
+  return {
+    user: profil ?? makeUser(session.email, new Date().toISOString()),
+    status: "unlocked",
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [credential, setCredential] = useState<StoredCredential | null>(() =>
     readJson<StoredCredential>(CREDENTIAL_KEY),
@@ -139,32 +177,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [lockout, setLockout] = useState<LockoutState>(
     () => readJson<LockoutState>(LOCKOUT_KEY) ?? INITIAL_LOCKOUT,
   );
-  const [user, setUser] = useState<User | null>(null);
-  const [status, setStatus] = useState<AuthStatus>(() =>
-    readJson<StoredCredential>(CREDENTIAL_KEY) === null ? "unconfigured" : "locked",
-  );
+  const [restaure] = useState(restaurerSession);
+  const [user, setUser] = useState<User | null>(restaure.user);
+  const [status, setStatus] = useState<AuthStatus>(restaure.status);
   const [retryInSeconds, setRetryInSeconds] = useState(0);
   const [pendingRecoveryCode, setPendingRecoveryCode] = useState<string | null>(null);
   const inactivityTimer = useRef<number | undefined>(undefined);
-
-  // Reprise d'une session encore valide après un simple rechargement de page.
-  useEffect(() => {
-    if (credential === null) return;
-
-    const session = readJson<{ email: string; lastActivityAt: number }>(SESSION_KEY);
-    if (session === null) return;
-
-    if (Date.now() - session.lastActivityAt > INACTIVITY_LIMIT_MS) {
-      localStorage.removeItem(SESSION_KEY);
-      return;
-    }
-
-    const profil = readJson<User>(PROFILE_KEY);
-    setUser(profil ?? makeUser(session.email, new Date().toISOString()));
-    setStatus("unlocked");
-    // Une seule reprise, à l'ouverture.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const lock = useCallback(() => {
     localStorage.removeItem(SESSION_KEY);

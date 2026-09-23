@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate, useLocation } from "react-router";
 import { Layout } from "./components/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Clients } from "./pages/Clients";
@@ -14,9 +14,12 @@ import { useAuth } from "./contexts/AuthContext";
 
 function ProtectedLayout() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // La destination demandée est transmise à l’écran de connexion : après
+    // déverrouillage on y revient, au lieu de retomber sur l’accueil.
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return <Layout />;
@@ -24,11 +27,16 @@ function ProtectedLayout() {
 
 function LoginRoute() {
   const { isAuthenticated, pendingRecoveryCode } = useAuth();
+  const location = useLocation();
+  const destination =
+    typeof (location.state as { from?: unknown } | null)?.from === "string"
+      ? ((location.state as { from: string }).from)
+      : "/";
 
   // Un code de récupération vient d’être émis : il n’est affiché qu’une seule
   // fois. On ne quitte pas l’écran avant confirmation qu’il a été noté.
   if (isAuthenticated && pendingRecoveryCode === null) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={destination} replace />;
   }
 
   return <Login />;

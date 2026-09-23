@@ -17,7 +17,10 @@ import {
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useLanguage } from "../contexts/LanguageContext";
-import { type Client, mockProjects } from "../data/mockData";
+import type { Client } from "../data/mockData";
+import { invoiceRepository, projectRepository } from "../data/repositories";
+import { ConfirmDelete } from "../components/ConfirmDelete";
+import { canDeleteClient } from "../../domain/rules";
 import { clientRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
@@ -45,6 +48,13 @@ export function Clients() {
     remove,
     dismissError,
   } = useCollection(clientRepository);
+  // Les projets et factures reels, pour compter les rattachements et decider
+  // si une suppression est possible. L ecran lisait jusqu ici les donnees de
+  // demonstration : le detail d un client montrait des projets qui n etaient
+  // pas les siens.
+  const { items: projects } = useCollection(projectRepository);
+  const { items: invoices } = useCollection(invoiceRepository);
+  const [clientASupprimer, setClientASupprimer] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -92,9 +102,23 @@ export function Clients() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    // Suppression douce : le client part en corbeille et reste recuperable.
-    void remove(id);
+  /** Projets et factures rattaches a un client, pour l affichage et la regle. */
+  const rattachements = (clientId: string) => ({
+    projets: projects.filter((projet) => projet.clientId === clientId),
+    factures: invoices.filter((facture) => facture.clientId === clientId),
+  });
+
+  const decisionSuppression = (client: Client | null) => {
+    if (client === null) return { allowed: true } as const;
+    const { projets, factures } = rattachements(client.id);
+    return canDeleteClient({
+      // Une facture encore en brouillon ne bloque pas : elle n a pas de
+      // numero et peut disparaitre sans trouer la sequence comptable.
+      issuedInvoiceIds: factures.map((facture) => facture.number),
+      activeProjectIds: projets
+        .filter((projet) => projet.status === "active")
+        .map((projet) => projet.name),
+    });
   };
 
   const handleView = (client: Client) => {
@@ -223,6 +247,7 @@ export function Clients() {
                   size="sm"
                   className="flex-1 gap-1"
                   onClick={() => handleEdit(client)}
+                  aria-label={`Modifier ${client.company}`}
                 >
                   <Pencil className="w-4 h-4" />
                   {t("common.edit")}
@@ -231,7 +256,8 @@ export function Clients() {
                   variant="outline"
                   size="sm"
                   className="gap-1"
-                  onClick={() => handleDelete(client.id)}
+                  onClick={() => setClientASupprimer(client)}
+                  aria-label={`Supprimer ${client.company}`}
                 >
                   <Trash2 className="w-4 h-4 text-destructive" />
                 </Button>
@@ -397,18 +423,14 @@ export function Clients() {
                   <span className="text-muted-foreground">
                     Nombre de projets:
                   </span>{" "}
-                  {selectedClient.projects}
+                  {rattachements(selectedClient.id).projets.length}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2">Projets associes</p>
+                <p className="text-sm font-medium mb-2">Projets associés</p>
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                  {mockProjects
-                    .filter(
-                      (project) => project.clientId === selectedClient.id,
-                    )
-                    .map((project) => (
+                  {rattachements(selectedClient.id).projets.map((project) => (
                       <div
                         key={project.id}
                         className="text-sm border border-border rounded-md px-3 py-2"
@@ -421,11 +443,9 @@ export function Clients() {
                       </div>
                     ))}
 
-                  {mockProjects.filter(
-                    (project) => project.clientId === selectedClient.id,
-                  ).length === 0 && (
+                  {rattachements(selectedClient.id).projets.length === 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Aucun projet associe.
+                      Aucun projet associé.
                     </p>
                   )}
                 </div>
@@ -444,6 +464,24 @@ export function Clients() {
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDelete
+        open={clientASupprimer !== null}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setClientASupprimer(null);
+        }}
+        subject={
+          clientASupprimer === null
+            ? ""
+            : `le client ${clientASupprimer.company}`
+        }
+        decision={decisionSuppression(clientASupprimer)}
+        consequence="Le client part à la corbeille. Ses projets et factures restent en place et continueront de le désigner."
+        onConfirm={() => {
+          if (clientASupprimer !== null) void remove(clientASupprimer.id);
+          setClientASupprimer(null);
+        }}
+      />
     </div>
   );
 }
