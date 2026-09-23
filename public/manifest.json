@@ -6,13 +6,20 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "background_color": "#0F172A",
   "theme_color": "#004AAD",
   "orientation": "any",
   "lang": "fr-FR",
   "dir": "ltr",
-  "categories": ["business", "finance", "productivity"],
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/icon-192.png",
@@ -25,6 +32,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [

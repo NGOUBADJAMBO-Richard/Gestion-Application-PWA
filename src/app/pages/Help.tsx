@@ -105,7 +105,7 @@ const QUESTIONS = [
   {
     question: "L’application fonctionne-t-elle hors ligne ?",
     reponse:
-      "Pas encore. Les données sont bien locales, mais l’installation hors connexion n’est pas terminée. Garde l’onglet ouvert ou relance l’application depuis le serveur local.",
+      "Oui. L’application s’installe depuis le navigateur — une proposition apparaît, ou passe par le menu « Installer ». Une fois installée, elle s’ouvre dans sa propre fenêtre et fonctionne sans connexion : le code, les styles et les polices sont conservés sur l’appareil. Tes données y étaient déjà. Quand une nouvelle version est prête, un message le signale et te laisse recharger au moment qui t’arrange.",
   },
   {
     question: "Comment changer de thème ou de langue ?",
