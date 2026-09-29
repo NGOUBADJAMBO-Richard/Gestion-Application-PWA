@@ -50,25 +50,42 @@ const buttonVariants = cva(
   },
 );
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+/**
+ * Bouton.
+ *
+ * `forwardRef` est **indispensable** ici, et ne l'était pas dans la version
+ * d'origine de ce composant : celle-ci est écrite pour React 19, où une
+ * fonction composant reçoit `ref` parmi ses props. Ce projet est en React 18,
+ * où la référence n'arrive pas ainsi.
+ *
+ * Conséquence concrète, observée : `<PopoverTrigger asChild><Button …/></...>`
+ * n'avait aucune ancre à mesurer. Radix ouvrait bien le panneau — l'état
+ * passait à `open` — mais le laissait à sa position initiale hors écran,
+ * `translate(0, -200%)`. Le clic sur la cloche des alertes ne produisait donc
+ * rien de visible, sans la moindre erreur.
+ *
+ * Toute mise à jour de ce composant depuis shadcn doit conserver ce `forwardRef`
+ * tant que le projet n'est pas passé à React 19.
+ */
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants> & {
+      asChild?: boolean;
+    }
+>(({ className, variant, size, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
+      ref={ref}
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
   );
-}
+});
+
+Button.displayName = "Button";
 
 export { Button, buttonVariants };

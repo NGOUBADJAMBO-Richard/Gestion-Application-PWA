@@ -19,6 +19,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
+import { SignaturePanel } from "../components/SignaturePanel";
 
 /**
  * Paramètres de l'entreprise.
@@ -423,6 +424,16 @@ export function Settings() {
               }
             />
           </Champ>
+
+          <div className="border-t border-border pt-6">
+            <p className="section-label mb-1">Signature</p>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Portée au bas des devis, des factures et des avoirs. Un devis
+              sans signature n&rsquo;engage personne : le client ne sait ni qui
+              lui écrit, ni à qui répondre.
+            </p>
+            <SignaturePanel draft={draft} set={set} />
+          </div>
         </CardContent>
       </Card>
 

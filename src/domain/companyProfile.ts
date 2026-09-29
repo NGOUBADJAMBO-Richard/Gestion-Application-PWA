@@ -50,6 +50,24 @@ export interface CompanyProfile {
   readonly paymentTerms?: string;
   readonly bankDetails?: string;
 
+  /**
+   * Signataire des documents commerciaux.
+   *
+   * Un devis sans signature n'engage personne : le client ne sait pas qui
+   * lui écrit, ni à qui répondre. Le nom et la qualité sont toujours
+   * imprimés ; l'image de signature, si elle existe, vient par-dessus.
+   */
+  readonly signatoryName: string;
+  readonly signatoryRole: string;
+  /**
+   * Signature manuscrite, en image encodée (data URL).
+   *
+   * Facultative. Stockée dans le navigateur avec le reste du profil, donc
+   * volontairement petite : une image d'un mégaoctet remplirait le quota et
+   * ferait échouer l'enregistrement de tout le profil.
+   */
+  readonly signatureDataUrl?: string | undefined;
+
   /** Mentions libres reportées en pied de chaque facture. */
   readonly invoiceFooterMentions: readonly string[];
 
@@ -112,6 +130,8 @@ export const DEFAULT_COMPANY_PROFILE: CompanyProfile = {
   paymentTermDays: 30,
   paymentTerms: "Paiement sous 30 jours à compter de la date de facture.",
   bankDetails: "",
+  signatoryName: "",
+  signatoryRole: "Gérant",
   invoiceFooterMentions: [],
   // Ordre de grandeur pour un développeur à Libreville. À ajuster : c'est un
   // coût de revient, pas un prix de vente.

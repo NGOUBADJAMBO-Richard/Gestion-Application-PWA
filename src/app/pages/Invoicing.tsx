@@ -125,12 +125,26 @@ export function Invoicing() {
   const handleDownloadPdf = async (invoice: Invoice) => {
     setPdfPendingId(invoice.id);
     try {
-      const { generateInvoicePDF } = await import("../utils/pdfGenerator");
-      generateInvoicePDF(invoice, nameOf(invoice.clientId));
+      const { generateDocumentPDF } = await import("../utils/documentPdf");
+      const client = clientById.get(invoice.clientId);
+      generateDocumentPDF({
+        invoice,
+        clientName: client?.company ?? nameOf(invoice.clientId),
+        clientLines: [
+          client?.name ?? "",
+          client?.email ?? "",
+          client?.phone ?? "",
+        ].filter((ligne) => ligne.length > 0),
+        profile,
+      });
     } catch (error) {
-      console.error("Génération du PDF impossible", error);
+      // Le message du domaine dit quoi corriger ; le remplacer par un libellé
+      // générique obligerait à chercher soi-même.
       toast.error("Le PDF n'a pas pu être généré.", {
-        description: "Vérifie que la facture est complète, puis réessaie.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Vérifie que le document est complet, puis réessaie.",
       });
     } finally {
       setPdfPendingId(null);
@@ -882,9 +896,15 @@ export function Invoicing() {
                           variant="ghost"
                           size="sm"
                           onClick={() => void handleDownloadPdf(invoice)}
-                          aria-label={`Télécharger le PDF de la facture ${invoice.number}`}
+                          aria-label={`Télécharger le PDF de ${invoice.number || "ce brouillon"}`}
                           disabled={pdfPendingId === invoice.id}
-                          title="Télécharger PDF"
+                          title={
+                            invoice.kind === "quote"
+                              ? "Télécharger le devis"
+                              : invoice.kind === "creditNote"
+                                ? "Télécharger l'avoir"
+                                : "Télécharger la facture"
+                          }
                         >
                           <Download className="w-4 h-4" />
                         </Button>
