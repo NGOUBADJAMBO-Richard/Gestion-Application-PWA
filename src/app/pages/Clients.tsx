@@ -21,7 +21,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useLanguage } from "../contexts/LanguageContext";
-import type { Client } from "../data/mockData";
+import type { Client } from "../data/entities";
 import { invoiceRepository, projectRepository } from "../data/repositories";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { canDeleteClient } from "../../domain/rules";
@@ -41,6 +41,7 @@ import {
 } from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
 import { StatCard } from "../components/StatCard";
+import { EmptyState } from "../components/EmptyState";
 import { formatMoney, money } from "../../domain/money";
 import { computeSettlement } from "../../domain/payment";
 import { computeClientConcentration } from "../../domain/executive";
@@ -331,7 +332,29 @@ export function Clients() {
         </CardContent>
       </Card>
 
-      {/* Clients Grid */}
+      {/*
+        Une liste vide qui n'affiche qu'une barre de recherche ressemble à
+        un écran cassé. On distingue les deux cas : il n'y a rien, ou la
+        recherche ne trouve rien — proposer de créer un client dans le
+        second cas serait à côté de la question.
+      */}
+      {filteredClients.length === 0 ? (
+        clients.length === 0 ? (
+          <EmptyState
+            icon={Building2}
+            title="Aucun client enregistré"
+            description="Les clients sont le point de départ : projets, devis et factures s’y rattachent. Crée le premier, tu pourras lui ouvrir un projet dans la foulée."
+            actionLabel={t("clients.new")}
+            onAction={handleCreate}
+          />
+        ) : (
+          <EmptyState
+            icon={Search}
+            title="Aucun client ne correspond"
+            description={`Rien ne correspond à « ${searchQuery.trim()} ». Essaie un nom d’entreprise, un contact ou une adresse e-mail.`}
+          />
+        )
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredClients.map((client) => (
           <Card key={client.id} className="hover:shadow-lg transition-shadow">
@@ -426,6 +449,7 @@ export function Clients() {
           </Card>
         ))}
       </div>
+      )}
 
       <Dialog
         open={isDialogOpen}

@@ -17,6 +17,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 import { BackupPanel } from "../components/BackupPanel";
 import { NotificationPanel } from "../components/NotificationPanel";
+import { ResetPanel } from "../components/ResetPanel";
 
 export function Account() {
   const { user } = useAuth();
@@ -109,6 +110,8 @@ export function Account() {
       <NotificationPanel />
 
       <BackupPanel />
+
+      <ResetPanel />
     </div>
   );
 }

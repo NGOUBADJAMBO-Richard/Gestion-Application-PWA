@@ -6,7 +6,7 @@ import type { DocumentTotals } from "../../domain/invoice";
 import { formatMoney, money } from "../../domain/money";
 import { computeSettlement } from "../../domain/payment";
 import { documentTotals } from "../data/documentTotals";
-import type { Invoice } from "../data/mockData";
+import type { Invoice } from "../data/entities";
 
 /**
  * Génération des documents commerciaux en PDF.

@@ -4,7 +4,7 @@ import { computeDocumentTotals, type DocumentTotals } from "../../domain/invoice
 import { totalPaid } from "../../domain/payment";
 import type { ExecutiveDocument } from "../../domain/executive";
 import type { RevenueDocument } from "../../domain/profitability";
-import type { Invoice, InvoiceItem } from "./mockData";
+import type { Invoice, InvoiceItem } from "./entities";
 
 /**
  * Passage du document stocké au document calculé.

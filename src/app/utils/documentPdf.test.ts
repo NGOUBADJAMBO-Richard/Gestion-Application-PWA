@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { DEFAULT_COMPANY_PROFILE } from "../../domain/companyProfile";
 import { computeDocumentTotals } from "../../domain/invoice";
 import { formatMoney, money } from "../../domain/money";
-import type { Invoice } from "../data/mockData";
+import type { Invoice } from "../data/entities";
 import { PdfGenerationError, drawDocument } from "./documentPdf";
 
 /**

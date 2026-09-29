@@ -7,26 +7,9 @@ import type {
 } from "../../domain/academy";
 import { isExpenseCategory } from "../../domain/expense";
 import type { Reminder } from "../../domain/reminder";
-import {
-  mockEnrollments,
-  mockLearners,
-  mockReminders,
-  mockSessions,
-} from "./academyData";
 import type { Expense } from "../../domain/expense";
 import type { TimeEntry } from "../../domain/timeEntry";
-import {
-  type Client,
-  type Invoice,
-  type Project,
-  type Ticket,
-  mockClients,
-  mockExpenses,
-  mockInvoices,
-  mockProjects,
-  mockTickets,
-  mockTimeEntries,
-} from "./mockData";
+import type { Client, Invoice, Project, Ticket } from "./entities";
 
 /**
  * Dépôts de l'application.
@@ -216,60 +199,51 @@ function parseReminder(raw: unknown): Reminder | undefined {
 export const clientRepository: Repository<Client> = new LocalStorageRepository<Client>({
   collection: "clients",
   parse: parseClient,
-  seed: () => mockClients,
 });
 
 export const projectRepository: Repository<Project> = new LocalStorageRepository<Project>({
   collection: "projects",
   parse: parseProject,
-  seed: () => mockProjects,
 });
 
 export const invoiceRepository: Repository<Invoice> = new LocalStorageRepository<Invoice>({
   collection: "invoices",
   parse: parseInvoice,
-  seed: () => mockInvoices,
 });
 
 export const ticketRepository: Repository<Ticket> = new LocalStorageRepository<Ticket>({
   collection: "tickets",
   parse: parseTicket,
-  seed: () => mockTickets,
 });
 
 export const timeEntryRepository: Repository<TimeEntry> =
   new LocalStorageRepository<TimeEntry>({
     collection: "time-entries",
     parse: parseTimeEntry,
-    seed: () => mockTimeEntries,
   });
 
 export const expenseRepository: Repository<Expense> =
   new LocalStorageRepository<Expense>({
     collection: "expenses",
     parse: parseExpense,
-    seed: () => mockExpenses,
   });
 
 export const sessionRepository: Repository<TrainingSession> =
   new LocalStorageRepository<TrainingSession>({
     collection: "academy-sessions",
     parse: parseSession,
-    seed: () => mockSessions,
   });
 
 export const learnerRepository: Repository<Learner> =
   new LocalStorageRepository<Learner>({
     collection: "academy-learners",
     parse: parseLearner,
-    seed: () => mockLearners,
   });
 
 export const enrollmentRepository: Repository<Enrollment> =
   new LocalStorageRepository<Enrollment>({
     collection: "academy-enrollments",
     parse: parseEnrollment,
-    seed: () => mockEnrollments,
   });
 
 /**
@@ -282,7 +256,6 @@ export const reminderRepository: Repository<Reminder> =
   new LocalStorageRepository<Reminder>({
     collection: "reminders",
     parse: parseReminder,
-    seed: () => mockReminders,
   });
 
 /** Toutes les collections, indexées par nom. Sert à l'export de sauvegarde. */

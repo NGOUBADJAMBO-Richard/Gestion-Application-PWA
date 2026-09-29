@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { documentAmounts, documentTotals, toRevenueDocuments } from "./documentTotals";
-import type { Invoice, InvoiceItem } from "./mockData";
+import type { Invoice, InvoiceItem } from "./entities";
 
 function ligne(overrides: Partial<InvoiceItem> = {}): InvoiceItem {
   return {

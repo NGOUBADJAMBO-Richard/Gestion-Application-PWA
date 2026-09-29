@@ -21,7 +21,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
-import type { Project } from "../data/mockData";
+import type { Project } from "../data/entities";
 import { projectRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";

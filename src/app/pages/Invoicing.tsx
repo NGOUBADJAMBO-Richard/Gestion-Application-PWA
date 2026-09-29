@@ -19,7 +19,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
-import type { Invoice, InvoiceItem } from "../data/mockData";
+import type { Invoice, InvoiceItem } from "../data/entities";
 import { invoiceRepository, reminderRepository } from "../data/repositories";
 import { recordActivity } from "../data/activityLog";
 import { useCollection } from "../hooks/useCollection";

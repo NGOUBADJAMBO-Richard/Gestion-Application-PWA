@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-import type { Project } from "../data/mockData";
+import type { Project } from "../data/entities";
 import { projectRepository } from "../data/repositories";
 import { useCollection } from "./useCollection";
 
