@@ -23,6 +23,9 @@ const Dashboard = lazy(() =>
 const Clients = lazy(() =>
   import("./pages/Clients").then((m) => ({ default: m.Clients })),
 );
+const ClientFile = lazy(() =>
+  import("./pages/ClientFile").then((m) => ({ default: m.ClientFile })),
+);
 const Projects = lazy(() =>
   import("./pages/Projects").then((m) => ({ default: m.Projects })),
 );
@@ -109,6 +112,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Dashboard },
       { path: "clients", Component: Clients },
+      { path: "clients/:clientId", Component: ClientFile },
       { path: "account", Component: Account },
       { path: "projects", Component: Projects },
       { path: "invoicing", Component: Invoicing },
