@@ -5,6 +5,7 @@ import { AlertTriangle, Bell, CheckCircle2, Info } from "lucide-react";
 import type { Alert, AlertSeverity } from "../../domain/alerts";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useAlertNotifications } from "../hooks/useAlertNotifications";
 import { useAlerts } from "../hooks/useAlerts";
 
 /**
@@ -71,6 +72,11 @@ function LigneAlerte({
 
 export function AlertBell() {
   const { alerts, summary } = useAlerts();
+
+  // Les alertes sont déjà calculées ici : les notifier depuis un autre
+  // composant obligerait à refaire le calcul, avec le risque que les deux
+  // sources divergent.
+  useAlertNotifications(alerts);
   const [ouvert, setOuvert] = useState(false);
   const navigate = useNavigate();
 

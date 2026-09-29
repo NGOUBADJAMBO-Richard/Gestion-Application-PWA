@@ -16,6 +16,7 @@ import { Badge } from "../components/ui/badge";
 import { useAuth } from "../contexts/AuthContext";
 
 import { BackupPanel } from "../components/BackupPanel";
+import { NotificationPanel } from "../components/NotificationPanel";
 
 export function Account() {
   const { user } = useAuth();
@@ -104,6 +105,8 @@ export function Account() {
           </div>
         </CardContent>
       </Card>
+
+      <NotificationPanel />
 
       <BackupPanel />
     </div>

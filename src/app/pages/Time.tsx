@@ -922,7 +922,7 @@ export function Time() {
                 </p>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <Label htmlFor="temps-refacturable" className="leading-snug">
+                <Label htmlFor="temps-refacturable" className="flex-col items-start gap-1 leading-snug">
                   Refacturable au client
                   <span className="block text-xs text-muted-foreground font-normal">
                     Une reprise offerte reste un coût : décoche-la.
@@ -1079,7 +1079,7 @@ export function Time() {
                 />
               </div>
               <div className="flex items-center justify-between gap-4">
-                <Label htmlFor="depense-refacturee" className="leading-snug">
+                <Label htmlFor="depense-refacturee" className="flex-col items-start gap-1 leading-snug">
                   Refacturée au client
                   <span className="block text-xs text-muted-foreground font-normal">
                     Avancée puis répercutée à l&rsquo;identique : hors marge.

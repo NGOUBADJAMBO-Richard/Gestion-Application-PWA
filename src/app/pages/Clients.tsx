@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Search,
   Plus,
@@ -7,6 +7,9 @@ import {
   Building2,
   Pencil,
   Trash2,
+  Wallet,
+  Receipt,
+  PieChart,
 } from "lucide-react";
 import {
   Card,
@@ -36,6 +39,12 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
+import { StatCard } from "../components/StatCard";
+import { formatMoney, money } from "../../domain/money";
+import { computeSettlement } from "../../domain/payment";
+import { computeClientConcentration } from "../../domain/executive";
+import { toExecutiveDocuments } from "../data/documentTotals";
+import { useCompanyProfile } from "../hooks/useCompanyProfile";
 
 export function Clients() {
   const { t } = useLanguage();
@@ -56,6 +65,38 @@ export function Clients() {
   // pas les siens.
   const { items: projects } = useCollection(projectRepository);
   const { items: invoices } = useCollection(invoiceRepository);
+  const { profile } = useCompanyProfile();
+
+  /**
+   * Portefeuille en chiffres.
+   *
+   * L'écran listait des fiches sans jamais dire ce que le portefeuille
+   * représente : combien il rapporte, combien il doit, et à quel point il
+   * tient à un seul nom. Trois questions qu'on se pose en ouvrant la liste.
+   */
+  const portefeuille = useMemo(() => {
+    const repartition = computeClientConcentration(
+      toExecutiveDocuments(invoices, profile.currency),
+      profile.currency,
+    );
+
+    // Encours : ce qui est facturé et pas encore encaissé, avoirs déduits.
+    const encours = invoices
+      .filter((facture) => facture.kind !== "quote" && facture.status !== "draft")
+      .filter((facture) => facture.status !== "cancelled" && facture.status !== "paid")
+      .reduce(
+        (cumul, facture) =>
+          cumul +
+          computeSettlement(facture.amount, facture.payments ?? []).balance,
+        0,
+      );
+
+    return { repartition, encours };
+  }, [invoices, profile.currency]);
+
+  const argent = (montant: number) =>
+    formatMoney(money(montant, profile.currency));
+
   const [clientASupprimer, setClientASupprimer] = useState<Client | null>(null);
   const [montrerArchives, setMontrerArchives] = useState(false);
 
@@ -219,6 +260,62 @@ export function Clients() {
         </Button>
         </div>
       </header>
+
+
+      <div className="enter-stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Clients actifs"
+          value={{
+            to: clients.filter((client) => client.archivedAt === undefined).length,
+            format: (valeur) => String(valeur),
+          }}
+          hint={
+            nombreArchives === 0
+              ? "Aucun client archivé"
+              : `${nombreArchives} archivé(s)`
+          }
+          icon={Building2}
+        />
+        <StatCard
+          label="Chiffre d’affaires HT"
+          value={{
+            to: portefeuille.repartition.total.amount,
+            format: argent,
+          }}
+          hint="Pièces émises, avoirs déduits. Les devis n’y figurent pas."
+          icon={Wallet}
+          href="/invoicing"
+        />
+        <StatCard
+          label="Encours"
+          value={{ to: portefeuille.encours, format: argent }}
+          hint={
+            portefeuille.encours === 0
+              ? "Tout est encaissé."
+              : "Facturé et pas encore encaissé."
+          }
+          icon={Receipt}
+          tone={portefeuille.encours > 0 ? "warning" : "positive"}
+          href="/invoicing"
+        />
+        <StatCard
+          label="Premier client"
+          value={
+            portefeuille.repartition.topSharePercent === null
+              ? "—"
+              : `${portefeuille.repartition.topSharePercent.toFixed(0)} % du CA`
+          }
+          hint={
+            portefeuille.repartition.topSharePercent === null
+              ? "Aucune pièce émise."
+              : portefeuille.repartition.dependent
+                ? "Dépendance forte : le perdre mettrait l\u2019activité en cause."
+                : "Portefeuille réparti."
+          }
+          icon={PieChart}
+          tone={portefeuille.repartition.dependent ? "warning" : "neutral"}
+        />
+      </div>
 
       {/* Search */}
       <Card>

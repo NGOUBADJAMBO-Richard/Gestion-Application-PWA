@@ -35,10 +35,9 @@ import { useClientIndex } from "../hooks/useClientIndex";
 import { useCollection } from "../hooks/useCollection";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { invoiceRepository, projectRepository } from "../data/repositories";
-import { toRevenueDocuments } from "../data/documentTotals";
+import { toExecutiveDocuments } from "../data/documentTotals";
 import { Meter, StatCard } from "../components/StatCard";
 import {
-  type ExecutiveDocument,
   computeCashPosition,
   computeClientConcentration,
   computeCollectionDelay,
@@ -121,44 +120,10 @@ export function Dashboard() {
     [documentsComptables, aujourdhui],
   );
 
-  /**
-   * Documents réduits à leur portée financière, pour les indicateurs de
-   * direction.
-   *
-   * Les montants sont recalculés depuis les lignes, comme partout ailleurs :
-   * le champ `amount` a été écrit par une version antérieure du calcul, et
-   * un total figé faux contaminerait le délai d'encaissement comme la
-   * répartition par client.
-   */
-  const documentsExecutifs = useMemo<readonly ExecutiveDocument[]>(() => {
-    const totaux = new Map(
-      toRevenueDocuments(invoices, profile.currency).map((document) => [
-        document.id,
-        document,
-      ]),
-    );
-    return invoices.flatMap((facture) => {
-      const calcule = totaux.get(facture.id);
-      if (calcule === undefined) return [];
-      return [
-        {
-          id: facture.id,
-          number: facture.number,
-          kind: facture.kind,
-          status: facture.status,
-          clientId: facture.clientId,
-          issuedAt: facture.date,
-          net: calcule.net,
-          total: calcule.total,
-          payments: (facture.payments ?? []).map((encaissement) => ({
-            date: encaissement.date,
-            amount: encaissement.amount,
-          })),
-          convertedFrom: facture.convertedFrom,
-        },
-      ];
-    });
-  }, [invoices, profile.currency]);
+  const documentsExecutifs = useMemo(
+    () => toExecutiveDocuments(invoices, profile.currency),
+    [invoices, profile.currency],
+  );
 
   const delai = useMemo(
     () => computeCollectionDelay(documentsExecutifs),
@@ -323,7 +288,7 @@ export function Dashboard() {
 
         <div className="enter-stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            label="Délai moyen d&rsquo;encaissement"
+            label="Délai moyen d’encaissement"
             value={
               delai.weightedDays === null
                 ? "—"

@@ -7,7 +7,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -135,7 +134,13 @@ export function Login() {
               <div className="md:hidden mb-4">
                 <BrandLogo size="md" mode={theme === "dark" ? "mono" : "color"} />
               </div>
-              <CardTitle>{titre}</CardTitle>
+              {/*
+                Un <h1> plutôt que `CardTitle` : c'est le titre de l'écran, pas
+                celui d'une carte parmi d'autres. Sans lui, le premier écran
+                de l'application était le seul sans point d'entrée pour un
+                lecteur d'écran.
+              */}
+              <h1 className="leading-none text-xl">{titre}</h1>
               <CardDescription>{description}</CardDescription>
             </CardHeader>
 

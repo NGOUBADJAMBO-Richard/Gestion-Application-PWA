@@ -32,6 +32,10 @@ export default defineConfig({
         // perdrait sa typographie, ce qui était déjà le défaut du CDN.
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         cleanupOutdatedCaches: true,
+        // Le code de mise en cache est produit par Workbox et ne doit pas
+        // être édité ; il peut en revanche importer ce complément, qui
+        // ouvre le bon écran au clic sur une notification.
+        importScripts: ["/sw-notifications.js"],
       },
       devOptions: {
         // Désactivé en développement : un service worker qui met en cache

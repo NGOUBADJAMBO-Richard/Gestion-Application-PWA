@@ -2,6 +2,7 @@ import type { CurrencyCode } from "../../domain/money";
 import { money } from "../../domain/money";
 import { computeDocumentTotals, type DocumentTotals } from "../../domain/invoice";
 import { totalPaid } from "../../domain/payment";
+import type { ExecutiveDocument } from "../../domain/executive";
 import type { RevenueDocument } from "../../domain/profitability";
 import type { Invoice, InvoiceItem } from "./mockData";
 
@@ -89,6 +90,47 @@ export function toRevenueDocuments(
       net: totaux.subtotal,
       total: totaux.total,
       collected: money(totalPaid(invoice.payments ?? []), currency),
+    });
+  }
+
+  return documents;
+}
+
+/**
+ * Réduit les documents à la forme attendue par les indicateurs de direction.
+ *
+ * Même principe que `toRevenueDocuments`, avec en plus la date d'émission, les
+ * encaissements datés et le devis d'origine — ce qu'il faut pour mesurer un
+ * délai d'encaissement et un taux de transformation.
+ *
+ * Cette conversion était écrite dans le tableau de bord ; elle sert aussi à
+ * l'écran Clients, et deux copies auraient fini par diverger sur ce qui compte
+ * comme recette.
+ */
+export function toExecutiveDocuments(
+  invoices: readonly Invoice[],
+  currency: CurrencyCode,
+): readonly ExecutiveDocument[] {
+  const documents: ExecutiveDocument[] = [];
+
+  for (const invoice of invoices) {
+    const totaux = documentTotals(invoice.items, currency);
+    if (totaux === null) continue;
+
+    documents.push({
+      id: invoice.id,
+      number: invoice.number,
+      kind: invoice.kind,
+      status: invoice.status,
+      clientId: invoice.clientId,
+      issuedAt: invoice.date,
+      net: totaux.subtotal,
+      total: totaux.total,
+      payments: (invoice.payments ?? []).map((encaissement) => ({
+        date: encaissement.date,
+        amount: encaissement.amount,
+      })),
+      convertedFrom: invoice.convertedFrom,
     });
   }
 

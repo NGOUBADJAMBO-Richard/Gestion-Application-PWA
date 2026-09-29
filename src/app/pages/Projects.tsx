@@ -1,5 +1,15 @@
 import React, { useMemo, useState } from "react";
-import { Search, Plus, Filter, Pencil, Trash2 } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Filter,
+  Pencil,
+  Trash2,
+  FolderKanban,
+  Wallet,
+  TrendingUp,
+  AlertTriangle,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -51,6 +61,7 @@ import { toRevenueDocuments } from "../data/documentTotals";
 import { expenseRepository, timeEntryRepository } from "../data/repositories";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { formatDuration } from "../../domain/timeEntry";
+import { StatCard } from "../components/StatCard";
 
 export function Projects() {
   const { t } = useLanguage();
@@ -106,6 +117,40 @@ export function Projects() {
     progress: 0,
     description: "",
   });
+
+  /**
+   * Le portefeuille de projets en quatre chiffres.
+   *
+   * La liste disait combien de projets existaient, jamais ce qu'ils valaient
+   * ni lesquels dérivaient. Les rentabilités sont déjà calculées ligne à
+   * ligne : on les agrège plutôt que de refaire le travail.
+   */
+  const bilan = useMemo(() => {
+    const lignes = [...rentabilites.values()];
+    return {
+      actifs: projects.filter((projet) => projet.status === "active").length,
+      budgetEnCours: projects
+        .filter((projet) => projet.status === "active")
+        .reduce((cumul, projet) => cumul + Math.round(projet.budget), 0),
+      marge: lignes.reduce((cumul, ligne) => cumul + ligne.margin.amount, 0),
+      // Ce qui compte est de perdre de l'argent, pas de dépasser un budget.
+      //
+      // La première version croisait les deux conditions et annonçait
+      // « aucun projet ne perd d'argent » alors que deux en perdaient : leurs
+      // coûts restaient sous le budget, mais la facturation n'avait pas
+      // suivi. Le dépassement de budget reste signalé sur la fiche du
+      // projet ; ici on compte les pertes.
+      enPerte: lignes.filter(
+        (ligne) =>
+          ligne.margin.amount < 0 &&
+          (ligne.revenue.amount !== 0 || ligne.totalCost.amount !== 0),
+      ).length,
+      horsBudget: lignes.filter((ligne) => ligne.overBudget).length,
+    };
+  }, [projects, rentabilites]);
+
+  const argent = (montant: number) =>
+    formatMoney(money(montant, profile.currency));
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
@@ -212,6 +257,44 @@ export function Projects() {
         </Button>
         </div>
       </header>
+
+
+      <div className="enter-stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Projets actifs"
+          value={{ to: bilan.actifs, format: (valeur) => String(valeur) }}
+          hint={`${projects.length} au total`}
+          icon={FolderKanban}
+        />
+        <StatCard
+          label="Budget en cours"
+          value={{ to: bilan.budgetEnCours, format: argent }}
+          hint="Prix de vente des projets actifs."
+          icon={Wallet}
+        />
+        <StatCard
+          label="Marge consolidée"
+          value={{ to: bilan.marge, format: argent }}
+          hint="Facturé hors taxes, moins le temps et les dépenses."
+          icon={TrendingUp}
+          tone={bilan.marge < 0 ? "negative" : "positive"}
+          href="/time"
+        />
+        <StatCard
+          label="Projets en perte"
+          value={{ to: bilan.enPerte, format: (valeur) => String(valeur) }}
+          hint={
+            bilan.enPerte === 0
+              ? "Chaque projet couvre ses coûts."
+              : bilan.horsBudget === 0
+                ? "Coûts supérieurs à ce qui a été facturé."
+                : `dont ${bilan.horsBudget} au-delà du budget prévu`
+          }
+          icon={AlertTriangle}
+          tone={bilan.enPerte === 0 ? "positive" : "negative"}
+          href="/time"
+        />
+      </div>
 
       {/* Filters */}
       <Card>
