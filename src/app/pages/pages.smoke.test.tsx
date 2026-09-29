@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 
 import { renderWithProviders } from "../../test/renderWithProviders";
+import { Academy } from "./Academy";
 import { Clients } from "./Clients";
 import { Dashboard } from "./Dashboard";
 import { Help } from "./Help";
@@ -35,6 +36,18 @@ describe("ouverture des écrans", () => {
   it("les projets s'affichent", async () => {
     renderWithProviders(<Projects />);
     expect(await screen.findByRole("heading", { level: 1, name: /projet/i })).toBeInTheDocument();
+  });
+
+  it("l'Academy s'affiche avec ses trois onglets", async () => {
+    renderWithProviders(<Academy />);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: /academy/i }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: "Sessions" })).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: "Apprenants" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("tab", { name: "Inscriptions" }),
+    ).toBeInTheDocument();
   });
 
   it("le temps et la rentabilité s'affichent", async () => {

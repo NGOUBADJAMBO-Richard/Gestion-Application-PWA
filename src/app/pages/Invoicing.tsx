@@ -7,6 +7,7 @@ import {
   Trash2,
   Undo2,
   Wallet,
+  BellRing,
 } from "lucide-react";
 import { todayIso } from "../../domain/date";
 import {
@@ -19,11 +20,15 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
 import type { Invoice, InvoiceItem } from "../data/mockData";
-import { invoiceRepository } from "../data/repositories";
+import { invoiceRepository, reminderRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
 import { ClientSelect } from "../components/ClientSelect";
 import { ProjectSelect } from "../components/ProjectSelect";
+import {
+  ReminderDialog,
+  type ReminderTarget,
+} from "../components/ReminderDialog";
 import { useClientIndex } from "../hooks/useClientIndex";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { defaultVatPercent } from "../../domain/companyProfile";
@@ -97,7 +102,7 @@ export function Invoicing() {
     remove,
     dismissError,
   } = useCollection(invoiceRepository);
-  const { nameOf } = useClientIndex();
+  const { nameOf, byId: clientById } = useClientIndex();
   const { profile } = useCompanyProfile();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [natureFilter, setNatureFilter] =
@@ -106,6 +111,9 @@ export function Invoicing() {
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [pdfPendingId, setPdfPendingId] = useState<string | null>(null);
   const [factureASupprimer, setFactureASupprimer] = useState<Invoice | null>(null);
+  const relances = useCollection(reminderRepository);
+  const [cibleRelance, setCibleRelance] = useState<ReminderTarget | null>(null);
+
   const [factureAEncaisser, setFactureAEncaisser] = useState<Invoice | null>(null);
 
   /**
@@ -404,6 +412,28 @@ export function Invoicing() {
             : `Reste ${formatCurrencyXAF(reglement.balance)} à encaisser.`,
       }),
     );
+  };
+
+  /**
+   * Prépare une relance sur un document.
+   *
+   * Le montant relancé est le **reste dû**, pas le total : relancer
+   * 531 000 F un client qui en a déjà versé 200 000 est la meilleure façon
+   * de se faire répondre que la facture a été payée.
+   */
+  const handleRemind = (invoice: Invoice) => {
+    const client = clientById.get(invoice.clientId);
+    const reste = computeSettlement(invoice.amount, invoice.payments ?? []).balance;
+    setCibleRelance({
+      invoiceId: invoice.id,
+      documentNumber: invoice.number || "(brouillon)",
+      clientName: client?.company ?? nameOf(invoice.clientId),
+      clientPhone: client?.phone ?? "",
+      clientEmail: client?.email ?? "",
+      formattedBalance: formatCurrencyXAF(reste),
+      dueDate: invoice.dueDate,
+      daysOverdue: daysOverdue(invoice, aujourdHui),
+    });
   };
 
   const handleEditGuarded = (invoice: Invoice) => {
@@ -743,6 +773,25 @@ export function Invoicing() {
                             >
                               <FileOutput className="h-4 w-4" />
                               Facturer
+                            </Button>
+                          )}
+
+                        {/*
+                          La relance n'apparaît que sur une facture
+                          réellement en retard : proposer de relancer une
+                          facture à jour invite à froisser un bon client.
+                        */}
+                        {invoice.kind === "invoice" &&
+                          statutDe(invoice) === "overdue" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-1 gap-1"
+                              onClick={() => handleRemind(invoice)}
+                              title="Préparer une relance WhatsApp ou e-mail"
+                            >
+                              <BellRing className="h-4 w-4" />
+                              Relancer
                             </Button>
                           )}
 
@@ -1121,6 +1170,19 @@ export function Invoicing() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ReminderDialog
+        target={cibleRelance}
+        history={relances.items}
+        companyName={profile.name}
+        paymentDetails={profile.bankDetails}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setCibleRelance(null);
+        }}
+        onRecord={(relance) => {
+          void relances.create(relance);
+        }}
+      />
 
       <ConfirmDelete
         open={factureASupprimer !== null}

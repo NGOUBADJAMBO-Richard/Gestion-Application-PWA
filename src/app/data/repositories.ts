@@ -1,6 +1,18 @@
 import { LocalStorageRepository } from "../../infra/localStorageRepo";
 import type { Repository } from "../../infra/repository";
+import type {
+  Enrollment,
+  Learner,
+  TrainingSession,
+} from "../../domain/academy";
 import { isExpenseCategory } from "../../domain/expense";
+import type { Reminder } from "../../domain/reminder";
+import {
+  mockEnrollments,
+  mockLearners,
+  mockReminders,
+  mockSessions,
+} from "./academyData";
 import type { Expense } from "../../domain/expense";
 import type { TimeEntry } from "../../domain/timeEntry";
 import {
@@ -117,6 +129,78 @@ function parseExpense(raw: unknown): Expense | undefined {
   };
 }
 
+
+/**
+ * Une session illisible est écartée.
+ *
+ * Une capacité nulle ou négative ferait afficher un taux de remplissage
+ * infini et refuserait toute inscription sans expliquer pourquoi.
+ */
+function parseSession(raw: unknown): TrainingSession | undefined {
+  if (!isRecord(raw)) return undefined;
+  if (!hasText(raw.id) || !hasText(raw.title)) return undefined;
+  if (!hasText(raw.startDate) || !hasText(raw.endDate)) return undefined;
+  if (!Number.isInteger(raw.capacity) || (raw.capacity as number) < 1) {
+    return undefined;
+  }
+  return {
+    ...(raw as unknown as TrainingSession),
+    // Champs apparus après coup : une session enregistrée avant eux reste
+    // exploitable plutôt que d'être perdue.
+    mode: raw.mode === "remote" || raw.mode === "inhouse" ? raw.mode : "onsite",
+    price: Number.isInteger(raw.price) ? (raw.price as number) : 0,
+    hours: typeof raw.hours === "number" ? raw.hours : 0,
+    trainer: typeof raw.trainer === "string" ? raw.trainer : "",
+  };
+}
+
+function parseLearner(raw: unknown): Learner | undefined {
+  if (!isRecord(raw)) return undefined;
+  if (!hasText(raw.id)) return undefined;
+  if (!hasText(raw.firstName) && !hasText(raw.lastName)) return undefined;
+  return {
+    ...(raw as unknown as Learner),
+    firstName: typeof raw.firstName === "string" ? raw.firstName : "",
+    lastName: typeof raw.lastName === "string" ? raw.lastName : "",
+    email: typeof raw.email === "string" ? raw.email : "",
+    phone: typeof raw.phone === "string" ? raw.phone : "",
+  };
+}
+
+/**
+ * Une inscription sans échéancier cohérent est écartée.
+ *
+ * Le solde se lit sur l'échéancier : sans lui, l'inscription apparaîtrait
+ * soldée alors que rien n'a été encaissé.
+ */
+function parseEnrollment(raw: unknown): Enrollment | undefined {
+  if (!isRecord(raw)) return undefined;
+  if (!hasText(raw.id) || !hasText(raw.sessionId) || !hasText(raw.learnerId)) {
+    return undefined;
+  }
+  if (!Array.isArray(raw.installments) || raw.installments.length === 0) {
+    return undefined;
+  }
+  return {
+    ...(raw as unknown as Enrollment),
+    agreedPrice: Number.isInteger(raw.agreedPrice)
+      ? (raw.agreedPrice as number)
+      : 0,
+  };
+}
+
+function parseReminder(raw: unknown): Reminder | undefined {
+  if (!isRecord(raw)) return undefined;
+  if (!hasText(raw.id) || !hasText(raw.invoiceId) || !hasText(raw.sentAt)) {
+    return undefined;
+  }
+  const niveau = raw.level;
+  return {
+    ...(raw as unknown as Reminder),
+    level: niveau === "firm" || niveau === "formal" ? niveau : "courtesy",
+  };
+}
+
 export const clientRepository: Repository<Client> = new LocalStorageRepository<Client>({
   collection: "clients",
   parse: parseClient,
@@ -155,6 +239,40 @@ export const expenseRepository: Repository<Expense> =
     seed: () => mockExpenses,
   });
 
+export const sessionRepository: Repository<TrainingSession> =
+  new LocalStorageRepository<TrainingSession>({
+    collection: "academy-sessions",
+    parse: parseSession,
+    seed: () => mockSessions,
+  });
+
+export const learnerRepository: Repository<Learner> =
+  new LocalStorageRepository<Learner>({
+    collection: "academy-learners",
+    parse: parseLearner,
+    seed: () => mockLearners,
+  });
+
+export const enrollmentRepository: Repository<Enrollment> =
+  new LocalStorageRepository<Enrollment>({
+    collection: "academy-enrollments",
+    parse: parseEnrollment,
+    seed: () => mockEnrollments,
+  });
+
+/**
+ * Historique des relances.
+ *
+ * Stocké, et non déduit : savoir qu'une mise en demeure est partie le 14 est
+ * le seul moyen de ne pas l'envoyer deux fois.
+ */
+export const reminderRepository: Repository<Reminder> =
+  new LocalStorageRepository<Reminder>({
+    collection: "reminders",
+    parse: parseReminder,
+    seed: () => mockReminders,
+  });
+
 /** Toutes les collections, indexées par nom. Sert à l'export de sauvegarde. */
 export const ALL_REPOSITORIES = {
   clients: clientRepository,
@@ -163,6 +281,10 @@ export const ALL_REPOSITORIES = {
   tickets: ticketRepository,
   timeEntries: timeEntryRepository,
   expenses: expenseRepository,
+  academySessions: sessionRepository,
+  academyLearners: learnerRepository,
+  academyEnrollments: enrollmentRepository,
+  reminders: reminderRepository,
 } as const;
 
 export type CollectionName = keyof typeof ALL_REPOSITORIES;
