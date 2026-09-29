@@ -1,8 +1,9 @@
 import type { Expense } from "../../domain/expense";
+import type { Milestone } from "../../domain/milestone";
 import type { Payment } from "../../domain/payment";
 import type { TimeEntry } from "../../domain/timeEntry";
 
-export type { Expense, TimeEntry };
+export type { Expense, Milestone, TimeEntry };
 
 export interface Client {
   id: string;
@@ -29,7 +30,15 @@ export interface Project {
   status: "active" | "completed" | "pending";
   deadline: string;
   budget: number;
-  progress: number;
+  /**
+   * Livrables du projet.
+   *
+   * Remplacent le pourcentage d'avancement, qui était saisi à la main et
+   * ne mesurait rien : il ne se mettait pas à jour, ne disait pas ce qu'il
+   * restait, et restait bloqué à « 90 % ». Un jalon est livré ou ne l'est
+   * pas — la question ne se discute pas.
+   */
+  milestones: Milestone[];
   description?: string;
 }
 
@@ -157,7 +166,15 @@ export const mockProjects: Project[] = [
     status: "active",
     deadline: "2026-05-15",
     budget: 450000,
-    progress: 65,
+    milestones: [
+      { id: "j1-1", label: "Cadrage et arborescence", dueDate: "2026-03-02", doneAt: "2026-03-02" },
+      { id: "j1-2", label: "Maquettes validées", dueDate: "2026-03-09", doneAt: "2026-03-11" },
+      { id: "j1-3", label: "Intégration du catalogue", dueDate: "2026-03-16", doneAt: "2026-03-16" },
+      { id: "j1-4", label: "Paiement Airtel Money", dueDate: "2026-03-30", doneAt: "2026-04-02" },
+      { id: "j1-5", label: "Recette client", dueDate: "2026-04-20" },
+      { id: "j1-6", label: "Formation du vendeur", dueDate: "2026-05-04" },
+      { id: "j1-7", label: "Mise en ligne", dueDate: "2026-05-15" },
+    ],
     description:
       "Boutique en ligne, produits illimités, paiement Airtel Money et Moov Money",
   },
@@ -168,7 +185,14 @@ export const mockProjects: Project[] = [
     status: "active",
     deadline: "2026-06-30",
     budget: 600000,
-    progress: 40,
+    milestones: [
+      { id: "j2-1", label: "Cadrage fonctionnel", dueDate: "2026-03-16", doneAt: "2026-03-16" },
+      { id: "j2-2", label: "Maquettes validées", dueDate: "2026-03-30", doneAt: "2026-04-03" },
+      { id: "j2-3", label: "Version de test interne", dueDate: "2026-05-04" },
+      { id: "j2-4", label: "Version de test client", dueDate: "2026-05-29" },
+      { id: "j2-5", label: "Recette et corrections", dueDate: "2026-06-15" },
+      { id: "j2-6", label: "Publication sur les magasins", dueDate: "2026-06-30" },
+    ],
     description: "Application de suivi de chantier, iOS et Android",
   },
   {
@@ -178,7 +202,12 @@ export const mockProjects: Project[] = [
     status: "pending",
     deadline: "2026-04-20",
     budget: 45000,
-    progress: 10,
+    milestones: [
+      { id: "j3-1", label: "Collecte des accès et données", dueDate: "2026-03-24", doneAt: "2026-03-24" },
+      { id: "j3-2", label: "Analyse technique", dueDate: "2026-04-01" },
+      { id: "j3-3", label: "Rapport rédigé", dueDate: "2026-04-10" },
+      { id: "j3-4", label: "Restitution au client", dueDate: "2026-04-20" },
+    ],
     description: "Audit technique, sémantique et netlinking",
   },
   {
@@ -188,7 +217,12 @@ export const mockProjects: Project[] = [
     status: "completed",
     deadline: "2026-03-10",
     budget: 25000,
-    progress: 100,
+    milestones: [
+      { id: "j4-1", label: "Brief et références", dueDate: "2026-02-16", doneAt: "2026-02-16" },
+      { id: "j4-2", label: "Pistes graphiques", dueDate: "2026-03-03", doneAt: "2026-03-03" },
+      { id: "j4-3", label: "Piste retenue et déclinaisons", dueDate: "2026-03-05", doneAt: "2026-03-05" },
+      { id: "j4-4", label: "Charte et fichiers livrés", dueDate: "2026-03-10", doneAt: "2026-03-09" },
+    ],
     description: "Logo, charte graphique et déclinaisons",
   },
   {
@@ -198,7 +232,14 @@ export const mockProjects: Project[] = [
     status: "active",
     deadline: "2026-05-28",
     budget: 175000,
-    progress: 30,
+    milestones: [
+      { id: "j5-1", label: "Cadrage et arborescence", dueDate: "2026-03-23", doneAt: "2026-03-23" },
+      { id: "j5-2", label: "Maquettes validées", dueDate: "2026-04-02" },
+      { id: "j5-3", label: "Intégration des pages", dueDate: "2026-04-20" },
+      { id: "j5-4", label: "Contenus et référencement de base", dueDate: "2026-05-04" },
+      { id: "j5-5", label: "Recette client", dueDate: "2026-05-18" },
+      { id: "j5-6", label: "Mise en ligne", dueDate: "2026-05-28" },
+    ],
     description: "Dix pages, blog intégré, optimisation SEO de base",
   },
 ];

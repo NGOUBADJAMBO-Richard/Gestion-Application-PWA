@@ -74,7 +74,7 @@ const translations: Translations = {
   "projects.status": { fr: "Statut", en: "Status" },
   "projects.deadline": { fr: "Échéance", en: "Deadline" },
   "projects.budget": { fr: "Budget", en: "Budget" },
-  "projects.progress": { fr: "Progression", en: "Progress" },
+  "projects.milestones": { fr: "Jalons", en: "Milestones" },
   "projects.actions": { fr: "Actions", en: "Actions" },
   "projects.edit": { fr: "Modifier", en: "Edit" },
   "projects.delete": { fr: "Supprimer", en: "Delete" },

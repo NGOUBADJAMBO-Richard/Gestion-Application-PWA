@@ -5,6 +5,7 @@ import {
   Filter,
   Pencil,
   Trash2,
+  ListChecks,
   FolderKanban,
   Wallet,
   TrendingUp,
@@ -44,7 +45,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { Progress } from "../components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +62,13 @@ import { expenseRepository, timeEntryRepository } from "../data/repositories";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { formatDuration } from "../../domain/timeEntry";
 import { StatCard } from "../components/StatCard";
+import {
+  MilestoneBar,
+  MilestoneDialog,
+  MilestonePanel,
+  MilestoneSummary,
+} from "../components/MilestonePanel";
+import type { Milestone } from "../../domain/milestone";
 
 export function Projects() {
   const { t } = useLanguage();
@@ -104,6 +111,9 @@ export function Projects() {
     );
   }, [projects, invoices, saisies, depenses, profile.currency]);
   const [projetASupprimer, setProjetASupprimer] = useState<Project | null>(null);
+  // Cocher un jalon est le geste le plus fréquent de la semaine : il ne doit
+  // pas obliger à rouvrir le formulaire complet du projet.
+  const [projetDesJalons, setProjetDesJalons] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -114,7 +124,7 @@ export function Projects() {
     status: "pending",
     deadline: "",
     budget: 0,
-    progress: 0,
+    milestones: [],
     description: "",
   });
 
@@ -184,7 +194,7 @@ export function Projects() {
       status: project.status,
       deadline: project.deadline,
       budget: project.budget,
-      progress: project.progress,
+      milestones: project.milestones,
       description: project.description || "",
     });
     setIsDialogOpen(true);
@@ -198,7 +208,7 @@ export function Projects() {
       status: "pending",
       deadline: "",
       budget: 0,
-      progress: 0,
+      milestones: [],
       description: "",
     });
     setIsDialogOpen(true);
@@ -212,7 +222,7 @@ export function Projects() {
       status: formData.status,
       deadline: formData.deadline,
       budget: Number(formData.budget) || 0,
-      progress: Number(formData.progress) || 0,
+      milestones: formData.milestones,
       description: formData.description?.trim() || "",
     };
 
@@ -349,7 +359,7 @@ export function Projects() {
                   <TableHead>{t("projects.deadline")}</TableHead>
                   <TableHead>{t("projects.budget")}</TableHead>
                   <TableHead>Marge</TableHead>
-                  <TableHead>{t("projects.progress")}</TableHead>
+                  <TableHead>{t("projects.milestones")}</TableHead>
                   <TableHead className="text-right">
                     {t("projects.actions")}
                   </TableHead>
@@ -404,15 +414,24 @@ export function Projects() {
                       })()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={project.progress} className="w-16" />
-                        <span className="text-sm text-muted-foreground">
-                          {project.progress}%
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 shrink-0">
+                          <MilestoneBar milestones={project.milestones} />
+                        </div>
+                        <MilestoneSummary milestones={project.milestones} />
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setProjetDesJalons(project)}
+                          aria-label={`Jalons du projet ${project.name}`}
+                          title="Jalons"
+                        >
+                          <ListChecks className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -538,20 +557,21 @@ export function Projects() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="progress">{t("projects.progress")}</Label>
-                <Input
-                  id="progress"
-                  type="number"
-                  value={formData.progress}
-                  onChange={(e) =>
+                <Label>{t("projects.milestones")} livrables</Label>
+                <p className="text-xs text-muted-foreground">
+                  L&rsquo;avancement se déduit des jalons livrés. Un
+                  pourcentage saisi à la main est une impression : il ne dit
+                  ni ce qui reste, ni si l&rsquo;on est à l&rsquo;heure.
+                </p>
+                <MilestonePanel
+                  milestones={formData.milestones}
+                  startDate={formData.deadline}
+                  onChange={(milestones) =>
                     setFormData((prev) => ({
                       ...prev,
-                      progress: Number(e.target.value) || 0,
+                      milestones: milestones as Milestone[],
                     }))
                   }
-                  placeholder="0"
-                  min={0}
-                  max={100}
                 />
               </div>
             </div>
@@ -570,6 +590,22 @@ export function Projects() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <MilestoneDialog
+        open={projetDesJalons !== null}
+        projectName={projetDesJalons?.name ?? ""}
+        milestones={projetDesJalons?.milestones ?? []}
+        startDate={projetDesJalons?.deadline ?? ""}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setProjetDesJalons(null);
+        }}
+        onSave={(milestones) => {
+          if (projetDesJalons === null) return;
+          void update(projetDesJalons.id, {
+            milestones: milestones as Milestone[],
+          });
+        }}
+      />
 
       <ConfirmDelete
         open={projetASupprimer !== null}

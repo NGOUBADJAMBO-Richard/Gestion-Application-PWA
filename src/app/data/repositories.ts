@@ -58,7 +58,19 @@ function parseProject(raw: unknown): Project | undefined {
   if (!isRecord(raw)) return undefined;
   if (!hasText(raw.id) || !hasText(raw.name)) return undefined;
   if (typeof raw.budget !== "number") return undefined;
-  return raw as unknown as Project;
+
+  // Un projet enregistré avant les jalons n'en a pas. On ne fabrique pas de
+  // jalons à partir de l'ancien pourcentage : « 65 % » ne dit pas lesquels
+  // étaient livrés, et en inventer donnerait un historique faux. Le projet
+  // s'affiche « aucun jalon défini », et un modèle s'y pose en un clic.
+  const jalons = Array.isArray(raw.milestones)
+    ? raw.milestones.filter(
+        (jalon: unknown) =>
+          isRecord(jalon) && hasText(jalon.id) && hasText(jalon.label),
+      )
+    : [];
+
+  return { ...(raw as unknown as Project), milestones: jalons as Project["milestones"] };
 }
 
 function parseInvoice(raw: unknown): Invoice | undefined {

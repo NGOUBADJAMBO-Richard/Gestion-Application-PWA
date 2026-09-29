@@ -38,6 +38,10 @@ import { invoiceRepository, projectRepository } from "../data/repositories";
 import { toExecutiveDocuments } from "../data/documentTotals";
 import { Meter, StatCard } from "../components/StatCard";
 import {
+  MilestoneBar,
+  MilestoneSummary,
+} from "../components/MilestonePanel";
+import {
   computeCashPosition,
   computeClientConcentration,
   computeCollectionDelay,
@@ -471,23 +475,9 @@ export function Dashboard() {
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
-                        role="progressbar"
-                        aria-valuenow={projet.progress}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`Avancement de ${projet.name}`}
-                      >
-                        <div
-                          className="h-full rounded-full bg-primary transition-[width] duration-500"
-                          style={{ width: `${Math.min(100, Math.max(0, projet.progress))}%` }}
-                        />
-                      </div>
-                      <span className="w-10 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
-                        {projet.progress}%
-                      </span>
+                    <div className="space-y-1.5">
+                      <MilestoneBar milestones={projet.milestones} />
+                      <MilestoneSummary milestones={projet.milestones} />
                     </div>
                   </li>
                 ))}
