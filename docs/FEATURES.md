@@ -138,6 +138,50 @@ avoir sur une facture déjà annulée.
 
 ---
 
+## CodeWave Academy ✅
+
+- **Catalogue importé du site** : `npm run import:catalogue` transcrit les 24
+  formations, tarifs et volumes horaires en un module commité. Recopier les
+  prix à la main garantissait qu'ils divergent du site
+- Sessions : capacité, dates, modalité, formateur, taux de remplissage. Titre
+  et prix **figés à la création** — une hausse de tarif ne réécrit pas une
+  session déjà vendue
+- Apprenants, avec l'entreprise qui les envoie le cas échéant
+- Inscriptions : prix consenti distinct du prix public (le site annonce −20 %
+  pour les étudiants), **échéancier calculé et jamais saisi**, présence,
+  pointage des règlements
+- Une inscription annulée ou un abandon **libèrent leur place** : les compter
+  afficherait « complet » avec des sièges vides
+
+---
+
+## Relances ✅
+
+- Trois paliers : rappel courtois à J+1, relance ferme à J+8, mise en demeure
+  à J+21
+- **WhatsApp d'abord** : c'est le canal qui obtient une réponse au Gabon
+- L'application **n'envoie rien** : elle compose le message, ouvre la
+  conversation, et enregistre que la relance est partie
+- Le montant relancé est le **reste dû**, pas le total
+- Historique par document, pour ne pas envoyer deux fois la même mise en demeure
+
+---
+
+## Alertes, recherche et pilotage ✅
+
+- **Centre d'alertes** dérivé de l'état courant : impayés, échéances proches,
+  devis expirés, brouillons oubliés, échéances de formation, sessions
+  sous-remplies, projets en dépassement, sauvegarde ancienne. Pas d'état
+  « lu » — une alerte disparaît quand le fait disparaît
+- **Recherche globale** Ctrl+K sur clients, projets, documents, sessions et
+  apprenants
+- **Indicateurs de direction** : délai d'encaissement réellement observé
+  (pondéré par les montants), taux de transformation des devis, trésorerie
+  attendue, dépendance au premier client
+- Navigation groupée par intention : piloter, produire, assister, régler
+
+---
+
 ## Paramètres ✅
 
 - Identité : raison sociale, forme juridique, adresse, coordonnées
@@ -219,7 +263,4 @@ Voir `SECURITE.md` pour le détail, y compris ce qui **n'est pas** protégé.
 | Manque | Conséquence |
 |---|---|
 | Comptabilité en partie double | Pas de grand livre, pas de balance |
-| CodeWave Academy | Formations, sessions et apprenants ne sont pas gérés |
-| Catalogue du site | Les tarifs se resaisissent au lieu d'être importés |
-| Relances | Aucune automatisation sur les impayés |
 | Multi-utilisateur | Un seul accès par appareil |

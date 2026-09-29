@@ -410,6 +410,62 @@
   .dark .surface-card {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   }
+
+  /* ---- Mouvement ------------------------------------------------------ */
+
+  /* Apparition d'un écran.
+     Courte et de faible amplitude : dans un outil de gestion, l'animation
+     sert à situer d'où vient le contenu, pas à se faire remarquer. Au-delà
+     de 250 ms elle se transforme en attente. */
+  @keyframes apparition {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .enter {
+    animation: apparition 0.22s ease-out both;
+  }
+
+  /* Décalage en cascade sur une grille de cartes : l'œil suit l'ordre de
+     lecture au lieu de recevoir quatre blocs d'un coup. Le décalage est
+     plafonné, sinon la sixième carte arriverait trop tard pour être perçue
+     comme faisant partie du même ensemble. */
+  .enter-stagger > * {
+    animation: apparition 0.22s ease-out both;
+  }
+  .enter-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .enter-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .enter-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .enter-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .enter-stagger > *:nth-child(n + 5) { animation-delay: 150ms; }
+
+  /* Repère d'écran courant dans la barre latérale : un trait plein à gauche,
+     à angles droits comme le reste de la charte. */
+  .nav-active {
+    position: relative;
+  }
+  .nav-active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary-foreground);
+  }
+
+  /* Lisibilité des liens et boutons au clavier. Le contour par défaut de
+     certains navigateurs disparaît sur fond sombre. */
+  :where(a, button, [role="tab"], [role="menuitem"]):focus-visible {
+    outline: 2px solid var(--primary-ink);
+    outline-offset: 2px;
+  }
 }
 
 /* Une animation décorative ne doit jamais s'imposer à qui la refuse. */
@@ -418,6 +474,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

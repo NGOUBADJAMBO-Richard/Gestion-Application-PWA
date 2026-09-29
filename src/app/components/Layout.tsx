@@ -153,7 +153,7 @@ export function Layout() {
                       group flex items-center gap-3 px-3 py-2.5 transition-all duration-150
                       ${
                         isActive
-                          ? "bg-primary text-primary-foreground"
+                          ? "nav-active bg-primary text-primary-foreground"
                           : "text-foreground hover:bg-accent hover:translate-x-0.5"
                       }
                     `}

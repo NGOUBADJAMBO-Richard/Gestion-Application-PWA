@@ -7,6 +7,9 @@ import {
   TrendingUp,
   Users,
   Wallet,
+  Clock3,
+  Percent,
+  PieChart,
 } from "lucide-react";
 import {
   Bar,
@@ -32,6 +35,15 @@ import { useClientIndex } from "../hooks/useClientIndex";
 import { useCollection } from "../hooks/useCollection";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { invoiceRepository, projectRepository } from "../data/repositories";
+import { toRevenueDocuments } from "../data/documentTotals";
+import { Meter, StatCard } from "../components/StatCard";
+import {
+  type ExecutiveDocument,
+  computeCashPosition,
+  computeClientConcentration,
+  computeCollectionDelay,
+  computeQuoteConversion,
+} from "../../domain/executive";
 import {
   computeActivePipeline,
   computeDashboardMetrics,
@@ -109,6 +121,77 @@ export function Dashboard() {
     [documentsComptables, aujourdhui],
   );
 
+  /**
+   * Documents réduits à leur portée financière, pour les indicateurs de
+   * direction.
+   *
+   * Les montants sont recalculés depuis les lignes, comme partout ailleurs :
+   * le champ `amount` a été écrit par une version antérieure du calcul, et
+   * un total figé faux contaminerait le délai d'encaissement comme la
+   * répartition par client.
+   */
+  const documentsExecutifs = useMemo<readonly ExecutiveDocument[]>(() => {
+    const totaux = new Map(
+      toRevenueDocuments(invoices, profile.currency).map((document) => [
+        document.id,
+        document,
+      ]),
+    );
+    return invoices.flatMap((facture) => {
+      const calcule = totaux.get(facture.id);
+      if (calcule === undefined) return [];
+      return [
+        {
+          id: facture.id,
+          number: facture.number,
+          kind: facture.kind,
+          status: facture.status,
+          clientId: facture.clientId,
+          issuedAt: facture.date,
+          net: calcule.net,
+          total: calcule.total,
+          payments: (facture.payments ?? []).map((encaissement) => ({
+            date: encaissement.date,
+            amount: encaissement.amount,
+          })),
+          convertedFrom: facture.convertedFrom,
+        },
+      ];
+    });
+  }, [invoices, profile.currency]);
+
+  const delai = useMemo(
+    () => computeCollectionDelay(documentsExecutifs),
+    [documentsExecutifs],
+  );
+
+  const conversion = useMemo(
+    () =>
+      computeQuoteConversion(
+        documentsExecutifs,
+        profile.currency,
+        aujourdhui,
+        profile.paymentTermDays,
+      ),
+    [documentsExecutifs, profile.currency, profile.paymentTermDays, aujourdhui],
+  );
+
+  const concentration = useMemo(
+    () => computeClientConcentration(documentsExecutifs, profile.currency),
+    [documentsExecutifs, profile.currency],
+  );
+
+  const tresorerie = useMemo(
+    () =>
+      computeCashPosition(
+        documentsExecutifs,
+        profile.currency,
+        aujourdhui,
+        new Map(invoices.map((facture) => [facture.id, facture.dueDate])),
+      ),
+    [documentsExecutifs, invoices, profile.currency, aujourdhui],
+  );
+
   const projetsRecents = useMemo(
     () => [...projects].sort((a, b) => a.deadline.localeCompare(b.deadline)).slice(0, 5),
     [projects],
@@ -155,7 +238,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <header className="wave-surface -mx-4 px-4 py-8 lg:-mx-6 lg:px-6">
+      <header className="enter wave-surface -mx-4 px-4 py-8 lg:-mx-6 lg:px-6">
         <p className="section-label">Vue d’ensemble</p>
         <h1 className="mt-2">{t("dashboard.title")}</h1>
         <p className="mt-1 text-muted-foreground">
@@ -185,7 +268,7 @@ export function Dashboard() {
         </Link>
       )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="enter-stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cartes.map((carte) => (
           <Link key={carte.titre} to={carte.lien} className="block">
             <Card data-slot="card" className="card-interactive h-full">
@@ -227,6 +310,112 @@ export function Dashboard() {
           </Link>
         ))}
       </div>
+
+      {/*
+        Indicateurs de direction.
+
+        Les quatre cartes du dessus disent l'état ; celles-ci disent la
+        tendance et le risque — en combien de temps on est payé, quelle part
+        des devis se transforme, et de qui dépend le chiffre d'affaires.
+      */}
+      <section className="space-y-4">
+        <p className="section-label">Pilotage</p>
+
+        <div className="enter-stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Délai moyen d&rsquo;encaissement"
+            value={
+              delai.weightedDays === null
+                ? "—"
+                : `${Math.round(delai.weightedDays)} jours`
+            }
+            hint={
+              delai.weightedDays === null
+                ? "Aucune facture soldée : le délai apparaîtra au premier règlement."
+                : `médiane ${Math.round(delai.medianDays ?? 0)} j sur ${delai.sampleSize} facture(s)`
+            }
+            icon={Clock3}
+            tone={
+              delai.weightedDays === null
+                ? "neutral"
+                : delai.weightedDays > profile.paymentTermDays
+                  ? "warning"
+                  : "positive"
+            }
+          />
+
+          <StatCard
+            label="Devis transformés"
+            value={
+              conversion.ratePercent === null
+                ? "—"
+                : `${conversion.ratePercent.toFixed(0)} %`
+            }
+            hint={
+              conversion.ratePercent === null
+                ? "Aucun devis émis."
+                : `${conversion.converted} sur ${conversion.issued} · ${conversion.pending} encore valide(s)`
+            }
+            icon={Percent}
+            tone={
+              conversion.ratePercent === null
+                ? "neutral"
+                : conversion.ratePercent >= 40
+                  ? "positive"
+                  : "warning"
+            }
+          />
+
+          <StatCard
+            label="À encaisser"
+            value={formatMoney(tresorerie.receivable)}
+            hint={
+              `dont ${formatMoney(tresorerie.overdue)} déjà échus`
+            }
+            icon={Wallet}
+            tone={tresorerie.overdue.amount > 0 ? "negative" : "neutral"}
+          />
+
+          <StatCard
+            label="Premier client"
+            value={
+              concentration.topSharePercent === null
+                ? "—"
+                : `${concentration.topSharePercent.toFixed(0)} % du CA`
+            }
+            hint={
+              concentration.topSharePercent === null
+                ? "Aucun chiffre d’affaires enregistré."
+                : concentration.dependent
+                  ? "Dépendance forte : le perdre mettrait l’activité en cause."
+                  : "Portefeuille réparti."
+            }
+            icon={PieChart}
+            tone={concentration.dependent ? "warning" : "neutral"}
+          />
+        </div>
+
+        {concentration.ranking.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Répartition du chiffre d&rsquo;affaires</CardTitle>
+              <CardDescription>
+                Hors taxes, avoirs déduits. Les devis n&rsquo;y figurent pas :
+                ils n&rsquo;engagent rien.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {concentration.ranking.slice(0, 5).map((ligne) => (
+                <Meter
+                  key={ligne.clientId}
+                  percent={ligne.sharePercent}
+                  label={`${nameOf(ligne.clientId)} — ${formatMoney(ligne.revenue)}`}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        )}
+      </section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <Card className="xl:col-span-3">

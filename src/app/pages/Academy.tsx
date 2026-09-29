@@ -547,7 +547,7 @@ export function Academy() {
         label="la formation"
       />
 
-      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+      <header className="enter wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
         <p className="section-label">Formation</p>
         <div className="flex flex-col gap-4 mt-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -573,7 +573,7 @@ export function Academy() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="enter-stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Sessions à venir"
           value={String(metriques.upcomingCount)}
