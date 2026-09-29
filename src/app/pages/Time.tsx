@@ -18,7 +18,6 @@ import {
   EXPENSE_CATEGORY_LABELS,
   type Expense,
   type ExpenseCategory,
-  netExpenses,
   rebilledExpenses,
   totalExpenses,
   totalsByCategory,
@@ -40,6 +39,7 @@ import {
 } from "../../domain/timeEntry";
 import { DataStateNotice } from "../components/DataStateNotice";
 import { ProjectSelect } from "../components/ProjectSelect";
+import { Meter, StatCard } from "../components/StatCard";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -58,7 +58,6 @@ import {
 } from "../components/ui/dialog";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Progress } from "../components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -233,6 +232,19 @@ export function Time() {
     [depenses],
   );
 
+  /**
+   * Dépenses réellement retenues dans la marge consolidée.
+   *
+   * La carte affichait le total de toutes les dépenses, frais de structure
+   * compris — alors que la marge, elle, ne retient que celles imputées à un
+   * projet. Les quatre chiffres d'en-tête ne se recomposaient donc pas :
+   * recette − temps − dépenses ne tombait pas sur la marge affichée.
+   */
+  const depensesDeProjet = portefeuille.projects.reduce(
+    (total, projet) => total + projet.expenseCost.amount,
+    0,
+  );
+
   const minutesTotales = totalMinutes(saisies);
   const minutesFacturables = billableMinutes(saisies);
   const coutTemps = laborCost(saisies, devise);
@@ -400,50 +412,45 @@ export function Time() {
 
       {/* Chiffres d'ensemble */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Temps saisi</p>
-            <p className="text-2xl mt-1">{formatDuration(minutesTotales)}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              dont {formatDuration(minutesFacturables)} refacturable
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Coût du temps</p>
-            <p className="text-2xl mt-1">{argent(coutTemps.amount)}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              aux coûts horaires figés à la saisie
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Dépenses</p>
-            <p className="text-2xl mt-1">
-              {argent(netExpenses(depenses, devise).amount)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              + {argent(rebilledExpenses(depenses, devise).amount)} refacturés
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Marge consolidée</p>
-            <p
-              className={`text-2xl mt-1 ${tonDeMarge(portefeuille.marginPercent)}`}
-            >
-              {argent(portefeuille.margin.amount)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {portefeuille.marginPercent === null
-                ? "aucune pièce émise"
-                : `${portefeuille.marginPercent.toFixed(1)} % du chiffre d'affaires HT`}
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Temps saisi"
+          value={formatDuration(minutesTotales)}
+          hint={`dont ${formatDuration(minutesFacturables)} refacturable`}
+          icon={Clock}
+        />
+        <StatCard
+          label="Coût du temps"
+          value={argent(coutTemps.amount)}
+          hint="aux coûts horaires figés à la saisie"
+          icon={Timer}
+        />
+        <StatCard
+          label="Dépenses imputées aux projets"
+          value={argent(depensesDeProjet)}
+          hint={
+            `+ ${argent(portefeuille.overheadExpenses.amount)} de structure · + ${argent(rebilledExpenses(depenses, devise).amount)} refacturés`
+          }
+          icon={Receipt}
+        />
+        <StatCard
+          label="Marge consolidée"
+          value={argent(portefeuille.margin.amount)}
+          tone={
+            portefeuille.marginPercent === null
+              ? "neutral"
+              : portefeuille.margin.amount < 0
+                ? "negative"
+                : portefeuille.marginPercent < 20
+                  ? "warning"
+                  : "positive"
+          }
+          icon={portefeuille.margin.amount < 0 ? TrendingDown : TrendingUp}
+          hint={
+            portefeuille.marginPercent === null
+              ? "aucune pièce émise"
+              : `${portefeuille.marginPercent.toFixed(1)} % du chiffre d'affaires HT`
+          }
+        />
       </div>
 
       {/* Angles morts de l'analyse : dits, jamais comblés au hasard. */}
@@ -494,7 +501,7 @@ export function Time() {
               </p>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="table-zebra">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
@@ -518,10 +525,10 @@ export function Time() {
                         <TableCell className="max-w-[18rem]">
                           {entree.description}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="amount whitespace-nowrap">
                           {formatDuration(entree.minutes)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="amount whitespace-nowrap">
                           {argent(laborCost([entree], devise).amount)}
                         </TableCell>
                         <TableCell>
@@ -587,9 +594,11 @@ export function Time() {
                             ({ligne.count})
                           </span>
                         </span>
-                        <span>{argent(ligne.total.amount)}</span>
+                        <span className="amount">{argent(ligne.total.amount)}</span>
                       </div>
-                      <Progress value={part} />
+                      <div className="meter">
+                        <span style={{ width: `${part}%` }} />
+                      </div>
                     </div>
                   );
                 })}
@@ -608,7 +617,7 @@ export function Time() {
                 </p>
               ) : (
                 <div className="overflow-x-auto">
-                  <Table>
+                  <Table className="table-zebra">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Date</TableHead>
@@ -641,7 +650,7 @@ export function Time() {
                             {EXPENSE_CATEGORY_LABELS[depense.category]}
                           </TableCell>
                           <TableCell>{nameOf(depense.projectId)}</TableCell>
-                          <TableCell className="whitespace-nowrap">
+                          <TableCell className="amount whitespace-nowrap">
                             {argent(depense.amount)}
                           </TableCell>
                           <TableCell>
@@ -720,7 +729,7 @@ export function Time() {
                       </div>
                       <div className="text-right">
                         <p
-                          className={`text-xl flex items-center gap-2 sm:justify-end ${tonDeMarge(projet.marginPercent)}`}
+                          className={`figure text-2xl flex items-center gap-2 sm:justify-end ${tonDeMarge(projet.marginPercent)}`}
                         >
                           {enPerte ? (
                             <TrendingDown className="w-5 h-5" />
@@ -737,46 +746,56 @@ export function Time() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm lg:grid-cols-4">
-                      <div>
-                        <p className="text-muted-foreground">Facturé HT</p>
-                        <p>{argent(projet.revenue.amount)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Coût du temps</p>
-                        <p>{argent(projet.laborCost.amount)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Dépenses</p>
-                        <p>{argent(projet.expenseCost.amount)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Reste à encaisser</p>
-                        <p>{argent(projet.outstanding.amount)}</p>
-                      </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-4 text-sm lg:grid-cols-4">
+                      {[
+                        ["Facturé HT", projet.revenue.amount],
+                        ["Coût du temps", projet.laborCost.amount],
+                        ["Dépenses", projet.expenseCost.amount],
+                        ["Reste à encaisser", projet.outstanding.amount],
+                      ].map(([libelle, montant]) => (
+                        <div key={libelle as string}>
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                            {libelle}
+                          </p>
+                          <p className="amount mt-1">
+                            {argent(montant as number)}
+                          </p>
+                        </div>
+                      ))}
                     </div>
 
                     {projet.costVsBudgetPercent !== null && (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Budget consommé en coûts</span>
-                          <span>
-                            {projet.costVsBudgetPercent.toFixed(0)} %
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.min(100, projet.costVsBudgetPercent)}
-                        />
-                      </div>
+                      <Meter
+                        percent={projet.costVsBudgetPercent}
+                        label="Budget consommé en coûts"
+                      />
                     )}
 
-                    {projet.overBudget && (
-                      <p className="flex items-center gap-2 text-sm text-destructive">
-                        <AlertTriangle className="w-4 h-4 shrink-0" />
-                        Les coûts dépassent le budget prévu : ce projet ne sera
-                        pas rentable au prix convenu.
-                      </p>
-                    )}
+                    {/*
+                      Dépasser le budget et perdre de l'argent sont deux
+                      faits distincts. Un projet peut consommer 144 % du
+                      budget prévu et rester rentable, parce que la
+                      facturation a suivi — une prestation ajoutée en cours
+                      de route. Annoncer « ne sera pas rentable » dans ce cas
+                      est simplement faux, et une alerte fausse finit par ne
+                      plus être lue.
+                    */}
+                    {projet.overBudget &&
+                      (projet.margin.amount <= 0 ? (
+                        <p className="flex items-center gap-2 text-sm text-destructive">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          Les coûts dépassent le budget prévu et la
+                          facturation ne les couvre pas : ce projet perd de
+                          l&rsquo;argent.
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          Les coûts dépassent le budget prévu, mais la
+                          facturation a suivi. À surveiller au prochain devis
+                          de ce type.
+                        </p>
+                      ))}
                   </CardContent>
                 </Card>
               );

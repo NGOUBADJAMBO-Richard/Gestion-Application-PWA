@@ -292,6 +292,81 @@
     color: var(--primary-foreground);
   }
 
+  /* Charte : onglets à angles droits, actif souligné d'un trait de 2 px.
+     Le composant importé rendait des pastilles arrondies sur fond plein —
+     une forme que la charte réserve aux boutons, et qui faisait lire les
+     onglets comme trois boutons concurrents plutôt que comme une seule
+     barre de navigation. */
+  [data-slot="tabs-list"] {
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    height: auto;
+    width: 100%;
+    justify-content: flex-start;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  [data-slot="tabs-trigger"] {
+    border-radius: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    padding: 0.625rem 1.125rem;
+    height: auto;
+    flex: 0 0 auto;
+    font-family: var(--font-family-heading);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--muted-foreground);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  [data-slot="tabs-trigger"]:hover {
+    color: var(--foreground);
+  }
+  [data-slot="tabs-trigger"][data-state="active"] {
+    background: transparent;
+    color: var(--primary-ink);
+    border-bottom-color: var(--primary);
+  }
+
+  /* Chiffre clé : graisse de titre et chasse tabulaire, pour qu'une colonne
+     de montants s'aligne au chiffre près. Un tableau financier dont les
+     unités ne tombent pas l'une sous l'autre se relit mal. */
+  .figure {
+    font-family: var(--font-family-heading);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .amount {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Jauge de consommation. La couleur porte l'information au même titre que
+     la longueur : une barre bleue à 98 % du budget ne alerte personne. */
+  .meter {
+    height: 6px;
+    background: var(--muted);
+    overflow: hidden;
+  }
+  .meter > span {
+    display: block;
+    height: 100%;
+    background: var(--meter-fill, var(--primary));
+    transition: width 0.3s ease;
+  }
+
+  /* Alternance de fond sur les tableaux longs : l'œil ne saute pas de ligne
+     en suivant une valeur jusqu'au bout de la rangée. */
+  .table-zebra tbody tr:nth-child(even) {
+    background: color-mix(in oklab, var(--muted) 45%, transparent);
+  }
+  .table-zebra tbody tr:hover {
+    background: color-mix(in oklab, var(--primary) 8%, transparent);
+  }
+
   /* Charte : fond d'ondes à 10 % (15 % en sombre).
      Réservé aux en-têtes de page et à l'écran de connexion ; jamais derrière
      un tableau, où il gênerait la lecture des montants. */
