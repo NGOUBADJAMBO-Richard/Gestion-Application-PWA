@@ -5,7 +5,13 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Ticket, mockTickets } from '../data/mockData';
+import type { Ticket } from '../data/entities';
+import { ticketRepository } from '../data/repositories';
+import { useCollection } from '../hooks/useCollection';
+import { DataStateNotice } from '../components/DataStateNotice';
+import { ClientSelect } from '../components/ClientSelect';
+import { useClientIndex } from '../hooks/useClientIndex';
+import { ConfirmDelete } from '../components/ConfirmDelete';
 import {
   Dialog,
   DialogContent,
@@ -24,15 +30,34 @@ import {
   SelectValue,
 } from '../components/ui/select';
 
+/** Filtres de la liste des tickets. « All » était resté en anglais. */
+const FILTRES_TICKET = [
+  { valeur: 'all', libelle: 'Tous' },
+  { valeur: 'open', libelle: 'Ouverts' },
+  { valeur: 'in-progress', libelle: 'En cours' },
+  { valeur: 'closed', libelle: 'Fermés' },
+] as const;
+
 export function Support() {
   const { t } = useLanguage();
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  // Les donnees vivent dans le depot : la saisie survit au rechargement.
+  const {
+    items: tickets,
+    isLoading,
+    error,
+    create,
+    update,
+    remove,
+    dismissError,
+  } = useCollection(ticketRepository);
+  const { nameOf } = useClientIndex();
+  const [ticketASupprimer, setTicketASupprimer] = useState<Ticket | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [formData, setFormData] = useState<Omit<Ticket, 'id'>>({
     title: '',
-    client: '',
+    clientId: '',
     status: 'open',
     priority: 'medium',
     created: todayIso(),
@@ -42,21 +67,26 @@ export function Support() {
     ? tickets 
     : tickets.filter(ticket => ticket.status === statusFilter);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Ticket['status']) => {
     switch (status) {
-      case 'open': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400';
-      case 'in-progress': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      case 'closed': return 'bg-green-500/10 text-green-600 dark:text-green-400';
-      default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case 'open': return 'bg-warning/10 text-warning border-warning/20';
+      case 'in-progress': return 'bg-primary/10 text-primary-ink border-primary/20';
+      case 'closed': return 'bg-success/10 text-success border-success/20';
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  /** Les priorités étaient affichées en brut : « high », « low », « medium ». */
+  const PRIORITE_LIBELLE: Record<Ticket['priority'], string> = {
+    high: 'Haute',
+    medium: 'Moyenne',
+    low: 'Basse',
+  };
+
+  const getPriorityColor = (priority: Ticket['priority']) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/10 text-red-600 dark:text-red-400';
-      case 'medium': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400';
-      case 'low': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'medium': return 'bg-warning/10 text-warning border-warning/20';
+      case 'low': return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -73,7 +103,7 @@ export function Support() {
     setEditingTicket(null);
     setFormData({
       title: '',
-      client: '',
+      clientId: '',
       status: 'open',
       priority: 'medium',
       created: todayIso(),
@@ -85,7 +115,7 @@ export function Support() {
     setEditingTicket(ticket);
     setFormData({
       title: ticket.title,
-      client: ticket.client,
+      clientId: ticket.clientId,
       status: ticket.status,
       priority: ticket.priority,
       created: ticket.created,
@@ -93,33 +123,25 @@ export function Support() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setTickets(prev => prev.filter(ticket => ticket.id !== id));
-  };
-
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload: Omit<Ticket, 'id'> = {
       title: formData.title.trim(),
-      client: formData.client.trim(),
+      clientId: formData.clientId,
       status: formData.status,
       priority: formData.priority,
       created: formData.created,
     };
 
-    if (!payload.title || !payload.client || !payload.created) {
+    if (!payload.title || !payload.clientId || !payload.created) {
       return;
     }
 
     if (editingTicket) {
-      setTickets(prev =>
-        prev.map(ticket =>
-          ticket.id === editingTicket.id ? { ...ticket, ...payload } : ticket,
-        ),
-      );
+      void update(editingTicket.id, payload);
     } else {
-      setTickets(prev => [...prev, { id: Date.now().toString(), ...payload }]);
+      void create(payload);
     }
 
     setIsDialogOpen(false);
@@ -128,7 +150,16 @@ export function Support() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <DataStateNotice
+        isLoading={isLoading}
+        error={error}
+        onDismiss={dismissError}
+        label="les tickets"
+      />
+
+      <header className="wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Assistance</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
         <div>
           <h1>{t('support.title')}</h1>
           <p className="text-muted-foreground mt-1">
@@ -139,41 +170,32 @@ export function Support() {
           <Plus className="w-4 h-4" />
           {t('support.new')}
         </Button>
-      </div>
+        </div>
+      </header>
 
-      {/* Status Filter */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-2">
-            <Button
-              variant={statusFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('all')}
-            >
-              All
-            </Button>
-            <Button
-              variant={statusFilter === 'open' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('open')}
-            >
-              {t('support.open')}
-            </Button>
-            <Button
-              variant={statusFilter === 'in-progress' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('in-progress')}
-            >
-              {t('support.inProgress')}
-            </Button>
-            <Button
-              variant={statusFilter === 'closed' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('closed')}
-            >
-              {t('support.closed')}
-            </Button>
-          </div>
+        <CardContent className="flex flex-wrap items-center gap-2 pt-6">
+          {FILTRES_TICKET.map((filtre) => {
+            const actif = statusFilter === filtre.valeur;
+            const compte =
+              filtre.valeur === 'all'
+                ? tickets.length
+                : tickets.filter((ticket) => ticket.status === filtre.valeur)
+                    .length;
+
+            return (
+              <button
+                key={filtre.valeur}
+                type="button"
+                className="filter-pill"
+                aria-pressed={actif}
+                onClick={() => setStatusFilter(filtre.valeur)}
+              >
+                {filtre.libelle}
+                <span className="ml-2 tabular-nums opacity-70">{compte}</span>
+              </button>
+            );
+          })}
         </CardContent>
       </Card>
 
@@ -199,18 +221,23 @@ export function Support() {
                           {t(`support.${ticket.status === 'in-progress' ? 'inProgress' : ticket.status}`)}
                         </Badge>
                         <Badge className={getPriorityColor(ticket.priority)}>
-                          {ticket.priority}
+                          {PRIORITE_LIBELLE[ticket.priority]}
                         </Badge>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(ticket)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(ticket.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setTicketASupprimer(ticket)}
+                          aria-label={`Supprimer le ticket ${ticket.title}`}
+                        >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{ticket.client}</span>
+                      <span>{nameOf(ticket.clientId)}</span>
                       <span>•</span>
                       <span>{new Date(ticket.created).toLocaleDateString('fr-FR')}</span>
                     </div>
@@ -236,7 +263,7 @@ export function Support() {
             <DialogHeader>
               <DialogTitle>{editingTicket ? t('common.edit') : t('support.new')}</DialogTitle>
               <DialogDescription>
-                Gerez les informations du ticket de support
+                Gérez les informations du ticket de support
               </DialogDescription>
             </DialogHeader>
 
@@ -253,15 +280,14 @@ export function Support() {
 
               <div className="space-y-2">
                 <Label htmlFor="ticket-client">{t('projects.client')}</Label>
-                <Input
+                <ClientSelect
                   id="ticket-client"
-                  value={formData.client}
-                  onChange={(e) => setFormData(prev => ({ ...prev, client: e.target.value }))}
-                  required
+                  value={formData.clientId}
+                  onChange={(clientId) => setFormData(prev => ({ ...prev, clientId }))}
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="ticket-status">{t('projects.status')}</Label>
                   <Select
@@ -282,7 +308,7 @@ export function Support() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="ticket-priority">Priorite</Label>
+                  <Label htmlFor="ticket-priority">Priorité</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value: Ticket['priority']) =>
@@ -324,6 +350,22 @@ export function Support() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDelete
+        open={ticketASupprimer !== null}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setTicketASupprimer(null);
+        }}
+        subject={
+          ticketASupprimer === null ? "" : `le ticket « ${ticketASupprimer.title} »`
+        }
+        decision={{ allowed: true }}
+        consequence="Le ticket part à la corbeille et reste récupérable."
+        onConfirm={() => {
+          if (ticketASupprimer !== null) void remove(ticketASupprimer.id);
+          setTicketASupprimer(null);
+        }}
+      />
     </div>
   );
 }

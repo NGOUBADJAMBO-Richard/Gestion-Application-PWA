@@ -1,107 +1,37 @@
-import {
-  User,
-  Mail,
-  Phone,
-  Building2,
-  Shield,
-  CalendarClock,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { BackupPanel } from "../components/BackupPanel";
+import { NotificationPanel } from "../components/NotificationPanel";
+import { ResetPanel } from "../components/ResetPanel";
+import { UserProfilePanel } from "../components/UserProfilePanel";
 import { useAuth } from "../contexts/AuthContext";
 
+/**
+ * Mon compte.
+ *
+ * Quatre blocs, dans l'ordre de ce qu'on vient y faire : se relire, régler les
+ * notifications, sauvegarder, et — tout en bas, séparé — repartir de zéro.
+ */
 export function Account() {
   const { user } = useAuth();
 
-  if (!user) {
-    return null;
-  }
+  if (user === null) return null;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1>Mon compte</h1>
-        <p className="text-muted-foreground mt-1">
-          Informations completes du compte connecte
+      <header className="enter wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Compte</p>
+        <h1 className="mt-2">Mon compte</h1>
+        <p className="mt-1 text-muted-foreground">
+          {user.name} &middot; {user.company}
         </p>
-      </div>
+      </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Profil utilisateur
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex items-start gap-3">
-              <Mail className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Email</p>
-                <p className="text-sm">{user.email}</p>
-              </div>
-            </div>
+      <UserProfilePanel />
 
-            <div className="flex items-start gap-3">
-              <Phone className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Telephone</p>
-                <p className="text-sm">{user.phone}</p>
-              </div>
-            </div>
+      <NotificationPanel />
 
-            <div className="flex items-start gap-3">
-              <Building2 className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Entreprise</p>
-                <p className="text-sm">{user.company}</p>
-              </div>
-            </div>
+      <BackupPanel />
 
-            <div className="flex items-start gap-3">
-              <Shield className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Role</p>
-                <Badge variant="secondary" className="mt-1">
-                  {user.role}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <User className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Departement</p>
-                <p className="text-sm">{user.department}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <CalendarClock className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Derniere connexion
-                </p>
-                <p className="text-sm">
-                  {new Date(user.lastLoginAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-4">
-            <p className="text-xs text-muted-foreground">
-              Compte cree le {new Date(user.joinedAt).toLocaleDateString()}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <ResetPanel />
     </div>
   );
 }

@@ -50,15 +50,14 @@
   --warning: #b54708;
 
   --border: #e2e8f0;
-  --input: #ffffff;
+  /* Convention shadcn : --input est la couleur de BORDURE du champ.
+     WCAG 1.4.11 exige 3:1 pour un composant d’interface ; #7c8ba1 = 3,46:1
+     sur blanc, la valeur precedente #e2e8f0 ne faisait que 1,23:1. */
+  --input: #7c8ba1;
   --input-background: #ffffff;
   --switch-background: #7c8ba1;
   --ring: #004aad;
 
-  /* La bordure d un champ est un composant d interface, pas une decoration :
-     WCAG 2.2 critere 1.4.11 exige 3:1. #e2e8f0 sur blanc ne fait que 1,23:1.
-     #7c8ba1 = 3,46:1. La bordure decorative des cartes reste en --border. */
-  --input-border: #7c8ba1;
 
   /* Fond des zones d'en-tête, repris de --hero-bg du site. */
   --hero: #e8f0fb;
@@ -124,13 +123,13 @@
   --warning: #fcd34d;
 
   --border: #334155;
-  --input: #0f172a;
-  --input-background: #0f172a;
+  /* #64748b = 3,75:1 sur #0f172a. Le remplissage est legerement plus clair
+     que la carte, sinon le champ se confond avec elle. */
+  --input: #64748b;
+  --input-background: #1e293b;
   --switch-background: #64748b;
   --ring: #60a5fa;
 
-  /* #334155 sur #0f172a ne fait que 1,72:1. #64748b = 3,75:1. */
-  --input-border: #64748b;
 
   --hero: #16213a;
 
@@ -176,7 +175,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
-  --color-input-border: var(--input-border);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -294,6 +292,81 @@
     color: var(--primary-foreground);
   }
 
+  /* Charte : onglets à angles droits, actif souligné d'un trait de 2 px.
+     Le composant importé rendait des pastilles arrondies sur fond plein —
+     une forme que la charte réserve aux boutons, et qui faisait lire les
+     onglets comme trois boutons concurrents plutôt que comme une seule
+     barre de navigation. */
+  [data-slot="tabs-list"] {
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    height: auto;
+    width: 100%;
+    justify-content: flex-start;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  [data-slot="tabs-trigger"] {
+    border-radius: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    padding: 0.625rem 1.125rem;
+    height: auto;
+    flex: 0 0 auto;
+    font-family: var(--font-family-heading);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--muted-foreground);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  [data-slot="tabs-trigger"]:hover {
+    color: var(--foreground);
+  }
+  [data-slot="tabs-trigger"][data-state="active"] {
+    background: transparent;
+    color: var(--primary-ink);
+    border-bottom-color: var(--primary);
+  }
+
+  /* Chiffre clé : graisse de titre et chasse tabulaire, pour qu'une colonne
+     de montants s'aligne au chiffre près. Un tableau financier dont les
+     unités ne tombent pas l'une sous l'autre se relit mal. */
+  .figure {
+    font-family: var(--font-family-heading);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .amount {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Jauge de consommation. La couleur porte l'information au même titre que
+     la longueur : une barre bleue à 98 % du budget ne alerte personne. */
+  .meter {
+    height: 6px;
+    background: var(--muted);
+    overflow: hidden;
+  }
+  .meter > span {
+    display: block;
+    height: 100%;
+    background: var(--meter-fill, var(--primary));
+    transition: width 0.3s ease;
+  }
+
+  /* Alternance de fond sur les tableaux longs : l'œil ne saute pas de ligne
+     en suivant une valeur jusqu'au bout de la rangée. */
+  .table-zebra tbody tr:nth-child(even) {
+    background: color-mix(in oklab, var(--muted) 45%, transparent);
+  }
+  .table-zebra tbody tr:hover {
+    background: color-mix(in oklab, var(--primary) 8%, transparent);
+  }
+
   /* Charte : fond d'ondes à 10 % (15 % en sombre).
      Réservé aux en-têtes de page et à l'écran de connexion ; jamais derrière
      un tableau, où il gênerait la lecture des montants. */
@@ -302,10 +375,18 @@
     overflow: hidden;
     background-color: var(--hero);
   }
+  /* Un pseudo-element ::after est peint apres les enfants : sans cette mise
+     en plan, le motif d’ondes recouvrait le contenu au lieu de rester au
+     fond. */
+  .wave-surface > * {
+    position: relative;
+    z-index: 1;
+  }
   .wave-surface::after {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 0;
     pointer-events: none;
     opacity: 0.1;
     background-image: var(--wave-pattern-light);
@@ -317,12 +398,6 @@
     background-image: var(--wave-pattern-dark);
   }
 
-  /* Bordure des champs, portee au contraste exige par WCAG 1.4.11. */
-  [data-slot="input"],
-  [data-slot="textarea"],
-  [data-slot="select-trigger"] {
-    border-color: var(--input-border);
-  }
 
   /* Dégradé de marque, pour les surfaces d'accueil. */
   .brand-gradient {
@@ -335,6 +410,62 @@
   .dark .surface-card {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   }
+
+  /* ---- Mouvement ------------------------------------------------------ */
+
+  /* Apparition d'un écran.
+     Courte et de faible amplitude : dans un outil de gestion, l'animation
+     sert à situer d'où vient le contenu, pas à se faire remarquer. Au-delà
+     de 250 ms elle se transforme en attente. */
+  @keyframes apparition {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .enter {
+    animation: apparition 0.22s ease-out both;
+  }
+
+  /* Décalage en cascade sur une grille de cartes : l'œil suit l'ordre de
+     lecture au lieu de recevoir quatre blocs d'un coup. Le décalage est
+     plafonné, sinon la sixième carte arriverait trop tard pour être perçue
+     comme faisant partie du même ensemble. */
+  .enter-stagger > * {
+    animation: apparition 0.22s ease-out both;
+  }
+  .enter-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .enter-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .enter-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .enter-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .enter-stagger > *:nth-child(n + 5) { animation-delay: 150ms; }
+
+  /* Repère d'écran courant dans la barre latérale : un trait plein à gauche,
+     à angles droits comme le reste de la charte. */
+  .nav-active {
+    position: relative;
+  }
+  .nav-active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary-foreground);
+  }
+
+  /* Lisibilité des liens et boutons au clavier. Le contour par défaut de
+     certains navigateurs disparaît sur fond sombre. */
+  :where(a, button, [role="tab"], [role="menuitem"]):focus-visible {
+    outline: 2px solid var(--primary-ink);
+    outline-offset: 2px;
+  }
 }
 
 /* Une animation décorative ne doit jamais s'imposer à qui la refuse. */
@@ -343,6 +474,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

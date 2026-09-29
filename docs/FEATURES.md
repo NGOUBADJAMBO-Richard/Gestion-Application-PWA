@@ -1,482 +1,298 @@
-# 🎯 CodeWave Studio - Fonctionnalités Détaillées
+# Fonctionnalités — CodeWave Studio
 
-## 📊 Dashboard - Tableau de Bord
-
-### Vue d'Ensemble
-Le tableau de bord offre une vision complète de votre activité en un coup d'œil.
-
-#### Cartes Statistiques (4)
-Chaque carte affiche une métrique clé avec :
-- **Icône colorée** - Identification visuelle rapide
-- **Valeur principale** - Chiffre en grand format
-- **Tendance** - Évolution vs mois précédent
-- **Animation** - Fond subtil avec couleur thématique
-
-**Métriques disponibles** :
-1. 💰 **Chiffre d'Affaires** - Total des revenus (€328,000)
-2. 📁 **Projets Actifs** - Nombre de projets en cours
-3. 👥 **Clients Total** - Base clientèle complète
-4. 📄 **Factures en Attente** - À encaisser
-
-#### Graphique de Revenus
-- **Type** : Bar Chart (Recharts)
-- **Période** : 6 derniers mois
-- **Interactivité** : Tooltip au survol
-- **Responsive** : S'adapte à la taille d'écran
-- **Thème** : Couleurs adaptées Light/Dark
-
-#### Liste Projets Récents
-- Affichage des **5 derniers projets**
-- Pour chaque projet :
-  - Nom du projet
-  - Client associé
-  - Progression (%)
-  - Badge de statut coloré
-- Navigation rapide vers les détails
-
-### Design
-- Layout **Bento Grid** moderne
-- Espacement harmonieux
-- Cartes avec hover effect
-- Transitions fluides
+> État réel au 23 septembre 2026. La version précédente de ce document
+> annonçait des montants en euros et un chiffre d'affaires de 328 000 € qui
+> n'était qu'une valeur écrite en dur dans le code.
+>
+> Chaque ligne ci-dessous est soit ✅ **faite et vérifiable**, soit ❌ **à
+> faire**. Rien n'est annoncé comme disponible sans l'être.
 
 ---
 
-## 📁 Gestion de Projets - CRUD Complet
+## Tableau de bord ✅
 
-### Affichage Liste
-**Tableau complet** avec colonnes :
-- Nom du projet
-- Client
-- Statut (badge coloré)
-- Date d'échéance
-- Budget (format EUR)
-- Progression (barre + %)
-- Actions (Modifier/Supprimer)
-
-### Fonctionnalités CRUD
-
-#### Create (Créer)
-1. Bouton **"+ Nouveau Projet"** (bleu #004aad)
-2. Dialog modal avec formulaire :
-   - Nom du projet (texte)
-   - Client (sélection)
-   - Statut (dropdown)
-   - Date d'échéance (date picker)
-   - Budget (nombre)
-3. Validation et sauvegarde
-
-#### Read (Lire)
-- Tableau responsive
-- Scroll horizontal sur mobile
-- Affichage paginé (à venir)
-- Tri par colonne (à venir)
-
-#### Update (Modifier)
-- Clic sur icône **✏️ Modifier**
-- Dialog pré-rempli avec données actuelles
-- Modification et sauvegarde
-- Mise à jour instantanée
-
-#### Delete (Supprimer)
-- Clic sur icône **🗑️ Supprimer**
-- Confirmation (à venir)
-- Suppression immédiate
-
-### Filtres & Recherche
-
-#### Barre de Recherche
-- Icône 🔍 à gauche
-- Recherche en temps réel
-- Filtre par :
-  - Nom du projet
-  - Nom du client
-- Insensible à la casse
-
-#### Filtre par Statut
-- Dropdown avec options :
-  - 🔵 **Tous** - Affiche tout
-  - 🟢 **En Cours** - Active
-  - 🔵 **Terminé** - Completed
-  - 🟡 **En Attente** - Pending
-- Icône filtre
-- Changement instantané
-
-### Badges de Statut
-Couleurs distinctes :
-- **Active** : Vert (#10b981)
-- **Completed** : Bleu (#3b82f6)
-- **Pending** : Jaune/Orange (#f59e0b)
-- Opacité 10% en fond
-- Mode Dark adapté
-
-### Barre de Progression
-- Composant Progress UI
-- Largeur fixe 64px
-- Pourcentage affiché à droite
-- Animation fluide
-- Couleur primaire #004aad
+- Encaissé du mois, avec variation réelle face au mois précédent
+- **Aucune variation n'est annoncée quand le mois précédent est vide** :
+  afficher « +100 % » pour un passage de zéro à une facture serait trompeur
+- Restant dû, montant et nombre de factures en retard, avec alerte cliquable
+- Portefeuille des projets actifs
+- Chiffre d'affaires des six derniers mois, **mois creux inclus à zéro** :
+  sauter un mois vide laisserait croire à une croissance continue
+- Devis et factures annulées exclus des indicateurs
+- États vides explicites : un graphique muet n'apprend rien
 
 ---
 
-## 👥 CRM - Gestion Clientèle
+## Clients ✅
 
-### Vue Grille
-- **Layout** : Grid responsive
-  - Mobile : 1 colonne
-  - Tablet : 2 colonnes
-  - Desktop : 3 colonnes
-- **Cartes** : Hover effect avec shadow
-- **Espacement** : Gap de 16px
-
-### Carte Client
-Chaque carte contient :
-
-#### Header
-- **Avatar** : Initiales sur fond bleu
-- **Nom** : En gras
-- **Entreprise** : Sous-titre gris
-
-#### Informations
-- 📧 **Email** : Tronqué si trop long
-- 📞 **Téléphone** : Format international
-- 🏢 **Projets** : Nombre de projets associés
-
-#### Actions
-2 boutons en bas :
-- **Voir** - Consulter la fiche
-- **Modifier** - Éditer les infos
-
-### Recherche
-- Barre dédiée en haut
-- Recherche multi-critères :
-  - Nom
-  - Email
-  - Entreprise
-- Filtrage instantané
-
-### Avatar
-- Génération automatique des initiales
-- Fond de couleur corporate (#004aad)
-- Texte blanc
-- Forme circulaire
+- Création, modification, recherche
+- **Archivage** : un client porteur de factures émises ne se supprime pas,
+  la conservation comptable l'interdit. Il s'archive, ce qui le sort des
+  listes sans rien détruire ni détacher
+- Suppression refusée avec la raison et la liste des documents bloquants —
+  **sans bouton pour passer outre**
+- Fiche détaillée avec les projets réellement rattachés
+- Nombre de projets compté, non saisi
 
 ---
 
-## 💰 Facturation & Devis
+## Projets ✅
 
-### Liste des Factures
-**Tableau complet** avec :
-- Numéro de facture (INV-YYYY-XXX)
-- Client
-- Montant (format EUR)
-- Date d'émission
-- Date d'échéance
-- Statut (badge)
-- Actions
-
-### Statuts de Facture
-
-#### 1. Payée (Paid)
-- Badge **vert**
-- Facture réglée
-- Archive automatique (à venir)
-
-#### 2. En Attente (Pending)
-- Badge **jaune**
-- Envoyée au client
-- En attente de paiement
-
-#### 3. En Retard (Overdue)
-- Badge **rouge**
-- Échéance dépassée
-- Relance recommandée
-
-### Filtres
-Boutons de filtre rapide :
-- **All** - Toutes les factures
-- **Paid** - Seulement payées
-- **Pending** - En attente
-- **Overdue** - En retard
-
-### Calcul Automatique
-- Total affiché en haut
-- Mise à jour selon filtre
-- Format monétaire EUR
-- Séparateurs de milliers
-
-### Actions
-- **Télécharger** : Export PDF (🔜)
-- **Envoyer** : Email au client (🔜)
-- **Modifier** : Édition (🔜)
-- **Dupliquer** : Copie rapide (🔜)
+- Création, modification, suppression protégée
+- Budget, échéance, avancement
+- Rattachement au client **par identifiant** : renommer un client met à jour
+  tous ses documents
+- **Jalons livrables** à la place du pourcentage d'avancement. « 4 jalons sur
+  7 · Recette client dans 6 jours » dit combien *et* quoi ; « 65 % » ne disait
+  ni l'un ni l'autre et ne se mettait jamais à jour
+- Cinq modèles de jalons posés en un clic — site vitrine, boutique,
+  application mobile, identité visuelle, audit
+- Le retard d'un jalon se voit sans être déclaré
+- Colonne **Marge** : ce que le projet a rapporté moins ce qu'il a coûté, et le
+  temps passé dessus
+- La suppression est refusée quand des pièces sont rattachées au projet — et
+  annonce le temps qui deviendra orphelin
 
 ---
 
-## 🎧 Support & Maintenance
+## Facturation ✅
 
-### Système de Tickets
+### Trois natures de document
 
-#### Carte Ticket
-Design épuré avec :
-- **Icône de statut** - Visuel immédiat
-  - 🔴 AlertCircle - Ouvert
-  - 🔵 Clock - En cours
-  - ✅ CheckCircle2 - Fermé
-- **Titre** - Description du problème
-- **Client** - Nom du demandeur
-- **Date** - Création du ticket
-- **2 Badges** :
-  - Statut (Open/In Progress/Closed)
-  - Priorité (High/Medium/Low)
+| Nature | Préfixe | Portée |
+|---|---|---|
+| Devis | `DEV-` | Aucune valeur comptable, convertible en facture |
+| Facture | `FAC-` | Engage |
+| Avoir | `AV-` | Annule une facture désignée |
 
-#### Priorités
-Couleurs distinctes :
-- **High** : Rouge (#ef4444)
-- **Medium** : Orange (#f59e0b)
-- **Low** : Bleu (#3b82f6)
+### Cycle de vie
 
-### Filtres
-Boutons de filtre par statut :
-- **All**
-- **Open**
-- **In Progress**
-- **Closed**
+1. **Brouillon** — sans numéro, librement modifiable et supprimable
+2. **Émission** — le numéro est attribué à ce moment, à partir des numéros
+   déjà pris. Un brouillon abandonné ne laisse aucun trou dans la séquence
+3. **Émise** — plus modifiable ni supprimable. Pour corriger : un avoir
 
-### Fonctionnalités (à venir)
-- [ ] Commentaires
-- [ ] Pièces jointes
-- [ ] Assignation d'équipe
-- [ ] SLA tracking
-- [ ] Historique complet
+### Calcul
 
----
+- Montants en entiers, jamais en flottants
+- TVA par tranche, calculée une fois sur la base remisée
+- `HT + TVA = TTC` garanti par construction
+- La colonne TVA affichée se resomme exactement au pied de facture
 
-## ❓ Centre d'Aide
+### Encaissements ✅
 
-### Ressources
+- Règlements partiels, avec moyen, date et référence
+- Le statut suit le solde : la facture passe payée quand il tombe à zéro
+- **Le trop-perçu est signalé, pas absorbé** : c'est soit une erreur de
+  saisie, soit un avoir à établir
+- Un encaissement négatif est refusé, avec renvoi vers l'avoir
 
-#### 4 Sections Principales
-1. **📚 Documentation**
-   - Guides complets
-   - Références API
-   - Icône bleu #004aad
+### Retard ✅
 
-2. **🎥 Vidéos**
-   - Tutoriels pas-à-pas
-   - Screencasts
-   - Icône vert #10b981
+Déduit de l'échéance, sans écriture en base, avec le nombre de jours affiché.
+Le jour de l'échéance ne compte pas : le client a la journée.
 
-3. **💬 Forum**
-   - Communauté
-   - Questions/Réponses
-   - Icône orange #f59e0b
+### Avoirs ✅
 
-4. **❔ FAQs**
-   - Questions fréquentes
-   - Réponses rapides
-   - Icône rouge #ef4444
+Lignes reprises au négatif. `facture + avoir = 0` exactement, vérifié par test.
+À l'émission de l'avoir, la facture visée passe en « annulée ». Pas de second
+avoir sur une facture déjà annulée.
 
-### FAQ Interactive
-**Accordion Radix UI** :
-- 5 questions principales
-- Clic pour déplier
-- Animations fluides
-- Contenu détaillé
-
-**Questions** :
-1. Comment créer un nouveau projet ?
-2. Comment gérer les factures ?
-3. Puis-je utiliser l'app hors ligne ?
-4. Comment changer le thème ?
-5. Comment changer la langue ?
-
-### Guide PWA
-Instructions détaillées :
-- **Desktop** (Chrome/Edge)
-- **Mobile iOS** (Safari)
-- **Mobile Android** (Chrome)
-
-Avec étapes numérotées et captures (à venir).
-
-### Fonctionnalités Clés
-Grid 2x2 présentant :
-- 📱 PWA
-- ⚡ Temps réel
-- 🔒 Sécurité
-- 🌐 Multi-langue
+❌ Relances automatiques · ❌ Échéanciers · ❌ Devise multiple à l'usage
 
 ---
 
-## 🎨 Thème & Personnalisation
+## Fiche client ✅
 
-### Mode Clair (Light)
-- Fond blanc (#ffffff)
-- Texte noir (#030213)
-- Cartes blanches
-- Bordures subtiles (rgba(0,0,0,0.1))
-- Accents bleu #004aad
-
-### Mode Sombre (Dark)
-- Fond noir (#0a0a0a)
-- Cartes anthracite (#141414)
-- Texte blanc (#f5f5f5)
-- Bordures grises
-- Mêmes accents bleu
-
-### Transition
-- Animation fluide (300ms)
-- Classe CSS `.dark` sur `<html>`
-- Variables CSS pour tous les tokens
-- Pas de flash lors du changement
-
-### Bouton Toggle
-- Icône ☀️ en Light
-- Icône 🌙 en Dark
-- Position : Top bar droite
-- Hover effect
-- Tooltip (à venir)
+- Chiffre d'affaires, part dans le portefeuille, encours et part échue
+- **Délai de paiement propre à ce client** : la moyenne de l'agence ne dit
+  rien d'un client en particulier. Trois niveaux, à seuils larges — trente-cinq
+  jours au lieu de trente n'est pas un mauvais payeur
+- Projets avec leur avancement par jalons et leur marge réelle
+- Temps passé, coût interne, dépenses imputées
+- Tous ses documents, ses apprenants en formation, ses demandes de support
+- Devis restés sans réponse signalés en tête
 
 ---
 
-## 🌐 Internationalisation (i18n)
+## Calendrier ✅
 
-### Langues Supportées
-- 🇫🇷 **Français** (par défaut)
-- 🇬🇧 **English**
-
-### Traductions
-**90+ clés** traduites :
-- Navigation (7 items)
-- Dashboard (8 clés)
-- Projects (20+ clés)
-- Clients (8 clés)
-- Invoicing (6 clés)
-- Support (6 clés)
-- Common (8 clés)
-
-### Système
-- Context API React
-- Fonction `t(key)` pour traduire
-- Sauvegarde en localStorage
-- Changement instantané
-
-### Bouton Langue
-- Icône 🌐 Globe
-- Affiche code langue (FR/EN)
-- Position : Top bar
-- Toggle FR ↔ EN
-
-### Extension Facile
-Pour ajouter une langue :
-```typescript
-const translations = {
-  'key': { 
-    fr: 'Français', 
-    en: 'English',
-    es: 'Español' // Ajouter ici
-  }
-}
-```
+- Vue mois et vue semaine : le mois dit « quand est-ce que ça tombe », la
+  semaine dit « qu'est-ce que je fais maintenant »
+- Échéances de facture, validité de devis, jalons de projet, dates de session,
+  échéances de formation — **dérivées de l'état courant, jamais stockées**
+- Le passé reste visible : un calendrier qui n'affiche que l'avenir masque
+  exactement ce qu'il faut voir, l'échéance dépassée de trois jours
+- Un jalon livré se range à sa date de livraison, pas à la date prévue
+- Montant en jeu totalisé par jour et sur la période
 
 ---
 
-## 📱 Responsive Design
+## Temps &amp; rentabilité ✅
 
-### Breakpoints
-- **Mobile** : < 640px
-- **Tablet** : 640px - 1024px
-- **Desktop** : > 1024px
-- **Large** : > 1280px
+### Suivi du temps
 
-### Navigation
-- **Desktop** : Sidebar fixe à gauche
-- **Mobile** : Sidebar collapsible
-  - Bouton hamburger ☰
-  - Overlay dark 50%
-  - Slide animation
-  - Auto-close au clic
+- Saisie par projet, avec durée libre : « 1h30 », « 90 » ou « 1,5h »
+- La durée est stockée en **minutes entières** — jamais en heures décimales,
+  dont l'accumulation d'arrondis fabrique des demi-journées fantômes
+- **Coût horaire figé à la saisie** : augmenter le coût par défaut ne réécrit
+  pas la marge des projets déjà livrés
+- Distinction refacturable / non refacturable : une reprise offerte reste un
+  coût
+- Date future refusée, saisie de plus de 16 h refusée
 
-### Grilles
-- **Dashboard Stats** : 1/2/4 colonnes
-- **Clients** : 1/2/3 colonnes
-- **Charts** : Pleine largeur ou 2 colonnes
+### Dépenses
 
-### Tableaux
-- Scroll horizontal sur mobile
-- Colonnes prioritaires visibles
-- Actions toujours accessibles
+- Neuf postes fermés (sous-traitance, logiciels, hébergement, matériel,
+  déplacements, communication, formation, frais, autre). Une liste libre
+  produirait « Hebergement », « hébergement » et « Hosting » dans la même base
+- Rattachement au projet **facultatif** : un abonnement de comptabilité est une
+  charge de structure, pas le coût d'un chantier
+- **Refacturée à l'identique** : la dépense reste une sortie de caisse mais ne
+  pèse pas sur la marge
+- Le montant saisi est celui payé, TTC. Aucune TVA n'est déduite : le régime
+  fiscal réel n'est pas vérifié (voir FISCALITE.md), et une marge calculée sur
+  une hypothèse fiscale fausse serait pire qu'une marge calculée sur la caisse
 
----
+### Rentabilité
 
-## 🔐 Sécurité (Demo)
-
-### Authentification Mockée
-- User auto-connecté
-- Données stockées en localStorage
-- Pas de vraie validation
-- **⚠️ Ne pas utiliser en production**
-
-### Données
-- Stockage local uniquement
-- Pas de backend
-- Réinitialisation au refresh (partiel)
-- Pas de chiffrement
-
-### Production (Recommandé)
-- ✅ Supabase avec RLS
-- ✅ JWT tokens
-- ✅ HTTPS obligatoire
-- ✅ Hashing bcrypt
-- ✅ CORS configuré
-- ✅ Rate limiting
+- Recette **hors taxes** — la TVA collectée transite, elle n'appartient pas à
+  l'entreprise
+- Devis et brouillons exclus : un devis est une espérance, pas une recette
+- Une facture annulée reste comptée et son avoir la compense : exclure les deux
+  retirerait deux fois le même montant
+- Marge, taux de marge, recette par heure passée, budget consommé en coûts
+- Alerte dès que les coûts dépassent le budget, **même avant la première
+  facture** — c'est là que l'alerte sert
+- Les angles morts sont dits, jamais comblés au hasard : pièces émises sans
+  projet, temps saisi sur un projet supprimé, frais de structure non répartis.
+  Une clé de répartition arbitraire fabriquerait des marges fausses
 
 ---
 
-## ⚡ Performance
+## CodeWave Academy ✅
 
-### Optimisations Actuelles
-- **Vite** : Build ultra-rapide
-- **React 18** : Concurrent rendering
-- **Code splitting** : Routes lazy (à venir)
-- **Tailwind** : CSS purge automatique
-- **SVG Icons** : Lucide optimisé
-
-### Métriques Cibles
-- Lighthouse Score : **> 90**
-- First Contentful Paint : **< 1s**
-- Time to Interactive : **< 2s**
-- Bundle size : **< 500kb**
-
-### À Implémenter
-- [ ] Image lazy loading
-- [ ] Virtual scrolling (grandes listes)
-- [ ] Service Worker caching
-- [ ] Prefetching
-- [ ] Memoization (React.memo)
+- **Catalogue importé du site** : `npm run import:catalogue` transcrit les 24
+  formations, tarifs et volumes horaires en un module commité. Recopier les
+  prix à la main garantissait qu'ils divergent du site
+- Sessions : capacité, dates, modalité, formateur, taux de remplissage. Titre
+  et prix **figés à la création** — une hausse de tarif ne réécrit pas une
+  session déjà vendue
+- Apprenants, avec l'entreprise qui les envoie le cas échéant
+- Inscriptions : prix consenti distinct du prix public (le site annonce −20 %
+  pour les étudiants), **échéancier calculé et jamais saisi**, présence,
+  pointage des règlements
+- Une inscription annulée ou un abandon **libèrent leur place** : les compter
+  afficherait « complet » avec des sièges vides
 
 ---
 
-## 🎯 Prochaines Fonctionnalités
+## Relances ✅
 
-### Court Terme (v1.1)
-- [ ] Service Worker
-- [ ] Mode hors-ligne
-- [ ] Génération PDF
-- [ ] Export CSV
-
-### Moyen Terme (v1.2)
-- [ ] Time-tracking
-- [ ] Kanban board
-- [ ] Calendrier
-- [ ] Notifications
-
-### Long Terme (v2.0)
-- [ ] App mobile native
-- [ ] API publique
-- [ ] Webhooks
-- [ ] Intégrations tierces
+- Trois paliers : rappel courtois à J+1, relance ferme à J+8, mise en demeure
+  à J+21
+- **WhatsApp d'abord** : c'est le canal qui obtient une réponse au Gabon
+- L'application **n'envoie rien** : elle compose le message, ouvre la
+  conversation, et enregistre que la relance est partie
+- Le montant relancé est le **reste dû**, pas le total
+- Historique par document, pour ne pas envoyer deux fois la même mise en demeure
 
 ---
 
-**CodeWave Studio** - Une application pensée pour la productivité et l'efficacité.
+## Alertes, recherche et pilotage ✅
+
+- **Centre d'alertes** dérivé de l'état courant : impayés, échéances proches,
+  devis expirés, brouillons oubliés, échéances de formation, sessions
+  sous-remplies, projets en dépassement, sauvegarde ancienne. Pas d'état
+  « lu » — une alerte disparaît quand le fait disparaît
+- **Recherche globale** Ctrl+K sur clients, projets, documents, sessions et
+  apprenants
+- **Indicateurs de direction** : délai d'encaissement réellement observé
+  (pondéré par les montants), taux de transformation des devis, trésorerie
+  attendue, dépendance au premier client
+- Navigation groupée par intention : piloter, produire, assister, régler
+
+---
+
+## Paramètres ✅
+
+- Identité : raison sociale, forme juridique, adresse, coordonnées
+- Fiscalité : NIF, RCCM, régime, **taux de TVA modifiables**
+- Préfixes de numérotation, délai et conditions de règlement
+- Coordonnées bancaires, mentions de pied de facture
+- Durée de conservation des pièces
+- Contrôle du profil : ce qui manque pour émettre une facture est **bloquant
+  et annoncé**, plutôt que découvert après l'émission d'une facture incomplète
+
+**Aucun taux, aucune mention légale, aucun préfixe n'est codé en dur** ailleurs
+dans l'application.
+
+---
+
+## Support ✅
+
+Tickets avec statut, priorité, client rattaché. Suppression confirmée.
+
+❌ Historique des échanges · ❌ Temps passé par ticket · ❌ SLA
+
+---
+
+## Mon compte ✅
+
+- Profil du compte local
+- **Sauvegarde** : export en un clic, corbeille comprise
+- **Restauration** en deux temps : le fichier est validé, comparé à l'état
+  local, puis l'écran annonce collection par collection ce qui sera écrasé,
+  ajouté et perdu, et attend confirmation
+- Un fichier modifié après export est **refusé** : l'empreinte SHA-256 ne
+  correspond plus
+- Occupation du stockage, alerte au-delà de 80 %
+- Demande de conservation durable au navigateur
+
+---
+
+## Sécurité ✅
+
+Voir `SECURITE.md` pour le détail, y compris ce qui **n'est pas** protégé.
+
+- PBKDF2-SHA256, 650 000 itérations, sel par appareil
+- Comparaison à temps constant
+- Temporisation croissante après échecs, sans blocage définitif
+- Code de récupération à usage unique
+- Fermeture automatique après 30 minutes d'inactivité
+- CSP sans `unsafe-eval`, **aucune sortie réseau**
+
+❌ Journal d'audit · ❌ Verrouillage manuel immédiat
+
+---
+
+## Application installable ✅
+
+- Service worker, fonctionne hors ligne
+- Installation proposée une fois, jamais imposée
+- Mise à jour annoncée, rechargement au choix de l'utilisateur
+- Icônes 192, 512 et maskable dédiée
+- Raccourcis vers facture, clients, projets
+
+---
+
+## Interface ✅
+
+- Charte du site portée intégralement, **25 ratios de contraste calculés**,
+  tous conformes AA — voir `DESIGN-SYSTEM.md`
+- Thèmes clair et sombre
+- Français et anglais
+- Polices auto-hébergées : aucun appel à un tiers
+- `prefers-reduced-motion` respecté
+- Boutons d'action nommés pour les lecteurs d'écran
+
+❌ Audit WCAG complet · ❌ Parcours mobile vérifié écran par écran
+
+---
+
+## Absent du produit
+
+| Manque | Conséquence |
+|---|---|
+| Comptabilité en partie double | Pas de grand livre, pas de balance |
+| Multi-utilisateur | Un seul accès par appareil |

@@ -4,6 +4,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { router } from './routes';
 import { Toaster } from './components/ui/sonner';
+import { PwaStatus } from './components/PwaStatus';
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <AuthProvider>
           <RouterProvider router={router} />
           <Toaster />
+          <PwaStatus />
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>

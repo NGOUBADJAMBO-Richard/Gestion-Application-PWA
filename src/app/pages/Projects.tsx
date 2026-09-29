@@ -1,5 +1,16 @@
-import React, { useState } from "react";
-import { Search, Plus, Filter, Pencil, Trash2 } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
+  Search,
+  Plus,
+  Filter,
+  Pencil,
+  Trash2,
+  ListChecks,
+  FolderKanban,
+  Wallet,
+  TrendingUp,
+  AlertTriangle,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,7 +21,15 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
-import { mockProjects, Project } from "../data/mockData";
+import type { Project } from "../data/entities";
+import { projectRepository } from "../data/repositories";
+import { useCollection } from "../hooks/useCollection";
+import { DataStateNotice } from "../components/DataStateNotice";
+import { ClientSelect } from "../components/ClientSelect";
+import { useClientIndex } from "../hooks/useClientIndex";
+import { invoiceRepository } from "../data/repositories";
+import { ConfirmDelete } from "../components/ConfirmDelete";
+import { canDeleteProject } from "../../domain/rules";
 import {
   Table,
   TableBody,
@@ -26,7 +45,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { Progress } from "../components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -37,28 +55,117 @@ import {
 } from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
 import { formatCurrencyXAF } from "../utils/currency";
+import { formatMoney, money } from "../../domain/money";
+import { computeProjectProfitability } from "../../domain/profitability";
+import { toRevenueDocuments } from "../data/documentTotals";
+import { expenseRepository, timeEntryRepository } from "../data/repositories";
+import { useCompanyProfile } from "../hooks/useCompanyProfile";
+import { formatDuration } from "../../domain/timeEntry";
+import { StatCard } from "../components/StatCard";
+import {
+  MilestoneBar,
+  MilestoneDialog,
+  MilestonePanel,
+  MilestoneSummary,
+} from "../components/MilestonePanel";
+import type { Milestone } from "../../domain/milestone";
 
 export function Projects() {
   const { t } = useLanguage();
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  // Les donnees vivent dans le depot : la saisie survit au rechargement.
+  const {
+    items: projects,
+    isLoading,
+    error,
+    create,
+    update,
+    remove,
+    dismissError,
+  } = useCollection(projectRepository);
+  const { nameOf } = useClientIndex();
+  const { items: invoices } = useCollection(invoiceRepository);
+  const { items: saisies } = useCollection(timeEntryRepository);
+  const { items: depenses } = useCollection(expenseRepository);
+  const { profile } = useCompanyProfile();
+
+  /**
+   * Rentabilité de chaque projet, indexée par identifiant.
+   *
+   * Calculée ici et non dans la boucle de rendu : recalculer pour chaque ligne
+   * à chaque frappe dans le champ de recherche relirait toutes les factures.
+   */
+  const rentabilites = useMemo(() => {
+    const documents = toRevenueDocuments(invoices, profile.currency);
+    return new Map(
+      projects.map((projet) => [
+        projet.id,
+        computeProjectProfitability({
+          projectId: projet.id,
+          currency: profile.currency,
+          budget: money(Math.round(projet.budget), profile.currency),
+          documents,
+          timeEntries: saisies,
+          expenses: depenses,
+        }),
+      ]),
+    );
+  }, [projects, invoices, saisies, depenses, profile.currency]);
+  const [projetASupprimer, setProjetASupprimer] = useState<Project | null>(null);
+  // Cocher un jalon est le geste le plus fréquent de la semaine : il ne doit
+  // pas obliger à rouvrir le formulaire complet du projet.
+  const [projetDesJalons, setProjetDesJalons] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<Omit<Project, "id">>({
     name: "",
-    client: "",
+    clientId: "",
     status: "pending",
     deadline: "",
     budget: 0,
-    progress: 0,
+    milestones: [],
     description: "",
   });
+
+  /**
+   * Le portefeuille de projets en quatre chiffres.
+   *
+   * La liste disait combien de projets existaient, jamais ce qu'ils valaient
+   * ni lesquels dérivaient. Les rentabilités sont déjà calculées ligne à
+   * ligne : on les agrège plutôt que de refaire le travail.
+   */
+  const bilan = useMemo(() => {
+    const lignes = [...rentabilites.values()];
+    return {
+      actifs: projects.filter((projet) => projet.status === "active").length,
+      budgetEnCours: projects
+        .filter((projet) => projet.status === "active")
+        .reduce((cumul, projet) => cumul + Math.round(projet.budget), 0),
+      marge: lignes.reduce((cumul, ligne) => cumul + ligne.margin.amount, 0),
+      // Ce qui compte est de perdre de l'argent, pas de dépasser un budget.
+      //
+      // La première version croisait les deux conditions et annonçait
+      // « aucun projet ne perd d'argent » alors que deux en perdaient : leurs
+      // coûts restaient sous le budget, mais la facturation n'avait pas
+      // suivi. Le dépassement de budget reste signalé sur la fiche du
+      // projet ; ici on compte les pertes.
+      enPerte: lignes.filter(
+        (ligne) =>
+          ligne.margin.amount < 0 &&
+          (ligne.revenue.amount !== 0 || ligne.totalCost.amount !== 0),
+      ).length,
+      horsBudget: lignes.filter((ligne) => ligne.overBudget).length,
+    };
+  }, [projects, rentabilites]);
+
+  const argent = (montant: number) =>
+    formatMoney(money(montant, profile.currency));
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchQuery.toLowerCase());
+      nameOf(project.clientId).toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || project.status === statusFilter;
@@ -79,19 +186,15 @@ export function Projects() {
     }
   };
 
-  const handleDelete = (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-  };
-
   const handleEdit = (project: Project) => {
     setEditingProject(project);
     setFormData({
       name: project.name,
-      client: project.client,
+      clientId: project.clientId,
       status: project.status,
       deadline: project.deadline,
       budget: project.budget,
-      progress: project.progress,
+      milestones: project.milestones,
       description: project.description || "",
     });
     setIsDialogOpen(true);
@@ -101,11 +204,11 @@ export function Projects() {
     setEditingProject(null);
     setFormData({
       name: "",
-      client: "",
+      clientId: "",
       status: "pending",
       deadline: "",
       budget: 0,
-      progress: 0,
+      milestones: [],
       description: "",
     });
     setIsDialogOpen(true);
@@ -115,31 +218,22 @@ export function Projects() {
     e.preventDefault();
     const payload: Omit<Project, "id"> = {
       name: formData.name.trim(),
-      client: formData.client.trim(),
+      clientId: formData.clientId,
       status: formData.status,
       deadline: formData.deadline,
       budget: Number(formData.budget) || 0,
-      progress: Number(formData.progress) || 0,
+      milestones: formData.milestones,
       description: formData.description?.trim() || "",
     };
 
-    if (!payload.name || !payload.client || !payload.deadline) {
+    if (!payload.name || !payload.clientId || !payload.deadline) {
       return;
     }
 
     if (editingProject) {
-      setProjects((prev) =>
-        prev.map((project) =>
-          project.id === editingProject.id
-            ? { ...project, ...payload }
-            : project,
-        ),
-      );
+      void update(editingProject.id, payload);
     } else {
-      setProjects((prev) => [
-        ...prev,
-        { id: Date.now().toString(), ...payload },
-      ]);
+      void create(payload);
     }
 
     setIsDialogOpen(false);
@@ -148,7 +242,16 @@ export function Projects() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <DataStateNotice
+        isLoading={isLoading}
+        error={error}
+        onDismiss={dismissError}
+        label="les projets"
+      />
+
+      <header className="enter wave-surface -mx-4 px-4 py-6 lg:-mx-6 lg:px-6">
+        <p className="section-label">Suivi</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
         <div>
           <h1>{t("projects.title")}</h1>
           <p className="text-muted-foreground mt-1">
@@ -162,6 +265,45 @@ export function Projects() {
           <Plus className="w-4 h-4" />
           {t("projects.new")}
         </Button>
+        </div>
+      </header>
+
+
+      <div className="enter-stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Projets actifs"
+          value={{ to: bilan.actifs, format: (valeur) => String(valeur) }}
+          hint={`${projects.length} au total`}
+          icon={FolderKanban}
+        />
+        <StatCard
+          label="Budget en cours"
+          value={{ to: bilan.budgetEnCours, format: argent }}
+          hint="Prix de vente des projets actifs."
+          icon={Wallet}
+        />
+        <StatCard
+          label="Marge consolidée"
+          value={{ to: bilan.marge, format: argent }}
+          hint="Facturé hors taxes, moins le temps et les dépenses."
+          icon={TrendingUp}
+          tone={bilan.marge < 0 ? "negative" : "positive"}
+          href="/time"
+        />
+        <StatCard
+          label="Projets en perte"
+          value={{ to: bilan.enPerte, format: (valeur) => String(valeur) }}
+          hint={
+            bilan.enPerte === 0
+              ? "Chaque projet couvre ses coûts."
+              : bilan.horsBudget === 0
+                ? "Coûts supérieurs à ce qui a été facturé."
+                : `dont ${bilan.horsBudget} au-delà du budget prévu`
+          }
+          icon={AlertTriangle}
+          tone={bilan.enPerte === 0 ? "positive" : "negative"}
+          href="/time"
+        />
       </div>
 
       {/* Filters */}
@@ -179,7 +321,7 @@ export function Projects() {
             </div>
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -216,7 +358,8 @@ export function Projects() {
                   <TableHead>{t("projects.status")}</TableHead>
                   <TableHead>{t("projects.deadline")}</TableHead>
                   <TableHead>{t("projects.budget")}</TableHead>
-                  <TableHead>{t("projects.progress")}</TableHead>
+                  <TableHead>Marge</TableHead>
+                  <TableHead>{t("projects.milestones")}</TableHead>
                   <TableHead className="text-right">
                     {t("projects.actions")}
                   </TableHead>
@@ -228,7 +371,7 @@ export function Projects() {
                     <TableCell className="font-medium">
                       {project.name}
                     </TableCell>
-                    <TableCell>{project.client}</TableCell>
+                    <TableCell>{nameOf(project.clientId)}</TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(project.status)}>
                         {t(`projects.status.${project.status}`)}
@@ -239,11 +382,43 @@ export function Projects() {
                     </TableCell>
                     <TableCell>{formatCurrencyXAF(project.budget)}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={project.progress} className="w-16" />
-                        <span className="text-sm text-muted-foreground">
-                          {project.progress}%
-                        </span>
+                      {(() => {
+                        const marge = rentabilites.get(project.id);
+                        if (marge === undefined) return null;
+                        const rien =
+                          marge.revenue.amount === 0 &&
+                          marge.totalCost.amount === 0;
+                        if (rien) {
+                          return (
+                            <span className="text-sm text-muted-foreground">
+                              Pas d&rsquo;activité
+                            </span>
+                          );
+                        }
+                        return (
+                          <div className="whitespace-nowrap">
+                            <span
+                              className={
+                                marge.margin.amount < 0
+                                  ? "text-destructive"
+                                  : "text-emerald-600 dark:text-emerald-400"
+                              }
+                            >
+                              {formatMoney(marge.margin)}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {formatDuration(marge.minutesLogged)} passées
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 shrink-0">
+                          <MilestoneBar milestones={project.milestones} />
+                        </div>
+                        <MilestoneSummary milestones={project.milestones} />
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -251,14 +426,25 @@ export function Projects() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => setProjetDesJalons(project)}
+                          aria-label={`Jalons du projet ${project.name}`}
+                          title="Jalons"
+                        >
+                          <ListChecks className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleEdit(project)}
+                          aria-label={`Modifier le projet ${project.name}`}
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(project.id)}
+                          onClick={() => setProjetASupprimer(project)}
+                          aria-label={`Supprimer le projet ${project.name}`}
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
@@ -305,17 +491,15 @@ export function Projects() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="client">{t("projects.client")}</Label>
-                <Input
+                <ClientSelect
                   id="client"
-                  value={formData.client}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, client: e.target.value }))
+                  value={formData.clientId}
+                  onChange={(clientId) =>
+                    setFormData((prev) => ({ ...prev, clientId }))
                   }
-                  placeholder={t("projects.clientName")}
-                  required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="status">{t("projects.status")}</Label>
                   <Select
@@ -373,20 +557,22 @@ export function Projects() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="progress">{t("projects.progress")}</Label>
-                <Input
-                  id="progress"
-                  type="number"
-                  value={formData.progress}
-                  onChange={(e) =>
+                <Label>{t("projects.milestones")} livrables</Label>
+                <p className="text-xs text-muted-foreground">
+                  L&rsquo;avancement se déduit des jalons livrés. Un
+                  pourcentage saisi à la main est une impression : il ne dit
+                  ni ce qui reste, ni si l&rsquo;on est à l&rsquo;heure.
+                </p>
+                <MilestonePanel
+                  milestones={formData.milestones}
+                  startDate={formData.deadline}
+                  projectName={formData.name}
+                  onChange={(milestones) =>
                     setFormData((prev) => ({
                       ...prev,
-                      progress: Number(e.target.value) || 0,
+                      milestones: milestones as Milestone[],
                     }))
                   }
-                  placeholder="0"
-                  min={0}
-                  max={100}
                 />
               </div>
             </div>
@@ -405,6 +591,61 @@ export function Projects() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <MilestoneDialog
+        open={projetDesJalons !== null}
+        projectName={projetDesJalons?.name ?? ""}
+        milestones={projetDesJalons?.milestones ?? []}
+        startDate={projetDesJalons?.deadline ?? ""}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setProjetDesJalons(null);
+        }}
+        onSave={(milestones) => {
+          if (projetDesJalons === null) return;
+          void update(projetDesJalons.id, {
+            milestones: milestones as Milestone[],
+          });
+        }}
+      />
+
+      <ConfirmDelete
+        open={projetASupprimer !== null}
+        onOpenChange={(ouvert) => {
+          if (!ouvert) setProjetASupprimer(null);
+        }}
+        subject={
+          projetASupprimer === null ? "" : `le projet ${projetASupprimer.name}`
+        }
+        decision={canDeleteProject({
+          // Une facture rattachee documente une prestation : supprimer le
+          // projet la laisserait orpheline.
+          //
+          // Le rapprochement se faisait sur le client, faute de rattachement
+          // au projet : un client portant deux projets voyait donc la
+          // suppression de l'un bloquée par les factures de l'autre. On compare
+          // maintenant le projet lui-meme.
+          linkedInvoiceIds: invoices
+            .filter(
+              (facture) =>
+                projetASupprimer !== null &&
+                facture.projectId === projetASupprimer.id,
+            )
+            .map((facture) => facture.number || "brouillon"),
+        })}
+        consequence={(() => {
+          const marge =
+            projetASupprimer === null
+              ? undefined
+              : rentabilites.get(projetASupprimer.id);
+          const base = "Le projet part à la corbeille et reste récupérable.";
+          if (marge === undefined || marge.minutesLogged === 0) return base;
+          return `${base} Les ${formatDuration(marge.minutesLogged)} saisies dessus seront signalées comme orphelines dans Temps & rentabilité.`;
+        })()}
+        onConfirm={() => {
+          if (projetASupprimer !== null) void remove(projetASupprimer.id);
+          setProjetASupprimer(null);
+        }}
+      />
     </div>
   );
 }

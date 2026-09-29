@@ -7,6 +7,19 @@
       name="description"
       content="CodeWave Studio — suite de gestion de M.G.N CodeWave : clients, projets, devis, factures et comptabilité. Toutes les données restent sur cet appareil."
     />
+    <!--
+      Politique de sécurité du contenu.
+
+      script-src sans unsafe-eval : aucune chaîne ne doit pouvoir devenir du
+      code exécutable. connect-src limité à self et au websocket local, qui
+      sert uniquement au rechargement à chaud de Vite en développement.
+      Aucune origine tierce n’est autorisée : les données ne peuvent pas
+      partir, même par accident.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws: wss:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
+    />
     <meta name="theme-color" content="#004AAD" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
 
