@@ -42,6 +42,12 @@
 - Budget, échéance, avancement
 - Rattachement au client **par identifiant** : renommer un client met à jour
   tous ses documents
+- **Jalons livrables** à la place du pourcentage d'avancement. « 4 jalons sur
+  7 · Recette client dans 6 jours » dit combien *et* quoi ; « 65 % » ne disait
+  ni l'un ni l'autre et ne se mettait jamais à jour
+- Cinq modèles de jalons posés en un clic — site vitrine, boutique,
+  application mobile, identité visuelle, audit
+- Le retard d'un jalon se voit sans être déclaré
 - Colonne **Marge** : ce que le projet a rapporté moins ce qu'il a coûté, et le
   temps passé dessus
 - La suppression est refusée quand des pièces sont rattachées au projet — et
@@ -93,6 +99,32 @@ Lignes reprises au négatif. `facture + avoir = 0` exactement, vérifié par tes
 avoir sur une facture déjà annulée.
 
 ❌ Relances automatiques · ❌ Échéanciers · ❌ Devise multiple à l'usage
+
+---
+
+## Fiche client ✅
+
+- Chiffre d'affaires, part dans le portefeuille, encours et part échue
+- **Délai de paiement propre à ce client** : la moyenne de l'agence ne dit
+  rien d'un client en particulier. Trois niveaux, à seuils larges — trente-cinq
+  jours au lieu de trente n'est pas un mauvais payeur
+- Projets avec leur avancement par jalons et leur marge réelle
+- Temps passé, coût interne, dépenses imputées
+- Tous ses documents, ses apprenants en formation, ses demandes de support
+- Devis restés sans réponse signalés en tête
+
+---
+
+## Calendrier ✅
+
+- Vue mois et vue semaine : le mois dit « quand est-ce que ça tombe », la
+  semaine dit « qu'est-ce que je fais maintenant »
+- Échéances de facture, validité de devis, jalons de projet, dates de session,
+  échéances de formation — **dérivées de l'état courant, jamais stockées**
+- Le passé reste visible : un calendrier qui n'affiche que l'avenir masque
+  exactement ce qu'il faut voir, l'échéance dépassée de trois jours
+- Un jalon livré se range à sa date de livraison, pas à la date prévue
+- Montant en jeu totalisé par jour et sur la période
 
 ---
 
