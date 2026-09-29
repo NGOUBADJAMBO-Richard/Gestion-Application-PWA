@@ -4,6 +4,7 @@ import {
   FileText,
   FolderKanban,
   Globe,
+  CalendarDays,
   GraduationCap,
   Headphones,
   HelpCircle,
@@ -75,7 +76,10 @@ export function Layout() {
   const groupes: readonly GroupeNav[] = [
     {
       titre: "Pilotage",
-      entrees: [{ key: "nav.dashboard", href: "/", icon: LayoutDashboard }],
+      entrees: [
+        { key: "nav.dashboard", href: "/", icon: LayoutDashboard },
+        { key: "nav.calendar", href: "/calendar", icon: CalendarDays },
+      ],
     },
     {
       titre: "Activité",

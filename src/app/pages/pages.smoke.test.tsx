@@ -3,6 +3,8 @@ import { screen } from "@testing-library/react";
 
 import { renderWithProviders } from "../../test/renderWithProviders";
 import { Academy } from "./Academy";
+import { Calendar } from "./Calendar";
+import { ClientFile } from "./ClientFile";
 import { Clients } from "./Clients";
 import { Dashboard } from "./Dashboard";
 import { Help } from "./Help";
@@ -36,6 +38,24 @@ describe("ouverture des écrans", () => {
   it("les projets s'affichent", async () => {
     renderWithProviders(<Projects />);
     expect(await screen.findByRole("heading", { level: 1, name: /projet/i })).toBeInTheDocument();
+  });
+
+  it("le calendrier s'affiche avec ses deux vues", async () => {
+    renderWithProviders(<Calendar />);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: /calendrier/i }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: "Mois" })).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: "Semaine" })).toBeInTheDocument();
+  });
+
+  it("la fiche client annonce un client introuvable plutôt que de planter", async () => {
+    // Sans identifiant dans l'URL, la page ne doit pas tomber : un lien
+    // périmé mène ici, et un écran blanc ne dit rien.
+    renderWithProviders(<ClientFile />);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: /client introuvable/i }),
+    ).toBeInTheDocument();
   });
 
   it("l'Academy s'affiche avec ses trois onglets", async () => {
