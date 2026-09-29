@@ -57,6 +57,12 @@ export interface User {
  * `locked`       : un mot de passe existe, la session est fermée.
  * `unlocked`     : session ouverte.
  */
+/** Champs du compte qui ne sont que des libellés d'affichage. */
+export type EditableUser = Pick<
+  User,
+  "name" | "email" | "phone" | "company" | "department"
+>;
+
 export type AuthStatus = "unconfigured" | "locked" | "unlocked";
 
 export interface SetupResult {
@@ -76,6 +82,15 @@ interface AuthContextValue {
    */
   readonly pendingRecoveryCode: string | null;
   acknowledgeRecoveryCode: () => void;
+  /**
+   * Corrige les informations d'affichage du compte.
+   *
+   * Le nom était déduit de l'adresse e-mail et n'était modifiable nulle
+   * part : « mgncodewave18@gmail.com » donnait « Mgncodewave18 », qui n'est
+   * le nom de personne. Ce sont des libellés, pas des identifiants — les
+   * changer n'affecte ni le mot de passe, ni le code de récupération.
+   */
+  updateUser: (patch: Partial<EditableUser>) => void;
   setUp: (email: string, password: string) => Promise<SetupResult>;
   unlock: (password: string) => Promise<void>;
   recover: (recoveryCode: string, newPassword: string) => Promise<SetupResult>;
@@ -350,6 +365,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [credential, lockout, persistLockout],
   );
 
+  const updateUser = useCallback((patch: Partial<EditableUser>) => {
+    setUser((courant) => {
+      if (courant === null) return courant;
+      // Les champs vides sont ignorés plutôt qu'enregistrés : un compte
+      // sans nom ni adresse n'aide personne, et l'écran redeviendrait muet.
+      const nettoye = Object.fromEntries(
+        Object.entries(patch).filter(
+          ([, valeur]) => typeof valeur === "string" && valeur.trim().length > 0,
+        ).map(([cle, valeur]) => [cle, (valeur as string).trim()]),
+      );
+      const suivant = { ...courant, ...nettoye };
+      writeJson(PROFILE_KEY, suivant);
+      return suivant;
+    });
+  }, []);
+
   const acknowledgeRecoveryCode = useCallback(() => {
     setPendingRecoveryCode(null);
   }, []);
@@ -367,6 +398,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       retryInSeconds,
       pendingRecoveryCode,
       acknowledgeRecoveryCode,
+      updateUser,
       setUp,
       unlock,
       recover,
@@ -379,6 +411,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       retryInSeconds,
       pendingRecoveryCode,
       acknowledgeRecoveryCode,
+      updateUser,
       setUp,
       unlock,
       recover,
