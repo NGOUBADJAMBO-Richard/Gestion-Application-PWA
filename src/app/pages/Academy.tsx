@@ -81,6 +81,7 @@ import {
   learnerRepository,
   sessionRepository,
 } from "../data/repositories";
+import { recordActivity } from "../data/activityLog";
 import { useCollection } from "../hooks/useCollection";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 
@@ -351,6 +352,16 @@ export function Academy() {
 
     void suite.then((resultat) => {
       if (resultat === undefined) return;
+      if (sessionEnEdition === null) {
+        recordActivity({
+          kind: "sessionOpened",
+          title: `Session « ${brouillon.title} » ouverte`,
+          detail: `${brouillon.capacity} places · ${brouillon.trainer}`,
+          href: "/academy",
+          amount: brouillon.price,
+        });
+      }
+
       toast.success(
         sessionEnEdition === null ? "Session ouverte." : "Session mise à jour.",
         { description: brouillon.title },
@@ -496,6 +507,14 @@ export function Academy() {
     void inscriptions.create(brouillon).then((resultat) => {
       if (resultat === undefined) return;
       const apprenant = apprenantsParId.get(brouillon.learnerId);
+      recordActivity({
+        kind: "enrollmentCreated",
+        title: `${apprenant === undefined ? "Apprenant" : learnerName(apprenant)} inscrit`,
+        detail: session.title,
+        href: "/academy",
+        amount: brouillon.agreedPrice,
+      });
+
       toast.success("Inscription enregistrée.", {
         description: `${apprenant === undefined ? "Apprenant" : learnerName(apprenant)} — ${session.title}`,
       });
@@ -506,6 +525,22 @@ export function Academy() {
 
   /** Marque une échéance réglée, ou revient en arrière en cas d'erreur de clic. */
   const basculerEcheance = (inscription: Enrollment, echeanceId: string) => {
+    // Seul le règlement est consigné, pas le retour en arrière : un clic
+    // corrigé n'est pas un encaissement.
+    const concernee = inscription.installments.find(
+      (echeance) => echeance.id === echeanceId,
+    );
+    if (concernee !== undefined && concernee.paidAt === undefined) {
+      const apprenant = apprenantsParId.get(inscription.learnerId);
+      recordActivity({
+        kind: "installmentPaid",
+        title: `${argent(concernee.amount)} encaissés`,
+        detail: `${apprenant === undefined ? "Apprenant" : learnerName(apprenant)} · ${sessionsParId.get(inscription.sessionId)?.title ?? "Session"}`,
+        href: "/academy",
+        amount: concernee.amount,
+      });
+    }
+
     const suivantes = inscription.installments.map((echeance) =>
       echeance.id === echeanceId
         ? echeance.paidAt === undefined

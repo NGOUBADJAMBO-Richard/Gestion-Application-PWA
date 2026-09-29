@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Input } from "./ui/input";
+import { recordActivity } from "../data/activityLog";
 import {
   Select,
   SelectContent,
@@ -46,6 +47,8 @@ interface MilestonePanelProps {
   readonly milestones: readonly Milestone[];
   /** Sert de date de départ aux modèles. */
   readonly startDate: string;
+  /** Nommé dans le journal d'activité, pour retrouver de quoi il s'agissait. */
+  readonly projectName?: string | undefined;
   readonly onChange: (milestones: readonly Milestone[]) => void;
 }
 
@@ -58,6 +61,7 @@ function dateCourte(value: string): string {
 export function MilestonePanel({
   milestones,
   startDate,
+  projectName = "",
   onChange,
 }: MilestonePanelProps) {
   const [intitule, setIntitule] = useState("");
@@ -102,6 +106,17 @@ export function MilestonePanel({
   };
 
   const basculer = (jalon: Milestone) => {
+    // Seule la livraison est consignée, pas le décochage : un clic corrigé
+    // n'est pas un événement, et le journal se remplirait d'allers-retours.
+    if (jalon.doneAt === undefined) {
+      recordActivity({
+        kind: "milestoneDelivered",
+        title: `${jalon.label} livré`,
+        detail: projectName,
+        href: "/projects",
+      });
+    }
+
     onChange(
       milestones.map((candidat) =>
         candidat.id === jalon.id
@@ -310,6 +325,7 @@ export function MilestoneDialog({
           <MilestonePanel
             milestones={brouillon}
             startDate={startDate}
+            projectName={projectName}
             onChange={setBrouillon}
           />
         </div>

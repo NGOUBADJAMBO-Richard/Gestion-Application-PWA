@@ -39,6 +39,9 @@ const Academy = lazy(() =>
 const Calendar = lazy(() =>
   import("./pages/Calendar").then((m) => ({ default: m.Calendar })),
 );
+const Notifications = lazy(() =>
+  import("./pages/Notifications").then((m) => ({ default: m.Notifications })),
+);
 const Support = lazy(() =>
   import("./pages/Support").then((m) => ({ default: m.Support })),
 );
@@ -122,6 +125,7 @@ export const router = createBrowserRouter([
       { path: "time", Component: Time },
       { path: "academy", Component: Academy },
       { path: "calendar", Component: Calendar },
+      { path: "notifications", Component: Notifications },
       { path: "support", Component: Support },
       { path: "settings", Component: Settings },
       { path: "help", Component: Help },

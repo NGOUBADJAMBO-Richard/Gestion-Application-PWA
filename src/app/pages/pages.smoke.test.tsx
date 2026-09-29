@@ -10,6 +10,7 @@ import { Dashboard } from "./Dashboard";
 import { Help } from "./Help";
 import { Invoicing } from "./Invoicing";
 import { NotFound } from "./NotFound";
+import { Notifications } from "./Notifications";
 import { Projects } from "./Projects";
 import { Settings } from "./Settings";
 import { Support } from "./Support";
@@ -38,6 +39,19 @@ describe("ouverture des écrans", () => {
   it("les projets s'affichent", async () => {
     renderWithProviders(<Projects />);
     expect(await screen.findByRole("heading", { level: 1, name: /projet/i })).toBeInTheDocument();
+  });
+
+  it("les notifications séparent ce qui reste à faire de ce qui a été fait", async () => {
+    renderWithProviders(<Notifications />);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: /notifications/i }),
+    ).toBeInTheDocument();
+    // Les deux onglets doivent rester distincts : les confondre ferait
+    // disparaître un impayé d'un clic sur « tout marquer lu ».
+    expect(
+      await screen.findByRole("tab", { name: /à traiter/i }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: /journal/i })).toBeInTheDocument();
   });
 
   it("le calendrier s'affiche avec ses deux vues", async () => {

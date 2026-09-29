@@ -4,6 +4,7 @@ import {
   FileText,
   FolderKanban,
   Globe,
+  BellRing,
   CalendarDays,
   GraduationCap,
   Headphones,
@@ -79,6 +80,7 @@ export function Layout() {
       entrees: [
         { key: "nav.dashboard", href: "/", icon: LayoutDashboard },
         { key: "nav.calendar", href: "/calendar", icon: CalendarDays },
+        { key: "nav.notifications", href: "/notifications", icon: BellRing },
       ],
     },
     {

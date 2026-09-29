@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle, Bell, CheckCircle2, Info } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  History,
+  Info,
+  ListFilter,
+} from "lucide-react";
 
 import type { Alert, AlertSeverity } from "../../domain/alerts";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useAlertNotifications } from "../hooks/useAlertNotifications";
+import { useActivity } from "../hooks/useActivity";
 import { useAlerts } from "../hooks/useAlerts";
 
 /**
@@ -77,6 +85,7 @@ export function AlertBell() {
   // composant obligerait à refaire le calcul, avec le risque que les deux
   // sources divergent.
   useAlertNotifications(alerts);
+  const { unreadCount } = useActivity();
   const [ouvert, setOuvert] = useState(false);
   const navigate = useNavigate();
 
@@ -125,17 +134,38 @@ export function AlertBell() {
           </p>
         </div>
 
+        {unreadCount > 0 && (
+          <button
+            type="button"
+            onClick={() => ouvrir("/notifications")}
+            className="flex w-full items-center gap-2 border-b border-border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent"
+          >
+            <History className="h-4 w-4 shrink-0 text-primary-ink" />
+            {unreadCount} nouveauté(s) au journal d&rsquo;activité
+          </button>
+        )}
+
         {alerts.length === 0 ? (
           <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             Aucune échéance dépassée, aucune dérive de budget.
           </div>
         ) : (
-          <div className="max-h-[22rem] overflow-y-auto divide-y divide-border">
-            {alerts.map((alerte) => (
-              <LigneAlerte key={alerte.id} alerte={alerte} onOuvrir={ouvrir} />
-            ))}
-          </div>
+          <>
+            <div className="max-h-[20rem] overflow-y-auto divide-y divide-border">
+              {alerts.map((alerte) => (
+                <LigneAlerte key={alerte.id} alerte={alerte} onOuvrir={ouvrir} />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => ouvrir("/notifications")}
+              className="flex w-full items-center gap-2 border-t border-border px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <ListFilter className="h-4 w-4 shrink-0" />
+              Tout voir, avec le journal d&rsquo;activité
+            </button>
+          </>
         )}
       </PopoverContent>
     </Popover>

@@ -566,6 +566,7 @@ export function Projects() {
                 <MilestonePanel
                   milestones={formData.milestones}
                   startDate={formData.deadline}
+                  projectName={formData.name}
                   onChange={(milestones) =>
                     setFormData((prev) => ({
                       ...prev,

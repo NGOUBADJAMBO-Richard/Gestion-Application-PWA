@@ -21,6 +21,7 @@ import { Badge } from "../components/ui/badge";
 import { useLanguage } from "../contexts/LanguageContext";
 import type { Invoice, InvoiceItem } from "../data/mockData";
 import { invoiceRepository, reminderRepository } from "../data/repositories";
+import { recordActivity } from "../data/activityLog";
 import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
 import { ClientSelect } from "../components/ClientSelect";
@@ -306,6 +307,14 @@ export function Invoicing() {
         }
       }
 
+      recordActivity({
+        kind: invoice.kind === "creditNote" ? "creditNoteIssued" : "documentIssued",
+        title: `${numero} émis`,
+        detail: nameOf(invoice.clientId),
+        href: "/invoicing",
+        amount: invoice.amount,
+      });
+
       toast.success(`Document ${numero} émis.`, {
         description: "Il ne peut plus être modifié ni supprimé.",
       });
@@ -335,6 +344,13 @@ export function Invoicing() {
       paymentTerms: devis.paymentTerms,
       notes: devis.notes ?? "",
     }).then(() => {
+      recordActivity({
+        kind: "documentConverted",
+        title: `${devis.number || "Devis"} transformé en facture`,
+        detail: nameOf(devis.clientId),
+        href: "/invoicing",
+        amount: devis.amount,
+      });
       setNatureFilter("invoice");
       toast.success("Facture créée depuis le devis.", {
         description: "Elle est en brouillon : vérifie-la avant de l’émettre.",
@@ -404,14 +420,22 @@ export function Invoicing() {
     void update(facture.id, {
       payments: encaissements,
       ...(reglement.balance <= 0 ? { status: "paid" as const } : {}),
-    }).then(() =>
+    }).then(() => {
+      recordActivity({
+        kind: "paymentRecorded",
+        title: `${formatCurrencyXAF(encaissement.amount)} encaissés`,
+        detail: `${facture.number || "brouillon"} · ${nameOf(facture.clientId)}`,
+        href: "/invoicing",
+        amount: encaissement.amount,
+      });
+
       toast.success("Encaissement enregistré.", {
         description:
           reglement.balance <= 0
             ? "La facture est soldée."
             : `Reste ${formatCurrencyXAF(reglement.balance)} à encaisser.`,
-      }),
-    );
+      });
+    });
   };
 
   /**
@@ -1181,6 +1205,12 @@ export function Invoicing() {
         }}
         onRecord={(relance) => {
           void relances.create(relance);
+          recordActivity({
+            kind: "reminderSent",
+            title: `Relance ${cibleRelance?.documentNumber ?? ""}`,
+            detail: `${cibleRelance?.clientName ?? ""} · ${cibleRelance?.formattedBalance ?? ""}`,
+            href: "/invoicing",
+          });
         }}
       />
 

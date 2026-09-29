@@ -11,6 +11,7 @@ import {
   serializeBackup,
 } from "../../infra/backup";
 import { readStorageHealth, requestPersistentStorage } from "../../infra/repository";
+import { recordActivity } from "../data/activityLog";
 import { recordBackup } from "../data/backupJournal";
 import { readAllCollections, restoreAllCollections } from "../data/repositories";
 import { Button } from "./ui/button";
@@ -77,6 +78,12 @@ export function BackupPanel() {
       // Sans cette trace, l'application ne pouvait pas signaler le cas le
       // plus dangereux : celui où aucune sauvegarde n'a jamais été faite.
       recordBackup();
+      recordActivity({
+        kind: "backupExported",
+        title: "Sauvegarde exportée",
+        detail: backupFileName(),
+        href: "/account",
+      });
 
       toast.success("Sauvegarde exportée.", {
         description: "Range ce fichier ailleurs que sur cet appareil.",
