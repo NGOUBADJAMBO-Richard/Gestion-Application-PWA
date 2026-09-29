@@ -25,6 +25,9 @@ const translations: Translations = {
   "nav.help": { fr: "Aide", en: "Help" },
   "nav.logout": { fr: "Déconnexion", en: "Logout" },
   "nav.closeMenu": { fr: "Fermer le menu", en: "Close menu" },
+  "nav.openMenu": { fr: "Ouvrir le menu", en: "Open menu" },
+  "nav.toggleLanguage": { fr: "Changer de langue", en: "Switch language" },
+  "nav.toggleTheme": { fr: "Changer de thème", en: "Switch theme" },
 
   // Dashboard
   "dashboard.title": { fr: "Tableau de bord", en: "Dashboard" },

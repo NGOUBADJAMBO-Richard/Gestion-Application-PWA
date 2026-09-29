@@ -11,6 +11,7 @@ import {
   serializeBackup,
 } from "../../infra/backup";
 import { readStorageHealth, requestPersistentStorage } from "../../infra/repository";
+import { recordBackup } from "../data/backupJournal";
 import { readAllCollections, restoreAllCollections } from "../data/repositories";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -71,6 +72,11 @@ export function BackupPanel() {
       lien.download = backupFileName();
       lien.click();
       URL.revokeObjectURL(url);
+
+      // La date de l'export permet de rappeler une sauvegarde oubliée.
+      // Sans cette trace, l'application ne pouvait pas signaler le cas le
+      // plus dangereux : celui où aucune sauvegarde n'a jamais été faite.
+      recordBackup();
 
       toast.success("Sauvegarde exportée.", {
         description: "Range ce fichier ailleurs que sur cet appareil.",
