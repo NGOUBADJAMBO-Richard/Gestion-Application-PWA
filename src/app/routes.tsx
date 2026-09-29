@@ -29,6 +29,7 @@ const Projects = lazy(() =>
 const Invoicing = lazy(() =>
   import("./pages/Invoicing").then((m) => ({ default: m.Invoicing })),
 );
+const Time = lazy(() => import("./pages/Time").then((m) => ({ default: m.Time })));
 const Support = lazy(() =>
   import("./pages/Support").then((m) => ({ default: m.Support })),
 );
@@ -108,6 +109,7 @@ export const router = createBrowserRouter([
       { path: "account", Component: Account },
       { path: "projects", Component: Projects },
       { path: "invoicing", Component: Invoicing },
+      { path: "time", Component: Time },
       { path: "support", Component: Support },
       { path: "settings", Component: Settings },
       { path: "help", Component: Help },

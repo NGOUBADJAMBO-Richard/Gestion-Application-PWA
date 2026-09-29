@@ -23,6 +23,7 @@ import { invoiceRepository } from "../data/repositories";
 import { useCollection } from "../hooks/useCollection";
 import { DataStateNotice } from "../components/DataStateNotice";
 import { ClientSelect } from "../components/ClientSelect";
+import { ProjectSelect } from "../components/ProjectSelect";
 import { useClientIndex } from "../hooks/useClientIndex";
 import { useCompanyProfile } from "../hooks/useCompanyProfile";
 import { defaultVatPercent } from "../../domain/companyProfile";
@@ -37,8 +38,7 @@ import { daysOverdue, effectiveStatus } from "../../domain/invoiceStatus";
 import { ConfirmDelete } from "../components/ConfirmDelete";
 import { PaymentDialog } from "../components/PaymentDialog";
 import { type Payment, computeSettlement } from "../../domain/payment";
-import { computeDocumentTotals } from "../../domain/invoice";
-import { money } from "../../domain/money";
+import { documentAmounts } from "../data/documentTotals";
 import { toast } from "sonner";
 import {
   Table,
@@ -136,6 +136,21 @@ export function Invoicing() {
     taxRate: defaultVatPercent(profile),
   });
 
+  const [formData, setFormData] = useState<Omit<Invoice, "id">>({
+    number: "",
+    kind: "invoice",
+    clientId: "",
+    projectId: undefined,
+    items: [createEmptyItem("item-1")],
+    amount: 0,
+    status: "draft",
+    date: "",
+    dueDate: "",
+    paymentMethod: "bank-transfer",
+    paymentTerms: "Paiement sous 30 jours",
+    notes: "",
+  });
+
   /**
    * Totaux de la facture, calculés par le domaine.
    *
@@ -148,41 +163,8 @@ export function Invoicing() {
    * n’affiche pas un total faux, on renvoie zéro et on laisse la validation
    * du formulaire faire son travail.
   */
-  const calculateInvoiceTotals = (items: InvoiceItem[]) => {
-    try {
-      const totaux = computeDocumentTotals(
-        items.map((item) => ({
-          id: item.id,
-          label: item.description,
-          quantity: Number(item.quantity) || 0,
-          unitPrice: money(Math.round(Number(item.unitPrice) || 0), profile.currency),
-          discountPercent: 0,
-          vatRatePercent: Number(item.taxRate) || 0,
-        })),
-        profile.currency,
-      );
-      return {
-        subtotal: totaux.subtotal.amount,
-        taxAmount: totaux.totalVat.amount,
-        total: totaux.total.amount,
-      };
-    } catch {
-      return { subtotal: 0, taxAmount: 0, total: 0 };
-    }
-  };
-  const [formData, setFormData] = useState<Omit<Invoice, "id">>({
-    number: "",
-    kind: "invoice",
-    clientId: "",
-    items: [createEmptyItem("item-1")],
-    amount: 0,
-    status: "draft",
-    date: "",
-    dueDate: "",
-    paymentMethod: "bank-transfer",
-    paymentTerms: "Paiement sous 30 jours",
-    notes: "",
-  });
+  const calculateInvoiceTotals = (items: InvoiceItem[]) =>
+    documentAmounts(items, profile.currency);
 
   const previewTotals = calculateInvoiceTotals(formData.items);
 
@@ -245,6 +227,7 @@ export function Invoicing() {
       // numero deja pris des qu une facture est supprimee.
       number: "",
       clientId: "",
+      projectId: undefined,
       items: [
         {
           ...createEmptyItem(),
@@ -277,6 +260,7 @@ export function Invoicing() {
         ? {}
         : { convertedFrom: invoice.convertedFrom }),
       clientId: invoice.clientId,
+      projectId: invoice.projectId,
       items: invoice.items.map((item) => ({ ...item })),
       amount: invoice.amount,
       status: invoice.status,
@@ -333,6 +317,7 @@ export function Invoicing() {
       kind: "invoice",
       convertedFrom: devis.number || devis.id,
       clientId: devis.clientId,
+      projectId: devis.projectId,
       items: devis.items.map((ligne) => ({ ...ligne })),
       amount: devis.amount,
       status: "draft",
@@ -377,6 +362,7 @@ export function Invoicing() {
       kind: "creditNote",
       cancels: facture.number || facture.id,
       clientId: facture.clientId,
+      projectId: facture.projectId,
       items: facture.items.map((ligne) => ({
         ...ligne,
         unitPrice: -ligne.unitPrice,
@@ -487,6 +473,7 @@ export function Invoicing() {
         ? {}
         : { convertedFrom: formData.convertedFrom }),
       clientId: formData.clientId,
+      projectId: formData.projectId,
       items: formData.items.map((item) => ({
         ...item,
         description: item.description.trim(),
@@ -508,8 +495,10 @@ export function Invoicing() {
 
     const hasInvalidItem = payload.items.some((item) => !item.description);
 
+    // Le numéro n'est PAS contrôlé ici : il est attribué à l'émission, et
+    // l'exiger à l'enregistrement rendait la création d'un brouillon
+    // silencieusement impossible — le formulaire se refermait sans rien créer.
     if (
-      !payload.number ||
       !payload.clientId ||
       payload.items.length === 0 ||
       hasInvalidItem ||
@@ -854,46 +843,32 @@ export function Invoicing() {
               <DialogDescription>{t("invoicing.manageData")}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {/*
+                Ni numéro ni statut ne se saisissent à la main.
+
+                Le champ « numéro » était obligatoire alors qu'un brouillon n'en
+                a pas : le formulaire refusait donc toute création sans jamais
+                dire pourquoi. Et un numéro libre ruinerait la séquence
+                comptable, qu'un test du domaine vérifie sans trou. Le statut,
+                lui, découle du cycle de vie : brouillon, émis, encaissé, en
+                retard. Les deux sont maintenant affichés, pas modifiables.
+              */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="invoice-number">
-                    {t("invoicing.number")}
-                  </Label>
-                  <Input
-                    id="invoice-number"
-                    value={formData.number}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        number: e.target.value,
-                      }))
-                    }
-                    required
-                  />
+                  <Label>{t("invoicing.number")}</Label>
+                  <p className="flex h-9 items-center px-3 text-sm border border-border bg-muted/40 text-muted-foreground">
+                    {formData.number.length > 0
+                      ? formData.number
+                      : "Attribué à l'émission"}
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="invoice-status">{t("projects.status")}</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: Invoice["status"]) =>
-                      setFormData((prev) => ({ ...prev, status: value }))
-                    }
-                  >
-                    <SelectTrigger id="invoice-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="paid">
-                        {t("invoicing.paid")}
-                      </SelectItem>
-                      <SelectItem value="pending">
-                        {t("invoicing.pending")}
-                      </SelectItem>
-                      <SelectItem value="overdue">
-                        {t("invoicing.overdue")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>{t("projects.status")}</Label>
+                  <p className="flex h-9 items-center px-3 text-sm border border-border bg-muted/40 text-muted-foreground">
+                    {formData.status === "draft"
+                      ? "Brouillon"
+                      : t(`invoicing.${formData.status}`)}
+                  </p>
                 </div>
               </div>
 
@@ -903,9 +878,35 @@ export function Invoicing() {
                   id="invoice-client"
                   value={formData.clientId}
                   onChange={(clientId) =>
-                    setFormData((prev) => ({ ...prev, clientId }))
+                    // Changer de client invalide le projet rattaché : il
+                    // appartenait à l'ancien. On le remet à vide plutôt que de
+                    // laisser une imputation croisée s'installer.
+                    setFormData((prev) => ({
+                      ...prev,
+                      clientId,
+                      projectId:
+                        prev.clientId === clientId ? prev.projectId : undefined,
+                    }))
                   }
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="invoice-project">Projet rattaché</Label>
+                <ProjectSelect
+                  id="invoice-project"
+                  value={formData.projectId}
+                  clientId={formData.clientId}
+                  allowNone
+                  noneLabel="Prestation ponctuelle (hors projet)"
+                  onChange={(projectId) =>
+                    setFormData((prev) => ({ ...prev, projectId }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Sans rattachement, la pièce compte au chiffre d&rsquo;affaires
+                  mais échappe à l&rsquo;analyse de rentabilité.
+                </p>
               </div>
 
               <div className="space-y-3">

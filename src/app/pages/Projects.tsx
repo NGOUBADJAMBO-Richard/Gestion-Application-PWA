@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Search, Plus, Filter, Pencil, Trash2 } from "lucide-react";
 import {
   Card,
@@ -45,6 +45,12 @@ import {
 } from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
 import { formatCurrencyXAF } from "../utils/currency";
+import { formatMoney, money } from "../../domain/money";
+import { computeProjectProfitability } from "../../domain/profitability";
+import { toRevenueDocuments } from "../data/documentTotals";
+import { expenseRepository, timeEntryRepository } from "../data/repositories";
+import { useCompanyProfile } from "../hooks/useCompanyProfile";
+import { formatDuration } from "../../domain/timeEntry";
 
 export function Projects() {
   const { t } = useLanguage();
@@ -60,6 +66,32 @@ export function Projects() {
   } = useCollection(projectRepository);
   const { nameOf } = useClientIndex();
   const { items: invoices } = useCollection(invoiceRepository);
+  const { items: saisies } = useCollection(timeEntryRepository);
+  const { items: depenses } = useCollection(expenseRepository);
+  const { profile } = useCompanyProfile();
+
+  /**
+   * Rentabilité de chaque projet, indexée par identifiant.
+   *
+   * Calculée ici et non dans la boucle de rendu : recalculer pour chaque ligne
+   * à chaque frappe dans le champ de recherche relirait toutes les factures.
+   */
+  const rentabilites = useMemo(() => {
+    const documents = toRevenueDocuments(invoices, profile.currency);
+    return new Map(
+      projects.map((projet) => [
+        projet.id,
+        computeProjectProfitability({
+          projectId: projet.id,
+          currency: profile.currency,
+          budget: money(Math.round(projet.budget), profile.currency),
+          documents,
+          timeEntries: saisies,
+          expenses: depenses,
+        }),
+      ]),
+    );
+  }, [projects, invoices, saisies, depenses, profile.currency]);
   const [projetASupprimer, setProjetASupprimer] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -233,6 +265,7 @@ export function Projects() {
                   <TableHead>{t("projects.status")}</TableHead>
                   <TableHead>{t("projects.deadline")}</TableHead>
                   <TableHead>{t("projects.budget")}</TableHead>
+                  <TableHead>Marge</TableHead>
                   <TableHead>{t("projects.progress")}</TableHead>
                   <TableHead className="text-right">
                     {t("projects.actions")}
@@ -255,6 +288,38 @@ export function Projects() {
                       {new Date(project.deadline).toLocaleDateString("fr-FR")}
                     </TableCell>
                     <TableCell>{formatCurrencyXAF(project.budget)}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const marge = rentabilites.get(project.id);
+                        if (marge === undefined) return null;
+                        const rien =
+                          marge.revenue.amount === 0 &&
+                          marge.totalCost.amount === 0;
+                        if (rien) {
+                          return (
+                            <span className="text-sm text-muted-foreground">
+                              Pas d&rsquo;activité
+                            </span>
+                          );
+                        }
+                        return (
+                          <div className="whitespace-nowrap">
+                            <span
+                              className={
+                                marge.margin.amount < 0
+                                  ? "text-destructive"
+                                  : "text-emerald-600 dark:text-emerald-400"
+                              }
+                            >
+                              {formatMoney(marge.margin)}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {formatDuration(marge.minutesLogged)} passées
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress value={project.progress} className="w-16" />
@@ -434,15 +499,28 @@ export function Projects() {
         decision={canDeleteProject({
           // Une facture rattachee documente une prestation : supprimer le
           // projet la laisserait orpheline.
+          //
+          // Le rapprochement se faisait sur le client, faute de rattachement
+          // au projet : un client portant deux projets voyait donc la
+          // suppression de l'un bloquée par les factures de l'autre. On compare
+          // maintenant le projet lui-meme.
           linkedInvoiceIds: invoices
             .filter(
               (facture) =>
                 projetASupprimer !== null &&
-                facture.clientId === projetASupprimer.clientId,
+                facture.projectId === projetASupprimer.id,
             )
             .map((facture) => facture.number || "brouillon"),
         })}
-        consequence="Le projet part à la corbeille et reste récupérable."
+        consequence={(() => {
+          const marge =
+            projetASupprimer === null
+              ? undefined
+              : rentabilites.get(projetASupprimer.id);
+          const base = "Le projet part à la corbeille et reste récupérable.";
+          if (marge === undefined || marge.minutesLogged === 0) return base;
+          return `${base} Les ${formatDuration(marge.minutesLogged)} saisies dessus seront signalées comme orphelines dans Temps & rentabilité.`;
+        })()}
         onConfirm={() => {
           if (projetASupprimer !== null) void remove(projetASupprimer.id);
           setProjetASupprimer(null);

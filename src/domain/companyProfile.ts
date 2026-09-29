@@ -53,6 +53,19 @@ export interface CompanyProfile {
   /** Mentions libres reportées en pied de chaque facture. */
   readonly invoiceFooterMentions: readonly string[];
 
+  /**
+   * Coût horaire interne par défaut, en unité mineure.
+   *
+   * Sert uniquement à préremplir une saisie de temps : la valeur retenue est
+   * ensuite figée sur la saisie elle-même. Changer ce réglage n'altère donc
+   * aucun coût déjà enregistré, et ne réécrit la marge d'aucun projet livré.
+   *
+   * Ce n'est PAS un tarif de vente : c'est ce qu'une heure coûte à
+   * l'entreprise. Zéro est admis — l'agence qui ne veut pas valoriser son
+   * temps le laisse à zéro et ne lit que les dépenses.
+   */
+  readonly defaultHourlyCost: number;
+
   /** Durée de conservation des pièces, en années. */
   readonly retentionYears: number;
 }
@@ -100,6 +113,9 @@ export const DEFAULT_COMPANY_PROFILE: CompanyProfile = {
   paymentTerms: "Paiement sous 30 jours à compter de la date de facture.",
   bankDetails: "",
   invoiceFooterMentions: [],
+  // Ordre de grandeur pour un développeur à Libreville. À ajuster : c'est un
+  // coût de revient, pas un prix de vente.
+  defaultHourlyCost: 8000,
   retentionYears: 10,
 };
 

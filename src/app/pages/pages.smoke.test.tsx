@@ -10,6 +10,7 @@ import { NotFound } from "./NotFound";
 import { Projects } from "./Projects";
 import { Settings } from "./Settings";
 import { Support } from "./Support";
+import { Time } from "./Time";
 
 /**
  * Tests de fumée : chaque écran doit s'ouvrir sans planter, avec un stockage
@@ -34,6 +35,20 @@ describe("ouverture des écrans", () => {
   it("les projets s'affichent", async () => {
     renderWithProviders(<Projects />);
     expect(await screen.findByRole("heading", { level: 1, name: /projet/i })).toBeInTheDocument();
+  });
+
+  it("le temps et la rentabilité s'affichent", async () => {
+    renderWithProviders(<Time />);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: /temps/i }),
+    ).toBeInTheDocument();
+    // Les trois onglets doivent exister : sans eux, l'écran n'expose que le
+    // temps et la rentabilité reste inaccessible.
+    expect(await screen.findByRole("tab", { name: "Temps" })).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: "Dépenses" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("tab", { name: "Rentabilité" }),
+    ).toBeInTheDocument();
   });
 
   it("la facturation s'affiche", async () => {

@@ -17,6 +17,7 @@ const translations: Translations = {
   "nav.clients": { fr: "Clients", en: "Clients" },
   "nav.projects": { fr: "Projets", en: "Projects" },
   "nav.invoicing": { fr: "Facturation", en: "Invoicing" },
+  "nav.time": { fr: "Temps & rentabilité", en: "Time & profitability" },
   "nav.support": { fr: "Support", en: "Support" },
   "nav.settings": { fr: "Paramètres", en: "Settings" },
   "nav.account": { fr: "Mon compte", en: "My account" },

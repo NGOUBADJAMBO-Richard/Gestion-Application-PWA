@@ -1,14 +1,19 @@
 import { LocalStorageRepository } from "../../infra/localStorageRepo";
 import type { Repository } from "../../infra/repository";
+import { isExpenseCategory } from "../../domain/expense";
+import type { Expense } from "../../domain/expense";
+import type { TimeEntry } from "../../domain/timeEntry";
 import {
   type Client,
   type Invoice,
   type Project,
   type Ticket,
   mockClients,
+  mockExpenses,
   mockInvoices,
   mockProjects,
   mockTickets,
+  mockTimeEntries,
 } from "./mockData";
 
 /**
@@ -69,6 +74,49 @@ function parseTicket(raw: unknown): Ticket | undefined {
   return raw as unknown as Ticket;
 }
 
+/**
+ * Une saisie de temps illisible est écartée, pas corrigée.
+ *
+ * Une durée négative ou fractionnaire fausserait tous les coûts en aval sans
+ * qu'aucun écran ne le signale. La refuser à la lecture coûte une ligne
+ * perdue ; la laisser passer coûte une marge fausse.
+ */
+function parseTimeEntry(raw: unknown): TimeEntry | undefined {
+  if (!isRecord(raw)) return undefined;
+  if (!hasText(raw.id) || !hasText(raw.projectId) || !hasText(raw.date)) {
+    return undefined;
+  }
+  if (!Number.isInteger(raw.minutes) || (raw.minutes as number) <= 0) {
+    return undefined;
+  }
+  if (!Number.isInteger(raw.hourlyCost) || (raw.hourlyCost as number) < 0) {
+    return undefined;
+  }
+  return {
+    ...(raw as unknown as TimeEntry),
+    description: typeof raw.description === "string" ? raw.description : "",
+    billable: raw.billable !== false,
+  };
+}
+
+function parseExpense(raw: unknown): Expense | undefined {
+  if (!isRecord(raw)) return undefined;
+  if (!hasText(raw.id) || !hasText(raw.date) || !hasText(raw.label)) {
+    return undefined;
+  }
+  if (!Number.isInteger(raw.amount) || (raw.amount as number) <= 0) {
+    return undefined;
+  }
+  return {
+    ...(raw as unknown as Expense),
+    // Une catégorie inconnue — renommée, ou venue d'une sauvegarde plus
+    // récente — devient « Autre » : la dépense reste comptée, ce qui importe
+    // davantage que sa classification.
+    category: isExpenseCategory(raw.category) ? raw.category : "other",
+    rebilled: raw.rebilled === true,
+  };
+}
+
 export const clientRepository: Repository<Client> = new LocalStorageRepository<Client>({
   collection: "clients",
   parse: parseClient,
@@ -93,12 +141,28 @@ export const ticketRepository: Repository<Ticket> = new LocalStorageRepository<T
   seed: () => mockTickets,
 });
 
+export const timeEntryRepository: Repository<TimeEntry> =
+  new LocalStorageRepository<TimeEntry>({
+    collection: "time-entries",
+    parse: parseTimeEntry,
+    seed: () => mockTimeEntries,
+  });
+
+export const expenseRepository: Repository<Expense> =
+  new LocalStorageRepository<Expense>({
+    collection: "expenses",
+    parse: parseExpense,
+    seed: () => mockExpenses,
+  });
+
 /** Toutes les collections, indexées par nom. Sert à l'export de sauvegarde. */
 export const ALL_REPOSITORIES = {
   clients: clientRepository,
   projects: projectRepository,
   invoices: invoiceRepository,
   tickets: ticketRepository,
+  timeEntries: timeEntryRepository,
+  expenses: expenseRepository,
 } as const;
 
 export type CollectionName = keyof typeof ALL_REPOSITORIES;

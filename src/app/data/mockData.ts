@@ -1,4 +1,8 @@
+import type { Expense } from "../../domain/expense";
 import type { Payment } from "../../domain/payment";
+import type { TimeEntry } from "../../domain/timeEntry";
+
+export type { Expense, TimeEntry };
 
 export interface Client {
   id: string;
@@ -53,6 +57,16 @@ export interface Invoice {
   payments?: Payment[] | undefined;
   /** Reference au client par identifiant : un nom d’entreprise n’est pas une clé. */
   clientId: string;
+  /**
+   * Projet rattaché.
+   *
+   * Facultatif, pour deux raisons : les pièces enregistrées avant ce champ ne
+   * l’ont pas, et une prestation ponctuelle — une consultation, un dépannage —
+   * n’appartient légitimement à aucun projet. Sans rattachement, la pièce reste
+   * comptée au chiffre d’affaires mais signalée comme non analysée : la
+   * rattacher au hasard inventerait une rentabilité.
+   */
+  projectId?: string | undefined;
   items: InvoiceItem[];
   amount: number;
   /**
@@ -194,6 +208,7 @@ export const mockInvoices: Invoice[] = [
     id: "1",
     number: "FAC-2026-001",
     kind: "invoice",
+    projectId: "1",
     clientId: "1",
     items: [
       {
@@ -223,6 +238,7 @@ export const mockInvoices: Invoice[] = [
     id: "2",
     number: "FAC-2026-002",
     kind: "invoice",
+    projectId: "2",
     clientId: "2",
     items: [
       {
@@ -244,6 +260,7 @@ export const mockInvoices: Invoice[] = [
     id: "3",
     number: "FAC-2026-003",
     kind: "invoice",
+    projectId: "5",
     clientId: "3",
     items: [
       {
@@ -272,6 +289,7 @@ export const mockInvoices: Invoice[] = [
     id: "4",
     number: "FAC-2026-004",
     kind: "invoice",
+    projectId: "4",
     clientId: "4",
     items: [
       {
@@ -333,4 +351,232 @@ export const mockRevenueData = [
   { month: "Avr", revenue: 545000 },
   { month: "Mai", revenue: 490000 },
   { month: "Juin", revenue: 623000 },
+];
+
+/**
+ * Temps passé, en minutes.
+ *
+ * Coûts horaires internes plausibles pour Libreville : développement 8 000 F,
+ * graphisme 6 000 F, rédaction 5 000 F. Ce sont des coûts, pas des tarifs de
+ * vente — c'est la distinction qui rend la marge lisible.
+ */
+export const mockTimeEntries: TimeEntry[] = [
+  {
+    id: "t-1",
+    projectId: "1",
+    date: "2026-03-02",
+    minutes: 480,
+    description: "Intégration du catalogue et des fiches produit",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-2",
+    projectId: "1",
+    date: "2026-03-04",
+    minutes: 420,
+    description: "Passerelle Airtel Money : tunnel de paiement",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-3",
+    projectId: "1",
+    date: "2026-03-06",
+    minutes: 300,
+    description: "Panier et gestion des stocks",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-4",
+    projectId: "1",
+    date: "2026-03-09",
+    minutes: 240,
+    description: "Reprise du tunnel après retour client",
+    billable: false,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-5",
+    projectId: "1",
+    date: "2026-03-11",
+    minutes: 480,
+    description: "Tableau de bord vendeur",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-6",
+    projectId: "1",
+    date: "2026-03-13",
+    minutes: 480,
+    description: "Recette fonctionnelle et corrections",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-7",
+    projectId: "2",
+    date: "2026-03-16",
+    minutes: 480,
+    description: "Architecture Flutter et navigation",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-8",
+    projectId: "2",
+    date: "2026-03-18",
+    minutes: 480,
+    description: "Synchronisation hors ligne des relevés de chantier",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-9",
+    projectId: "2",
+    date: "2026-03-20",
+    minutes: 420,
+    description: "Prise de photos géolocalisées",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-10",
+    projectId: "2",
+    date: "2026-03-23",
+    minutes: 480,
+    description: "Export PDF des rapports de chantier",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-11",
+    projectId: "2",
+    date: "2026-03-25",
+    minutes: 480,
+    description: "Reprise complète du module de synchronisation",
+    billable: false,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-12",
+    projectId: "2",
+    date: "2026-03-27",
+    minutes: 360,
+    description: "Publication sur les magasins d'applications",
+    billable: true,
+    hourlyCost: 8000,
+  },
+  {
+    id: "t-13",
+    projectId: "3",
+    date: "2026-03-24",
+    minutes: 240,
+    description: "Exploration technique et relevé des erreurs d'indexation",
+    billable: true,
+    hourlyCost: 5000,
+  },
+  {
+    id: "t-14",
+    projectId: "4",
+    date: "2026-03-03",
+    minutes: 240,
+    description: "Recherches et pistes graphiques",
+    billable: true,
+    hourlyCost: 6000,
+  },
+  {
+    id: "t-15",
+    projectId: "4",
+    date: "2026-03-05",
+    minutes: 120,
+    description: "Déclinaisons et charte d'usage",
+    billable: true,
+    hourlyCost: 6000,
+  },
+  {
+    id: "t-16",
+    projectId: "5",
+    date: "2026-03-26",
+    minutes: 300,
+    description: "Maquette et intégration de la page d'accueil",
+    billable: true,
+    hourlyCost: 8000,
+  },
+];
+
+/**
+ * Dépenses engagées.
+ *
+ * Trois dépenses sont refacturées à l'identique — domaine, hébergement : elles
+ * traversent l'entreprise sans l'appauvrir et ne doivent donc pas peser sur la
+ * marge. Les autres sont des charges réelles, dont deux de structure.
+ */
+export const mockExpenses: Expense[] = [
+  {
+    id: "d-1",
+    date: "2026-03-01",
+    label: "Nom de domaine .ga (1 an)",
+    amount: 12000,
+    category: "hosting",
+    projectId: "1",
+    supplier: "Registrar Gabon",
+    rebilled: true,
+  },
+  {
+    id: "d-2",
+    date: "2026-03-17",
+    label: "Maquettes UI sous-traitées",
+    amount: 120000,
+    category: "subcontracting",
+    projectId: "2",
+    supplier: "Studio Mandji",
+    rebilled: false,
+    notes: "Douze écrans, deux tours de correction.",
+  },
+  {
+    id: "d-3",
+    date: "2026-03-01",
+    label: "Abonnement Figma (mensuel)",
+    amount: 9000,
+    category: "software",
+    rebilled: false,
+  },
+  {
+    id: "d-4",
+    date: "2026-03-26",
+    label: "Hébergement mutualisé (1 an)",
+    amount: 48000,
+    category: "hosting",
+    projectId: "5",
+    supplier: "Registrar Gabon",
+    rebilled: true,
+  },
+  {
+    id: "d-5",
+    date: "2026-03-19",
+    label: "Déplacements chantier Nzeng-Ayong",
+    amount: 15000,
+    category: "travel",
+    projectId: "2",
+    rebilled: false,
+  },
+  {
+    id: "d-6",
+    date: "2026-03-31",
+    label: "Frais bancaires du trimestre",
+    amount: 3500,
+    category: "fees",
+    rebilled: false,
+  },
+  {
+    id: "d-7",
+    date: "2026-03-12",
+    label: "Cartes de visite et flyers",
+    amount: 25000,
+    category: "marketing",
+    rebilled: false,
+  },
 ];

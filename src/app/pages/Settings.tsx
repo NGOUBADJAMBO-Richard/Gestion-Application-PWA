@@ -377,6 +377,29 @@ export function Settings() {
             </Champ>
           </div>
 
+          <Champ
+            label={`Coût horaire interne par défaut (${draft.currency})`}
+            id="defaultHourlyCost"
+          >
+            <Input
+              id="defaultHourlyCost"
+              type="number"
+              min={0}
+              step={500}
+              value={draft.defaultHourlyCost}
+              onChange={(e) =>
+                set("defaultHourlyCost", Math.max(0, Number(e.target.value) || 0))
+              }
+            />
+          </Champ>
+
+          <p className="text-xs text-muted-foreground">
+            Ce coût sert à préremplir une saisie de temps ; la valeur retenue est
+            ensuite figée sur la saisie. Le modifier ne réécrit donc la marge
+            d&rsquo;aucun projet déjà livré. Ce n&rsquo;est pas un tarif de
+            vente, mais ce qu&rsquo;une heure coûte à l&rsquo;entreprise.
+          </p>
+
           <Champ label="Coordonnées bancaires / moyens de paiement" id="bankDetails">
             <Textarea
               id="bankDetails"

@@ -42,8 +42,10 @@
 - Budget, échéance, avancement
 - Rattachement au client **par identifiant** : renommer un client met à jour
   tous ses documents
-
-❌ Rentabilité (temps passé × taux − dépenses) · ❌ Suivi du temps · ❌ Dépenses
+- Colonne **Marge** : ce que le projet a rapporté moins ce qu'il a coûté, et le
+  temps passé dessus
+- La suppression est refusée quand des pièces sont rattachées au projet — et
+  annonce le temps qui deviendra orphelin
 
 ---
 
@@ -91,6 +93,48 @@ Lignes reprises au négatif. `facture + avoir = 0` exactement, vérifié par tes
 avoir sur une facture déjà annulée.
 
 ❌ Relances automatiques · ❌ Échéanciers · ❌ Devise multiple à l'usage
+
+---
+
+## Temps &amp; rentabilité ✅
+
+### Suivi du temps
+
+- Saisie par projet, avec durée libre : « 1h30 », « 90 » ou « 1,5h »
+- La durée est stockée en **minutes entières** — jamais en heures décimales,
+  dont l'accumulation d'arrondis fabrique des demi-journées fantômes
+- **Coût horaire figé à la saisie** : augmenter le coût par défaut ne réécrit
+  pas la marge des projets déjà livrés
+- Distinction refacturable / non refacturable : une reprise offerte reste un
+  coût
+- Date future refusée, saisie de plus de 16 h refusée
+
+### Dépenses
+
+- Neuf postes fermés (sous-traitance, logiciels, hébergement, matériel,
+  déplacements, communication, formation, frais, autre). Une liste libre
+  produirait « Hebergement », « hébergement » et « Hosting » dans la même base
+- Rattachement au projet **facultatif** : un abonnement de comptabilité est une
+  charge de structure, pas le coût d'un chantier
+- **Refacturée à l'identique** : la dépense reste une sortie de caisse mais ne
+  pèse pas sur la marge
+- Le montant saisi est celui payé, TTC. Aucune TVA n'est déduite : le régime
+  fiscal réel n'est pas vérifié (voir FISCALITE.md), et une marge calculée sur
+  une hypothèse fiscale fausse serait pire qu'une marge calculée sur la caisse
+
+### Rentabilité
+
+- Recette **hors taxes** — la TVA collectée transite, elle n'appartient pas à
+  l'entreprise
+- Devis et brouillons exclus : un devis est une espérance, pas une recette
+- Une facture annulée reste comptée et son avoir la compense : exclure les deux
+  retirerait deux fois le même montant
+- Marge, taux de marge, recette par heure passée, budget consommé en coûts
+- Alerte dès que les coûts dépassent le budget, **même avant la première
+  facture** — c'est là que l'alerte sert
+- Les angles morts sont dits, jamais comblés au hasard : pièces émises sans
+  projet, temps saisi sur un projet supprimé, frais de structure non répartis.
+  Une clé de répartition arbitraire fabriquerait des marges fausses
 
 ---
 
@@ -175,7 +219,6 @@ Voir `SECURITE.md` pour le détail, y compris ce qui **n'est pas** protégé.
 | Manque | Conséquence |
 |---|---|
 | Comptabilité en partie double | Pas de grand livre, pas de balance |
-| Suivi du temps et dépenses | Pas de rentabilité par projet |
 | CodeWave Academy | Formations, sessions et apprenants ne sont pas gérés |
 | Catalogue du site | Les tarifs se resaisissent au lieu d'être importés |
 | Relances | Aucune automatisation sur les impayés |

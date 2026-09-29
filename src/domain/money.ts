@@ -282,3 +282,23 @@ export function distribute(
     currency: value.currency,
   }));
 }
+
+/**
+ * Divise un montant par un diviseur quelconque et arrondit à l'unité mineure.
+ *
+ * Sert aux taux dérivés : recette par heure, coût moyen par jour. Distinct de
+ * `allocate`, qui répartit un montant sans en perdre une unité ; ici on calcule
+ * un ratio, pas un partage, et le résultat n'a pas à se resommer.
+ *
+ * Diviser par zéro est refusé plutôt que rendu `Infinity` : un appelant qui
+ * peut avoir zéro heure doit traiter ce cas explicitement, pas afficher « ∞ F ».
+ */
+export function divide(value: Money, divisor: number): Money {
+  if (!Number.isFinite(divisor) || divisor === 0) {
+    throw new InvalidAmountError(divisor);
+  }
+  return {
+    amount: roundHalfUp(value.amount / divisor),
+    currency: value.currency,
+  };
+}
